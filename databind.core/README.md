@@ -8,7 +8,7 @@ data formats.
 ## Quickstart
 
 ```python
-from databind.core import datamodel, field, options
+from databind.core import datamodel, field
 from typing import Optional
 
 @datamodel
