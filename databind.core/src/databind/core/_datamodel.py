@@ -5,6 +5,7 @@ Extends the functionality of the #dataclass module to provide additional metadat
 """
 
 import types
+import textwrap
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 from typing import Any, Dict, Iterable, List, Optional, Union, T, Tuple, Type, get_type_hints
 from ._typing import type_repr
@@ -215,11 +216,15 @@ class UnionMetadata(BaseMetadata):
   #: Indicates whether the union type is a container for its members.
   container: bool = _field(default=False)
 
+  #: The type field of the union container.
+  type_field: str = _field(default=None)
+
   #: The key in the data structure that identifies the union type. Defaults to "type".
-  type_key: str = _field(default=str)
+  type_key: str = _field(default='type')
 
   #: Whether union members should be converted from Python to flat data strucutres.
-  #: The default is `True`.
+  #: This option is required in order to de-serialize union members that cannot be
+  #: deserialized from mappings (like plain types). The default is `True`.
   flat: bool = _field(default=True)
 
 
@@ -265,15 +270,26 @@ def uniontype(
     Initializes *cls* as a container for the union type members.
     """
 
-    scope = {'Any': Any}
-    exec(
-      f"def __init__(self, {type_field}: str, value: Any) -> None:\n"
-      f"  self.{type_field} = {type_field}\n"
-      f"  self._value = value",
-      scope)
+    scope = {}
+    exec(textwrap.dedent(f"""
+      def __init__(self, {type_field}: str, value: Any) -> None:
+        self.{type_field} = {type_field}
+        self._value = value
+      def __repr__(self) -> str:
+        return f'{{type(self).__name__}}({{self.{type_field}!r}}, {{self._value!r}})'
+      def __eq__(self, other) -> bool:
+        if isinstance(other, cls):
+          return self.{type_field} == other.{type_field} and self._value == other._value
+        return False
+      def __ne__(self, other) -> bool:
+        if isinstance(other, cls):
+          return self.{type_field} != other.{type_field} or self._value != other._value
+        return True
+    """), {'Any': Any, 'cls': cls}, scope)
 
-    if '__init__' not in vars(cls):
-      cls.__init__ = scope['__init__']
+    for key, value in scope.items():
+      if key not in vars(cls):
+        setattr(cls, key, scope[key])
 
     def _make_property(type_name: str, annotation: Any) -> property:
       def getter(self) -> annotation:
@@ -310,6 +326,7 @@ def uniontype(
 
     kwargs['resolver'] = resolver
     kwargs['container'] = container
+    kwargs['type_field'] = type_field
     setattr(cls, UnionMetadata.ATTRIBUTE, UnionMetadata(**kwargs))
 
     return cls
