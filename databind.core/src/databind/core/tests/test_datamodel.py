@@ -12,21 +12,34 @@ def test_uniontype_decorator():
   class A:
     pass
 
-  assert hasattr(A, '__databind_metadata__')
-  assert isinstance(A.__databind_metadata__, UnionMetadata)
-  assert UnionMetadata.for_type(A) == UnionMetadata(resolver=StaticUnionResolver({
-    'int': int,
-    'str': str,
-  }))
+  def _a_checks(A):
+    assert hasattr(A, '__databind_metadata__')
+    assert isinstance(A.__databind_metadata__, UnionMetadata)
+    assert UnionMetadata.for_type(A) == UnionMetadata(resolver=StaticUnionResolver({
+      'int': int,
+      'str': str,
+    }))
+
+  _a_checks(A)
 
   @uniontype
+  class A:
+    int: int
+    str: str
+
+  _a_checks(A)
+
+  with raises(TypeError) as excinfo:
+    A()
+  assert str(excinfo.value) == f'non-container @uniontype {type_repr(A)} cannot be constructed directly'
+
+  @uniontype(container=True)
   class B:
     int: int
     str: str
 
   metadata = B.__databind_metadata__
   assert isinstance(metadata, UnionMetadata)
-  assert not metadata.resolver
 
   assert isinstance(B.int, property)
   assert isinstance(B.str, property)

@@ -212,6 +212,9 @@ class UnionMetadata(BaseMetadata):
   #: the union type acts as a container for exactly one of it's dataclass fields.
   resolver: UnionResolver
 
+  #: Indicates whether the union type is a container for its members.
+  container: bool = _field(default=False)
+
   #: The key in the data structure that identifies the union type. Defaults to "type".
   type_key: str = _field(default=str)
 
@@ -220,36 +223,44 @@ class UnionMetadata(BaseMetadata):
   flat: bool = _field(default=True)
 
 
-def uniontype(resolver: Union[UnionMetadata, Dict[str, Type], Type] = None, type_field: str = None, **kwargs):
+def uniontype(
+  resolver: Union[UnionMetadata, Dict[str, Type], Type] = None,
+  container: bool = False,
+  type_field: str = None,
+  **kwargs
+):
   """
   Decorator for classes to define them as union types, and are to be (de-) serialized as such.
   Union types can either act as placeholders or as containers for their members.
 
-  If a *resolver* is specified, the union type will act as a placeholder and will be converted
-  directly into one the union member types.
+  If a *resolver* is specified or *container* is `False`, the union type will act as a placeholder
+  and will be converted directly into one the union member types. If no *resolver* is specified,
+  the members will be determined from the type hints.
 
-  If no *resolver* is specified, the union type will also be a dataclass, where the union
-  type members are derived from the fields. All fields on such a union type must be optional,
-  and when converted, only one such field can be set.
+  If *container* is #True, the union type will be equipped as a container for its members
+  based on the type hints. The *type_field* will be used to store the type name in the
+  container.
   """
 
   cls = None
-
-  if resolver is None or isinstance(resolver, type):
+  if isinstance(resolver, type):
     resolver, cls = None, resolver
+    #import pdb; pdb.set_trace()
+
+  if container:
     if not type_field:
       type_field = kwargs.get('type_key', 'type')
     kwargs.setdefault('type_key', type_field)
-  else:
+
+  if resolver is not None:
+    if container:
+      raise TypeError('"container" argument cannot be combined with "resolver" argument')
     if type_field is not None:
       raise TypeError('"type_field" argument cannot be combined with "resolver" argument')
     if isinstance(resolver, dict):
       resolver = StaticUnionResolver(resolver)
 
-  kwargs['resolver'] = resolver
-  metadata = UnionMetadata(**kwargs)
-
-  def _init_as_container(cls):
+  def _init_as_container(cls, type_hints):
     """
     Initializes *cls* as a container for the union type members.
     """
@@ -275,15 +286,32 @@ def uniontype(resolver: Union[UnionMetadata, Dict[str, Type], Type] = None, type
         self._value = value
       return property(getter, setter)
 
-    for key, annotation in get_type_hints(cls).items():
+    for key, annotation in type_hints.items():
       setattr(cls, key, _make_property(key, annotation))
 
     return cls
 
+  def _prevent_init(cls):
+    def __init__(self, *args, **kwargs):
+      raise TypeError(f'non-container @uniontype {type_repr(cls)} cannot be constructed directly')
+    if '__init__' not in vars(cls):
+      cls.__init__ = __init__
+
   def decorator(cls):
+    nonlocal resolver
+    if not resolver or container:
+      type_hints = get_type_hints(cls)
     if not resolver:
-      _init_as_container(cls)
-    setattr(cls, UnionMetadata.ATTRIBUTE, metadata)
+      resolver = StaticUnionResolver(type_hints)
+    if container:
+      _init_as_container(cls, type_hints)
+    else:
+      _prevent_init(cls)
+
+    kwargs['resolver'] = resolver
+    kwargs['container'] = container
+    setattr(cls, UnionMetadata.ATTRIBUTE, UnionMetadata(**kwargs))
+
     return cls
 
   if cls:
