@@ -18,9 +18,21 @@ from databind.core import (
   Registry,
   type_repr,
   uniontype,
+  UnionMetadata,
+  UnionTypeError,
 )
 from databind.core.utils import find
 from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601
+
+
+class BoolConverter(Converter):
+
+  def from_python(self, value, context):
+    if not isinstance(value, context.type):
+      raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
+    return bool(value)
+
+  to_python = from_python
 
 
 class IntConverter(Converter):
@@ -340,7 +352,6 @@ class DatetimeConverter(AbstractDateConverter):
   py_type = datetime.datetime
 
 
-
 class DateConverter(AbstractDateConverter):
 
   default_format = create_datetime_format_set('default', ['%Y-%m-%d'])
@@ -364,7 +375,73 @@ class DurationConverter(Converter):
       raise context.value_error(str(exc))
 
 
+class UnionConverter(Converter):
+
+  def from_python(self, value, context):
+    metadata = UnionMetadata.for_type(context.type)
+    if metadata.container:
+      if not isinstance(value, context.type):
+        raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
+      type_name = getattr(value, metadata.type_field)
+      member_value = getattr(value, type_name)
+      member_type = metadata.resolver.type_for_name(type_name)
+
+    else:
+      member_value = value
+      member_type = type(value)
+      try:
+        type_name = metadata.resolver.name_for_type(member_type)
+      except UnionTypeError as exc:
+        raise context.value_error(f'unknown member {type_repr(type(value))} for union {type_repr(context.type)}')
+
+    result = {metadata.type_key: type_name}
+
+    if metadata.flat:
+      next_context = context.fork(member_type, member_value)
+    else:
+      next_context = context.child(type_name, member_type, member_value, context.field_metadata)
+
+    result_member = next_context.from_python()
+    if metadata.flat:
+      result.update(result_member)
+    else:
+      result[type_name] = result_member
+
+    return result
+
+  def to_python(self, value, context):
+    if not isinstance(value, Mapping):
+      raise context.type_error(f'expected {type_repr(context.type)} (as mapping), got {type_repr(type(value))}')
+    metadata = UnionMetadata.for_type(context.type)
+    if metadata.type_key not in value:
+      raise context.type_error(f'missing {metadata.type_key!r} to convert {type_repr(context.type)}')
+
+    value = dict(value)
+    type_name = value.pop(metadata.type_key)
+    try:
+      type_ = metadata.resolver.type_for_name(type_name)
+    except UnionTypeError as exc:
+      raise context.value_error(f'unknown member {type_name!r} for union {type_repr(context.type)}')
+
+    if metadata.flat:
+      next_context = context.fork(type_, value)
+    else:
+      if type_name not in value:
+        raise context.value_error(f'missing {type_name!r} key to convert {type_repr(context.type)}')
+      remaining_keys = set(value.keys()) - set([type_name])
+      if remaining_keys:
+        raise context.value_error(f'additional keys in nested union type {type_repr(context.type)} not permitted: {remaining_keys}')
+      next_context = context.child(type_name, type_, value[type_name], context.field_metadata)
+
+    result = next_context.to_python()
+    if metadata.container:
+      return context.type(type_name, result)
+
+    return result
+
+
 def register_json_converters(registry: Registry) -> None:
+  registry.register_converter(bool, BoolConverter())
   registry.register_converter(int, IntConverter())
   registry.register_converter(str, StringConverter())
   registry.register_converter(float, FloatConverter())
@@ -376,5 +453,5 @@ def register_json_converters(registry: Registry) -> None:
   registry.register_converter(datetime.datetime, DatetimeConverter())
   registry.register_converter(Duration, DurationConverter())
   registry.register_converter(datamodel, ModelConverter())
-  #registry.register_converter(uniontype, UnionConverter())
+  registry.register_converter(uniontype, UnionConverter())
   registry.register_converter(Union, MixtypeConverter())

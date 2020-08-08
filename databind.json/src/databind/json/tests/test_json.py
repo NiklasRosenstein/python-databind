@@ -9,6 +9,14 @@ from nr.parsing.date import Duration, Iso8601
 from pytest import raises
 
 
+def test_bool_converter():
+  assert from_json(bool, True) == True
+  assert to_json(False) == False
+  with raises(ConversionTypeError) as excinfo:
+    from_json(bool, "foo")
+  assert str(excinfo.value) == '$: expected bool, got str'
+
+
 def test_int_converter():
   assert from_json(int, 42) == 42
   assert to_json(42) == 42
@@ -159,3 +167,59 @@ def test_date_converter():
 def test_duration_converter():
   assert from_json(Duration, 'PT4H') == Duration(hours=4)
   assert to_json(Duration(years=20, hours=3, seconds=15)) == 'P20YT3H15S'
+
+
+def test_uniontype_converter():
+  @uniontype(type_key='T', flat=False)
+  class A:
+    int: Optional[int]
+    str: str
+
+  assert from_json(A, {'T': 'int', 'int': 42}) == 42
+  assert from_json(A, {'T': 'int', 'int': None}) == None
+  assert from_json(A, {'T': 'str', 'str': "foo"}) == "foo"
+  with raises(ConversionTypeError) as excinfo:
+    from_json(A, {'T': 'str', 'str': None})
+  assert str(excinfo.value) == "$.str: expected str, got NoneType"
+
+  assert to_json(42, A) == {'T': 'int', 'int': 42}
+  assert to_json("bar", A) == {'T': 'str', 'str': "bar"}
+
+
+  @uniontype(type_key='T', flat=False, container=True)
+  class A:
+    int: Optional[int]
+    str: str
+
+  assert from_json(A, {'T': 'int', 'int': 42}) == A('int', 42)
+  assert from_json(A, {'T': 'int', 'int': 42}) != A('int', 43)
+  assert from_json(A, {'T': 'int', 'int': 42}) != A('str', "foo")
+  assert from_json(A, {'T': 'int', 'int': None}) == A('int', None)
+  assert from_json(A, {'T': 'str', 'str': "foo"}) == A('str', "foo")
+  with raises(ConversionTypeError) as excinfo:
+    from_json(A, {'T': 'str', 'str': None})
+  assert str(excinfo.value) == "$.str: expected str, got NoneType"
+
+  assert to_json(A('int', 42)) == {'T': 'int', 'int': 42}
+  assert to_json(A('int', None)) == {'T': 'int', 'int': None}
+  assert to_json(A('str', "foo")) == {'T': 'str', 'str': "foo"}
+
+
+def test_uniontype_converter_with_models():
+  @datamodel
+  class A:
+    field_a: int
+
+  @datamodel
+  class B:
+    field_b: str
+
+  @uniontype
+  class C:
+    a: A
+    b: B
+
+  assert from_json(C, {'type': 'a', 'field_a': 42}) == A(42)
+  assert from_json(C, {'type': 'b', 'field_b': "foo"}) == B("foo")
+  assert to_json(A(42), C) == {'type': 'a', 'field_a': 42}
+  assert to_json(B("foo"), C) == {'type': 'b', 'field_b': "foo"}
