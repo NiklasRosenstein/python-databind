@@ -5,3 +5,4 @@ license: "MIT"
 description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
 requirements:
 - python ^3.7
+- nr.collections ^0.1.0

@@ -7,6 +7,7 @@ Extends the functionality of the #dataclass module to provide additional metadat
 import types
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 from typing import Any, Dict, Iterable, List, Optional, Union, T, Tuple, Type, get_type_hints
+from ._typing import type_repr
 from ._union import UnionResolver, StaticUnionResolver
 
 __all__ = [
@@ -37,7 +38,7 @@ class UnionResolver: pass
 
 
 @_dataclass
-class _BaseMetadata:
+class BaseMetadata:
   #: Use strict deserialization mode where that is not already the default.
   strict: bool = _field(default=False)
 
@@ -47,7 +48,9 @@ class _BaseMetadata:
   ATTRIBUTE = '__databind_metadata__'
 
   @classmethod
-  def for_type(cls, type_: Type) -> '_BaseMetadata':
+  def for_type(cls, type_: Type) -> 'BaseMetadata':
+    if not isinstance(type_, type):
+      raise TypeError(f'expected type object, got {type_repr(type(type_))}')
     result = vars(type_).get(cls.ATTRIBUTE)
     if result is None or not isinstance(result, cls):
       result = cls()
@@ -55,7 +58,7 @@ class _BaseMetadata:
 
 
 @_dataclass
-class UnionMetadata(_BaseMetadata):
+class UnionMetadata(BaseMetadata):
   #: The resolver that is used to map type names to a datatype.
   # NOTE(NiklasRosenstein): default=None is needed as otherwise dataclasses complains
   #   that a non-default argument follows a default argument (from the base class).
@@ -67,13 +70,13 @@ class UnionMetadata(_BaseMetadata):
 
 
 @_dataclass
-class ModelMetadata(_BaseMetadata):
+class ModelMetadata(BaseMetadata):
   #: Allow only keyword arguments when constructing an instance of the model.
   kwonly: bool = _field(default=False)
 
 
 @_dataclass
-class FieldMetadata(_BaseMetadata):
+class FieldMetadata(BaseMetadata):
   #: Alternative name of the field used during the (de-) serialization. This may be
   #: set to change the name of a field to a value that is not valid Python syntax
   #: (for example "field-name").

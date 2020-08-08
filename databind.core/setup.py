@@ -19,7 +19,7 @@ else:
   print("warning: file \"{}\" does not exist.".format(readme_file), file=sys.stderr)
   long_description = None
 
-requirements = []
+requirements = ['nr.collections >=0.1.0,<1.0.0']
 
 setuptools.setup(
   name = 'databind.core',
@@ -37,7 +37,7 @@ setuptools.setup(
   install_requires = requirements,
   extras_require = {},
   tests_require = [],
-  python_requires = None, # TODO: '>=3.6,<4.0.0',
+  python_requires = None, # TODO: '>=3.7,<4.0.0',
   data_files = [],
   entry_points = {},
   cmdclass = {},
