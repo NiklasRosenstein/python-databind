@@ -268,7 +268,10 @@ class ModelConverter(Converter):
         raise context.value_error(f'strict conversion of {type_repr(context.type)} does not permit additional keys {additional_keys}')
 
     assert len(targets) == 1
-    return context.type(**targets['*'])
+    try:
+      return context.type(**targets['*'])
+    except TypeError as exc:
+      raise context.type_error(str(exc))
 
   def from_python(self, value, context: Context) -> Any:
     if not isinstance(value, context.type):
