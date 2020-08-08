@@ -164,6 +164,13 @@ class Registry:
 
     self._type_options.setdefault(type_, {}).update(options)
 
+  def set_option(self, type_: Type, option_name: str, value: Any) -> None:
+    """
+    Set a specific option.
+    """
+
+    self._type_options.setdefault(type_, {})[option_name] = value
+
   def get_options(self, type_: Type) -> Dict[str, Any]:
     """
     Returns a mapping that contains all options for the specified type or type hint, taking
