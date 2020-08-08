@@ -213,6 +213,11 @@ class ModelConverter(Converter):
     return self._ModelConversionData(ModelMetadata.for_type(type_), fields, targets, wildcard)
 
   def to_python(self, value, context: Context) -> dict:
+    if hasattr(context.type, 'databind_json_load'):
+      result = context.type.databind_json_load(value, context)
+      if result is not NotImplemented:
+        return result
+
     if not isinstance(value, Mapping):
       raise context.type_error(f'expected {type_repr(context.type)} (as mapping), got {type_repr(type(value))}')
 
@@ -266,6 +271,11 @@ class ModelConverter(Converter):
   def from_python(self, value, context: Context) -> Any:
     if not isinstance(value, context.type):
       raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
+
+    if hasattr(value, 'databind_json_dump'):
+      result = value.databind_json_load(context)
+      if result is not NotImplemented:
+        return result
 
     conversion_data = self._get_conversion_data(context.type)
     result = {}  # TODO(NiklasRosenstein): Option to override target conversion type.
