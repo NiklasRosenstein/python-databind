@@ -1,4 +1,5 @@
 
+import abc
 import datetime
 import decimal
 import enum
@@ -19,6 +20,7 @@ from databind.core import (
   uniontype,
 )
 from databind.core.utils import find
+from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601
 
 
 class IntConverter(Converter):
@@ -294,6 +296,74 @@ class ArrayConverter(Converter):
     return self._do_conversion(value, context, 'to_python')
 
 
+class AbstractDateConverter(Converter):
+
+  default_format = None
+  py_type = None
+  truncate = staticmethod(lambda d: d)
+
+  def _get_format(self, context: Context) -> DatetimeFormat:
+    formats = context.field_metadata and context.field_metadata.formats or []
+    datetime_format = find(lambda x: isinstance(x, DatetimeFormat), formats)
+    if not datetime_format:
+      string_formats = [x for x in formats if isinstance(x, str)]
+      if string_formats:
+        datetime_format = create_datetime_format_set('field-formats', string_formats)
+    if not datetime_format:
+      datetime_format = context.registry.get_option(datetime, 'format')
+    if not datetime_format:
+      datetime_format = self.default_format
+    return datetime_format
+
+  def to_python(self, value: str, context: Context) -> datetime.datetime:
+    if not isinstance(value, str):
+      raise context.type_error(f'expected {type_repr(context.type)} (as string), got {type_repr(type(value))}')
+    formatter = self._get_format(context)
+    try:
+      return self.truncate(formatter.parse(value))
+    except ValueError as exc:
+      raise context.value_error(str(exc))
+
+  def from_python(self, value: str, context: Context) -> datetime.datetime:
+    if not isinstance(value, self.py_type):
+      raise context.type_error(f'expected {type_repr(context.type)} (as string), got {type_repr(type(value))}')
+    formatter = self._get_format(context)
+    try:
+      return formatter.format(value)
+    except ValueError as exc:
+      raise context.value_error(str(exc))
+
+
+class DatetimeConverter(AbstractDateConverter):
+
+  default_format = Iso8601()
+  py_type = datetime.datetime
+
+
+
+class DateConverter(AbstractDateConverter):
+
+  default_format = create_datetime_format_set('default', ['%Y-%m-%d'])
+  py_type = datetime.date
+  truncate = staticmethod(lambda d: d.date())
+
+
+class DurationConverter(Converter):
+
+  def from_python(self, value: Duration, context: Context) -> str:
+    if not isinstance(value, context.type):
+      raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
+    return str(value)
+
+  def to_python(self, value: str, context: Context) -> Duration:
+    if not isinstance(value, str):
+      raise context.type_error(f'expected {type_repr(context.type)} (as string), got {type_repr(type(value))}')
+    try:
+      return Duration.parse(value)
+    except ValueError as exc:
+      raise context.value_error(str(exc))
+
+
 def register_json_converters(registry: Registry) -> None:
   registry.register_converter(int, IntConverter())
   registry.register_converter(str, StringConverter())
@@ -302,9 +372,9 @@ def register_json_converters(registry: Registry) -> None:
   registry.register_converter(Dict, ObjectConverter())
   registry.register_converter(decimal.Decimal, DecimalConverter())
   registry.register_converter(enum.Enum, EnumConverter())
-  #registry.register_converter(datetime.date, DateConverter())
-  #registry.register_converter(datetime.datetime, DatetimeConverter())
-  #registry.register_converter(datetime.timedelta, TimedeltaConverter())
+  registry.register_converter(datetime.date, DateConverter())
+  registry.register_converter(datetime.datetime, DatetimeConverter())
+  registry.register_converter(Duration, DurationConverter())
   registry.register_converter(datamodel, ModelConverter())
   #registry.register_converter(uniontype, UnionConverter())
   registry.register_converter(Union, MixtypeConverter())

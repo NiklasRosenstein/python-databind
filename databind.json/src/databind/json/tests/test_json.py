@@ -1,9 +1,11 @@
 
+import datetime
 import decimal
 import enum
 from typing import Dict, List, Optional, Union
 from databind.core import *
 from databind.json import *
+from nr.parsing.date import Duration, Iso8601
 from pytest import raises
 
 
@@ -140,3 +142,20 @@ def test_model_converter_strict():
   with raises(ConversionValueError) as excinfo:
     from_json(A, {'a': 'foo', 'b': 'bar'}, field_metadata=FieldMetadata(strict=True))
   assert str(excinfo.value) == f"$: strict conversion of {type_repr(A)} does not permit additional keys {{'b'}}"
+
+
+def test_datetime_converter():
+  assert from_json(datetime.datetime, '2020-01-04T14:23:00.0Z') == Iso8601().parse('2020-01-04T14:23:00.0Z')
+
+  now = datetime.datetime.now()
+  assert to_json(now) == Iso8601().format(now)
+
+
+def test_date_converter():
+  assert from_json(datetime.date, '2020-06-01') == datetime.date(2020, 6, 1)
+  assert to_json(datetime.date(2020, 6, 1)) == '2020-06-01'
+
+
+def test_duration_converter():
+  assert from_json(Duration, 'PT4H') == Duration(hours=4)
+  assert to_json(Duration(years=20, hours=3, seconds=15)) == 'P20YT3H15S'
