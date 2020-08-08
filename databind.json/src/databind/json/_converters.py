@@ -2,11 +2,12 @@
 import datetime
 import decimal
 import enum
-from typing import Any, Optional
+from typing import Any, T, Union
 
 from databind.core import (
   datamodel,
   Context,
+  ConversionTypeError,
   Converter,
   Registry,
   type_repr,
@@ -97,6 +98,35 @@ class EnumConverter(Converter):
       raise context.value_error(f'invalid value for enum {type_repr(context.type)}: {value!r}')
 
 
+class MixtypeConverter(Converter):
+  """
+  Handles the conversion of #Optional and #Union type hints. The `Optional[T]` type hint is
+  just an alias for `Union[T, None]`, that's why this class needs to handle both cases.
+
+  For multiple types defined in the #Union type hint, a conversion will be attempted in order
+  of the types defined in the hint. If a conversion fails with a #ConversionTypeError, the
+  next type is tried.
+  """
+
+  def _do_conversion(self, value, context, method):
+    args = context.type.__args__
+    if type(None) in args and value is None:
+      return None
+    for type_ in args:
+      if type_ == type(None): continue
+      try:
+        return getattr(context.fork(type_, value), method)()
+      except ConversionTypeError:
+        pass
+    raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
+
+  def from_python(self, value: Any, context: Context) -> Any:
+    return self._do_conversion(value, context, 'from_python')
+
+  def to_python(self, value: Any, context: Context) -> Any:
+    return self._do_conversion(value, context, 'to_python')
+
+
 def register_json_converters(registry: Registry) -> None:
   registry.register_converter(int, IntConverter())
   registry.register_converter(str, StringConverter())
@@ -108,5 +138,4 @@ def register_json_converters(registry: Registry) -> None:
   #registry.register_converter(datetime.timedelta, TimedeltaConverter())
   #registry.register_converter(datamodel, ModelConverter())
   #registry.register_converter(uniontype, UnionConverter())
-  #registry.register_converter(Optional, OptionalConverter())
-  #registry.register_converter(Union, MixtypeConverter())
+  registry.register_converter(Union, MixtypeConverter())
