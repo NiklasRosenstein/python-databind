@@ -6,7 +6,7 @@ Extends the functionality of the #dataclass module to provide additional metadat
 
 import types
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field
-from typing import Any, Dict, List, Optional, Union, T, Type
+from typing import Any, Dict, Iterable, List, Optional, Union, T, Tuple, Type, get_type_hints
 from ._union import UnionResolver, StaticUnionResolver
 
 __all__ = [
@@ -16,6 +16,7 @@ __all__ = [
   'uniontype',
   'datamodel',
   'field',
+  'enumerate_fields',
 ]
 
 
@@ -160,3 +161,17 @@ def field(*args, **kwargs) -> _Field:
   metadata = kwargs.setdefault('metadata', {})
   metadata[FieldMetadata.KEYSPACE] = _extract_dataclass_from_kwargs(FieldMetadata, kwargs)
   return _field(*args, **kwargs)
+
+
+def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[Tuple[str, Type, FieldMetadata]]:
+  """
+  Enumerate the fields of a datamodel. The items yielded by this generator are tuples of
+  the field name, the resolved type hint and the #FieldMetadata.
+  """
+
+  if not isinstance(data_model, type):
+    data_model = type(data_model)
+
+  type_hints = get_type_hints(data_model)
+  for field in data_model.__dataclass_fields__.values():
+    yield field.name, type_hints[field.name], FieldMetadata.for_field(field)
