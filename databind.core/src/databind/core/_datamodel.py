@@ -37,6 +37,18 @@ def _extract_dataclass_from_kwargs(dataclass: Type[T], kwargs: Dict[str, Any]) -
   })
 
 
+def _field_has_default(field: _Field) -> bool:
+  return any(not isinstance(x, _MISSING_TYPE) for x in (field.default, field.default_factory))
+
+
+def _field_get_default(field: _Field) -> Any:
+  if not isinstance(field.default, _MISSING_TYPE):
+    return field.default
+  if not isinstance(field.default_factory, _MISSING_TYPE):
+    return field.default_factory()
+  raise RuntimeError('{!r} has no default'.format(field))
+
+
 class UnionResolver: pass
 
 
@@ -128,7 +140,7 @@ def datamodel(*args, **kwargs):
         f = getattr(cls, key)
         if not isinstance(f, _Field):
           continue
-      if all(isinstance(x, _MISSING_TYPE) for x in (f.default, f.default_factory)):
+      if not _field_has_default(f):
         # This prevents a SyntaxError if non-default arguments follow default arguments.
         f.default = uninitialized
         no_default_fields.append(key)
@@ -187,6 +199,12 @@ class _EnumeratedField:
   name: str
   type: Type
   metadata: FieldMetadata = _field(repr=False)
+
+  def has_default(self) -> bool:
+    return _field_has_default(self.field)
+
+  def get_default(self) -> Any:
+    return _field_get_default(self.field)
 
 
 def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[_EnumeratedField]:
