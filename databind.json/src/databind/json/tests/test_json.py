@@ -1,6 +1,7 @@
 
 import decimal
 import enum
+from typing import Optional
 from databind.core import *
 from databind.json import *
 from pytest import raises
@@ -65,3 +66,17 @@ def test_enum_converter():
   with raises(ConversionTypeError) as excinfo:
     to_json(42, Pet)
   assert str(excinfo.value) == f"$: expected {type_repr(Pet)}, got int"
+
+
+def test_optional_converter():
+  assert from_json(Optional[int], None) == None
+  assert from_json(Optional[int], 242) == 242
+  with raises(ConversionTypeError) as excinfo:
+    from_json(Optional[int], "foo")
+  assert str(excinfo.value) == '$: expected typing.Union[int, NoneType], got str'
+
+  assert to_json(None, Optional[int]) == None
+  assert to_json(242, Optional[int]) == 242
+  with raises(ConversionTypeError) as excinfo:
+    to_json("foo", Optional[int])
+  assert str(excinfo.value) == '$: expected typing.Union[int, NoneType], got str'
