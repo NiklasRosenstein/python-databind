@@ -72,12 +72,12 @@ class PlainTypeConverter(_BinaryConverter):
 class DatamodelConverter(Converter):
 
   def get_format_parts(self, context):
-    for name, type_, metadata in enumerate_fields(context.type):
+    for field in enumerate_fields(context.type):
       if isinstance(context.value, BufferedBinaryStream) or context.value is None:
         child_value = None
       else:
-        child_value = getattr(context.value, name)
-      child_context = context.child(name, type_, child_value, metadata)
+        child_value = getattr(context.value, field.name)
+      child_context = context.child(field.name, field.type, child_value, field.metadata)
       converter = child_context.get_converter()
       yield from converter.get_format_parts(child_context)
 

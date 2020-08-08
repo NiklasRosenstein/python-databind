@@ -1,7 +1,7 @@
 
 import abc
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, Generic, Optional, T, Type, Union
+from typing import Any, Dict, Generic, List, Optional, T, Type, Union
 from nr.collections.chaindict import ChainDict
 from ._datamodel import (
   BaseMetadata,
@@ -145,6 +145,11 @@ class Registry:
     return self.parent.root
 
   def register_converter(self, type_: Type, converter: Converter, overwrite: bool = False) -> None:
+    """
+    Registers a convert for the specified Python type or type hint.
+    """
+
+    type_ = normalize_type(type_, keep_parametrized=True)
     if type_ in self._mapping and not overwrite:
       raise RuntimeError(f'converter for {type_repr(type_)} already registered')
     if not isinstance(converter, Converter):
@@ -152,29 +157,38 @@ class Registry:
     self._mapping[type_] = converter
 
   def update_options(self, type_: Type, options: Dict[str, Any]) -> None:
+    """
+    Registers options with the specified Python type or type hint. Existing options are
+    merged, with the options specified to this method taking precedence.
+    """
+
     self._type_options.setdefault(type_, {}).update(options)
 
   def get_options(self, type_: Type) -> Dict[str, Any]:
+    """
+    Returns a mapping that contains all options for the specified type or type hint, taking
+    options defined on the parent #Registry into account.
+
+    Note that this does not respect type inheritance.
+    """
+
     options = self._type_options.get(type_, {})
     if self.parent:
       options = ChainDict(options, self.parent.get_options(type_))
     return options
 
   def get_option(self, type_: Type, option_name: str, default: Any = None) -> Any:
+    """
+    Return a specific option associated with the specified type or type hint.
+    """
+
     return self.get_options(type_).get(option_name, default)
 
   def get_converter(self, type_: Type) -> Converter:
-
-    # Map type's decoreated with uniontype/datamodel to the respective functions.
-    metadata = BaseMetadata.for_type(type_)
-    if isinstance(metadata, UnionMetadata):
-      type_ = uniontype
-    elif isinstance(metadata, ModelMetadata):
-      type_ = datamodel
-
-    # Resolve type hints to the original annotated form.
-    if hasattr(type_, '__origin__'):
-      type_ = type_.__origin__
+    """
+    Return a converter registered for this type or type hint. If there is no immediate match
+    for the type, it will be normalized using #normalize_type().
+    """
 
     if type_ in self._mapping:
       return self._mapping[type_]
@@ -192,4 +206,29 @@ class Registry:
       except UnknownTypeError:
         pass
 
+    normalized = normalize_type(type_, keep_parametrized=False)
+    if normalized != type_:
+      return self.get_converter(normalized)
+
     raise UnknownTypeError(f'no converter found for type {type_repr(type_)}')
+
+
+def normalize_type(type_, keep_parametrized: bool):
+  """
+  Normalizes a Python type or type hint. For type hints, this will return the `__origin__`.
+  If *keep_parametrized* is `True`, then the `__origin__` will only be returned if the type
+  hint is not parametrized (i.e. still generic).
+  """
+
+  # Map type's decoreated with uniontype/datamodel to the respective functions.
+  metadata = BaseMetadata.for_type(type_)
+  if isinstance(metadata, UnionMetadata):
+    type_ = uniontype
+  elif isinstance(metadata, ModelMetadata):
+    type_ = datamodel
+
+  # Resolve type hints to the original annotated form.
+  if hasattr(type_, '__origin__') and (not keep_parametrized or type_.__parameters__):
+    type_ = type_.__origin__
+
+  return type_
