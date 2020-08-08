@@ -1,9 +1,10 @@
 
 import abc
 from dataclasses import dataclass as _dataclass
-from typing import Any, Generic, Optional, T, Type, Union
+from typing import Any, Dict, Generic, Optional, T, Type, Union
+from nr.collections.chaindict import ChainDict
 from ._datamodel import (
-  _BaseMetadata,
+  BaseMetadata,
   FieldMetadata,
   ModelMetadata,
   UnionMetadata,
@@ -14,11 +15,31 @@ from ._locator import Locator
 from ._typing import type_repr
 
 __all__ = [
+  'ConversionError',
+  'ConversionTypeError',
+  'ConversionValueError',
   'Context',
   'Converter',
   'UnknownTypeError',
   'Registry',
 ]
+
+
+@_dataclass
+class ConversionError(Exception):
+  context: 'Context'
+  message: str
+
+  def __str__(self):
+    return '{}: {}'.format(self.context.locator, self.message)
+
+
+class ConversionTypeError(ConversionError, TypeError):
+  pass
+
+
+class ConversionValueError(ConversionError, ValueError):
+  pass
 
 
 @_dataclass
@@ -37,12 +58,12 @@ class Context:
   field_metadata: Optional[FieldMetadata]
 
   @classmethod
-  def new(cls, registry: 'Registry', type: Type, value: Any, field_metadata: FieldMetadata=None) -> 'Context':
-    return cls(None, registry, Locator([]), type, value, field_metadata)
+  def new(cls, registry: 'Registry', type_: Type, value: Any, field_metadata: FieldMetadata=None) -> 'Context':
+    return cls(None, registry, Locator([]), type_, value, field_metadata)
 
   def fork(
     self,
-    type: Type,
+    type_: Type,
     value: Any,
     field_metadata: FieldMetadata=NotImplemented,
   ) -> 'Context':
@@ -54,12 +75,12 @@ class Context:
     if field_metadata is NotImplemented:
       field_metadata = self.field_metadata
 
-    return Context(self.parent, self.registry, self.locator, type, value, field_metadata)
+    return Context(self.parent, self.registry, self.locator, type_, value, field_metadata)
 
   def child(
     self,
     key: Union[int, str],
-    type: Type,
+    type_: Type,
     value: Any,
     field_metadata: FieldMetadata=None
   ) -> 'Context':
@@ -68,7 +89,7 @@ class Context:
     current value.
     """
 
-    return Context(self, self.registry, self.locator.push(key), type, value, field_metadata)
+    return Context(self, self.registry, self.locator.push(key), type_, value, field_metadata)
 
   def get_converter(self) -> 'Converter':
     return self.registry.get_converter(self.type)
@@ -78,6 +99,13 @@ class Context:
 
   def to_python(self) -> Any:
     return self.get_converter().to_python(self.value, self)
+
+  def type_error(self, message: str) -> ConversionTypeError:
+    return ConversionTypeError(self, message)
+
+  def value_error(self, message: str) -> ConversionValueError:
+    return ConversionValueError(self, message)
+
 
 
 class Converter(Generic[T], metaclass=abc.ABCMeta):
@@ -108,6 +136,7 @@ class Registry:
   def __init__(self, parent: Optional['Registry']) -> None:
     self.parent = parent
     self._mapping = {}
+    self._type_options = {}
 
   @property
   def root(self) -> 'Registry':
@@ -115,28 +144,52 @@ class Registry:
       return self
     return self.parent.root
 
-  def register_converter(self, type: Type, converter: Converter, overwrite: bool=False) -> None:
-    if type in self._mapping and not overwrite:
-      raise RuntimeError(f'converter for {type_repr(type)} already registered')
-    self._mapping[type] = converter
+  def register_converter(self, type_: Type, converter: Converter, overwrite: bool = False) -> None:
+    if type_ in self._mapping and not overwrite:
+      raise RuntimeError(f'converter for {type_repr(type_)} already registered')
+    if not isinstance(converter, Converter):
+      raise TypeError(f'expected Converter, got {type_repr(type(converter))}')
+    self._mapping[type_] = converter
 
-  def get_converter(self, type: Type) -> Converter:
+  def update_options(self, type_: Type, options: Dict[str, Any]) -> None:
+    self._type_options.setdefault(type_, {}).update(options)
+
+  def get_options(self, type_: Type) -> Dict[str, Any]:
+    options = self._type_options.get(type_, {})
+    if self.parent:
+      options = ChainDict(options, self.parent.get_options(type_))
+    return options
+
+  def get_option(self, type_: Type, option_name: str, default: Any = None) -> Any:
+    return self.get_options(type_).get(option_name, default)
+
+  def get_converter(self, type_: Type) -> Converter:
 
     # Map type's decoreated with uniontype/datamodel to the respective functions.
-    metadata = _BaseMetadata.for_type(type)
+    metadata = BaseMetadata.for_type(type_)
     if isinstance(metadata, UnionMetadata):
-      type = uniontype
+      type_ = uniontype
     elif isinstance(metadata, ModelMetadata):
-      type = datamodel
+      type_ = datamodel
 
     # Resolve type hints to the original annotated form.
-    if hasattr(type, '__origin__'):
-      type = type.__origin__
+    if hasattr(type_, '__origin__'):
+      type_ = type_.__origin__
 
-    if type in self._mapping:
-      return self._mapping[type]
+    if type_ in self._mapping:
+      return self._mapping[type_]
 
     if self.parent:
-      return self.parent.get_converter(type)
-    else:
-      raise UnknownTypeError(f'no converter found for type {type_repr(type)}')
+      try:
+        return self.parent.get_converter(type_)
+      except UnknownTypeError:
+        pass
+
+    # Try base classes.
+    for base in getattr(type_, '__bases__', ()):
+      try:
+        return self.get_converter(base)
+      except UnknownTypeError:
+        pass
+
+    raise UnknownTypeError(f'no converter found for type {type_repr(type_)}')
