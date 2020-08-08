@@ -212,6 +212,9 @@ class Registry:
 
     raise UnknownTypeError(f'no converter found for type {type_repr(type_)}')
 
+  def make_context(self, type_: Type, value: Any, field_metadata: FieldMetadata = None) -> Any:
+    return Context.new(self, type_, value, field_metadata)
+
 
 def normalize_type(type_, keep_parametrized: bool):
   """
