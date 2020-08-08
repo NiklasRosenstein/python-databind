@@ -200,6 +200,8 @@ class ModelConverter(Converter):
     targets = []
     wildcard = None
     for field in enumerate_fields(type_):
+      if field.metadata.derived:
+        continue
       if field.metadata.flatten and is_datamodel(field.type):
         for field_data in self._get_conversion_data(field.type).fields:
           field_data.target.append(field.name)
@@ -273,18 +275,26 @@ class ModelConverter(Converter):
       raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
 
     if hasattr(value, 'databind_json_dump'):
-      result = value.databind_json_load(context)
+      result = value.databind_json_dump(context)
       if result is not NotImplemented:
         return result
 
-    conversion_data = self._get_conversion_data(context.type)
+    skip_defaults = context.registry.get_option(datamodel, 'skip_defaults', False)
     result = {}  # TODO(NiklasRosenstein): Option to override target conversion type.
 
     for field in enumerate_fields(context.type):
+      if field.metadata.derived:
+        continue
+
+      python_value = getattr(value, field.name)
+      if (skip_defaults and not field.metadata.required and
+          field.has_default() and field.get_default() == python_value):
+        continue
+
       field_value = context.child(
         field.name,
         field.type,
-        getattr(value, field.name),
+        python_value,
         field.metadata,
       ).from_python()
       if field.metadata.flatten:
