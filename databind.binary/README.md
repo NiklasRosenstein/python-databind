@@ -17,12 +17,12 @@ from databind.core import datamodel, field
 @datamodel
 class RiffChunk:
   """ RIFF-WAVE chunk header. """
-  chunk_id: cstring(4)
+  chunk_id: cstring(4) = field(default=b'RIFF')
   chunk_size: u32
-  riff_type: cstring(4)
+  riff_type: cstring(4) = field(default=b'WAVE')
 
 assert calc_size(RiffChunk) == 12
-assert to_bytes(RiffChunk(b'RIFF', 16442, b'WAVE')) == b'RIFF:@\x00\x00WAVE'
+assert to_bytes(RiffChunk(chunk_size=16442)) == b'RIFF:@\x00\x00WAVE'
 ```
 
 ---
