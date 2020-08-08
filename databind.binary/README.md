@@ -4,6 +4,10 @@ Databind is a library inspired by Jackson-databind to describe and bind data mod
 object-oriented programming. The `databind.binary` package implements conversion of data
 models between Python and binary format (using the `struct` module).
 
+__Roadmap__
+
+* [ ] Support unpacking of nested structs
+
 ## Quickstart
 
 ```python
