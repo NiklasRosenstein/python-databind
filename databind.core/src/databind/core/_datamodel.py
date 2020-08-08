@@ -18,6 +18,8 @@ __all__ = [
   'datamodel',
   'field',
   'enumerate_fields',
+  'is_datamodel',
+  'is_uniontype',
 ]
 
 
@@ -208,7 +210,15 @@ def field(*args, **kwargs) -> _Field:
   return _field(*args, **kwargs)
 
 
-def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[Tuple[str, Type, FieldMetadata]]:
+@_dataclass
+class _EnumeratedField:
+  field: _Field = _field(repr=False)
+  name: str
+  type: Type
+  metadata: FieldMetadata = _field(repr=False)
+
+
+def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[_EnumeratedField]:
   """
   Enumerate the fields of a datamodel. The items yielded by this generator are tuples of
   the field name, the resolved type hint and the #FieldMetadata.
@@ -219,4 +229,12 @@ def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[Tuple[str, Type,
 
   type_hints = get_type_hints(data_model)
   for field in data_model.__dataclass_fields__.values():
-    yield field.name, type_hints[field.name], FieldMetadata.for_field(field)
+    yield _EnumeratedField(field, field.name, type_hints[field.name], FieldMetadata.for_field(field))
+
+
+def is_datamodel(obj: Any) -> bool:
+  return isinstance(BaseMetadata.for_type(obj), ModelMetadata)
+
+
+def is_uniontype(obj: Any) -> bool:
+  return isinstance(BaseMetadata.for_type(obj), UnionMetadata)
