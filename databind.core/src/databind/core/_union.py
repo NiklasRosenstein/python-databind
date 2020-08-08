@@ -1,7 +1,7 @@
 
 import abc
 import dataclasses
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Union
 from ._typing import type_repr
 
 __all__ = [
@@ -74,8 +74,12 @@ class StaticUnionResolver(UnionResolver):
       raise UnionTypeError(f'type name {type_name!r} could not be resolved')
 
   def name_for_type(self, type_: Type) -> str:
-    for key, value in self._mapping:
+    for key, value in self._mapping.items():
       if type_ is value:
+        return key
+      # Check for Optional[type_]
+      if (getattr(value, '__origin__', None) == Union and len(value.__args__) == 2 and
+          value.__args__[1] == type(None) and type_ == value.__args__[0]):
         return key
     raise UnionTypeError(f'type {type_repr(type_)} could not be resolved')
 
