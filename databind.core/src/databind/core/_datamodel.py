@@ -49,9 +49,10 @@ class BaseMetadata:
 
   @classmethod
   def for_type(cls, type_: Type) -> 'BaseMetadata':
-    if not isinstance(type_, type):
-      raise TypeError(f'expected type object, got {type_repr(type(type_))}')
-    result = vars(type_).get(cls.ATTRIBUTE)
+    try:
+      result = vars(type_).get(cls.ATTRIBUTE)
+    except TypeError:
+      return cls()
     if result is None or not isinstance(result, cls):
       result = cls()
     return result
