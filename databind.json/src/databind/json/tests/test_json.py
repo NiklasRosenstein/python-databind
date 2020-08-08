@@ -1,7 +1,7 @@
 
 import decimal
 import enum
-from typing import Optional
+from typing import Optional, Union
 from databind.core import *
 from databind.json import *
 from pytest import raises
@@ -80,3 +80,11 @@ def test_optional_converter():
   with raises(ConversionTypeError) as excinfo:
     to_json("foo", Optional[int])
   assert str(excinfo.value) == '$: expected typing.Union[int, NoneType], got str'
+
+
+def test_mixtype_converter():
+  assert from_json(Union[int, str], 242) == 242
+  assert from_json(Union[int, str], "foo") == "foo"
+  with raises(ConversionTypeError) as excinfo:
+    from_json(Union[int, str], 342.324)
+  assert str(excinfo.value) == "$: expected typing.Union[int, str], got float"
