@@ -5,7 +5,7 @@ Extends the functionality of the #dataclass module to provide additional metadat
 """
 
 import types
-from dataclasses import dataclass as _dataclass, field as _field, Field as _Field
+from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 from typing import Any, Dict, Iterable, List, Optional, Union, T, Tuple, Type, get_type_hints
 from ._union import UnionResolver, StaticUnionResolver
 
@@ -138,18 +138,59 @@ def datamodel(*args, **kwargs):
   """
 
   metadata = _extract_dataclass_from_kwargs(ModelMetadata, kwargs)
+  uninitialized = object()  # Placeholder object to inidicate that a field does not actually have a default.
+
+  def _before_dataclass(cls):
+    # Allow non-default arguments to follow default-arguments.
+    no_default_fields = []
+    for key, value in getattr(cls, '__annotations__', {}).items():
+      if not hasattr(cls, key):
+        f = field()
+        setattr(cls, key, f)
+      else:
+        f = getattr(cls, key)
+        if not isinstance(f, _Field):
+          continue
+      if all(isinstance(x, _MISSING_TYPE) for x in (f.default, f.default_factory)):
+        # This prevents a SyntaxError if non-default arguments follow default arguments.
+        f.default = uninitialized
+        no_default_fields.append(key)
+
+    # Override the `__post_init__` method that is called by the dataclass `__init__`.
+    old_postinit = getattr(cls, '__post_init__', None)
+    def __post_init__(self):
+      # Ensure that no field has a "uninitialized" value.
+      for name in no_default_fields:
+        if getattr(self, name) == uninitialized:
+          raise TypeError(f'missing required argument {name!r}')
+      if old_postinit:
+        old_postinit(self)
+    cls.__post_init__ = __post_init__
+
+    return cls
+
+  def _after_dataclass(cls):
+    setattr(cls, ModelMetadata.ATTRIBUTE, metadata)
+
+    if metadata.kwonly:
+      old_init = cls.__init__
+      def __init__(self, **kwargs):
+        old_init(self, **kwargs)
+      cls.__init__ = __init__
+
+    return cls
+
+  if args:
+    _before_dataclass(args[0])
+
   result = _dataclass(*args, **kwargs)
 
-  if isinstance(result, types.FunctionType):
+  if not args:
     def wrapper(cls):
-      cls = result(cls)
-      setattr(cls, ModelMetadata.ATTRIBUTE, metadata)
-      return cls
+      return _after_dataclass(result(_before_dataclass(cls)))
     return wrapper
 
-  else:
-    setattr(result, ModelMetadata.ATTRIBUTE, metadata)
-    return result
+  return _after_dataclass(result)
 
 
 def field(*args, **kwargs) -> _Field:
