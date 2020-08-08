@@ -1,5 +1,5 @@
 
-from databind.core._datamodel import *
+from databind.core import *
 from databind.core._union import StaticUnionResolver
 from pytest import raises
 
@@ -18,6 +18,27 @@ def test_uniontype_decorator():
     'int': int,
     'str': str,
   }))
+
+  @uniontype
+  class B:
+    int: int
+    str: str
+
+  metadata = B.__databind_metadata__
+  assert isinstance(metadata, UnionMetadata)
+  assert not metadata.resolver
+
+  assert isinstance(B.int, property)
+  assert isinstance(B.str, property)
+
+  assert B('int', 42).int == 42
+  with raises(TypeError) as excinfo:
+    B('int', 42).str
+  assert str(excinfo.value) == f"{type_repr(B)}.str cannot be accessed if type == 'int'"
+
+  b = B('int', 42)
+  b.str = 'foo'
+  assert b.type == 'str'
 
 
 def test_datamodel_decorator():

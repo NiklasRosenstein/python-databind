@@ -61,18 +61,6 @@ class BaseMetadata:
 
 
 @_dataclass
-class UnionMetadata(BaseMetadata):
-  #: The resolver that is used to map type names to a datatype.
-  # NOTE(NiklasRosenstein): default=None is needed as otherwise dataclasses complains
-  #   that a non-default argument follows a default argument (from the base class).
-  resolver: UnionResolver = _field(default=None)
-
-  def __post_init__(self):
-    if not self.resolver:
-      raise TypeError('"resolver" cannot be None')
-
-
-@_dataclass
 class ModelMetadata(BaseMetadata):
   #: Allow only keyword arguments when constructing an instance of the model.
   kwonly: bool = _field(default=False)
@@ -117,24 +105,6 @@ class FieldMetadata(BaseMetadata):
   @classmethod
   def for_field(cls, field: _Field) -> 'FieldMetadata':
     return field.metadata.get(cls.KEYSPACE) or cls()
-
-
-def uniontype(resolver: Union[UnionMetadata, Dict[str, Type]], **kwargs):
-  """
-  Decorator for classes to define them as union types, and are to be (de-) serialized as such.
-  """
-
-  if isinstance(resolver, dict):
-    resolver = StaticUnionResolver(resolver)
-
-  kwargs['resolver'] = resolver
-  metadata = UnionMetadata(**kwargs)
-
-  def decorator(cls):
-    setattr(cls, UnionMetadata.ATTRIBUTE, metadata)
-    return cls
-
-  return decorator
 
 
 def datamodel(*args, **kwargs):
@@ -234,6 +204,92 @@ def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[_EnumeratedField
 
 def is_datamodel(obj: Any) -> bool:
   return isinstance(BaseMetadata.for_type(obj), ModelMetadata)
+
+
+@datamodel
+class UnionMetadata(BaseMetadata):
+  #: The resolver that is used to map type names to a datatype. If no resolver is set,
+  #: the union type acts as a container for exactly one of it's dataclass fields.
+  resolver: UnionResolver
+
+  #: The key in the data structure that identifies the union type. Defaults to "type".
+  type_key: str = _field(default=str)
+
+  #: Whether union members should be converted from Python to flat data strucutres.
+  #: The default is `True`.
+  flat: bool = _field(default=True)
+
+
+def uniontype(resolver: Union[UnionMetadata, Dict[str, Type], Type] = None, type_field: str = None, **kwargs):
+  """
+  Decorator for classes to define them as union types, and are to be (de-) serialized as such.
+  Union types can either act as placeholders or as containers for their members.
+
+  If a *resolver* is specified, the union type will act as a placeholder and will be converted
+  directly into one the union member types.
+
+  If no *resolver* is specified, the union type will also be a dataclass, where the union
+  type members are derived from the fields. All fields on such a union type must be optional,
+  and when converted, only one such field can be set.
+  """
+
+  cls = None
+
+  if resolver is None or isinstance(resolver, type):
+    resolver, cls = None, resolver
+    if not type_field:
+      type_field = kwargs.get('type_key', 'type')
+    kwargs.setdefault('type_key', type_field)
+  else:
+    if type_field is not None:
+      raise TypeError('"type_field" argument cannot be combined with "resolver" argument')
+    if isinstance(resolver, dict):
+      resolver = StaticUnionResolver(resolver)
+
+  kwargs['resolver'] = resolver
+  metadata = UnionMetadata(**kwargs)
+
+  def _init_as_container(cls):
+    """
+    Initializes *cls* as a container for the union type members.
+    """
+
+    scope = {'Any': Any}
+    exec(
+      f"def __init__(self, {type_field}: str, value: Any) -> None:\n"
+      f"  self.{type_field} = {type_field}\n"
+      f"  self._value = value",
+      scope)
+
+    if '__init__' not in vars(cls):
+      cls.__init__ = scope['__init__']
+
+    def _make_property(type_name: str, annotation: Any) -> property:
+      def getter(self) -> annotation:
+        has_type = getattr(self, type_field)
+        if has_type != type_name:
+          raise TypeError(f'{type_repr(cls)}.{type_name} cannot be accessed if {type_field} == {has_type!r}')
+        return self._value
+      def setter(self, value: annotation) -> None:
+        setattr(self, type_field, type_name)
+        self._value = value
+      return property(getter, setter)
+
+    for key, annotation in get_type_hints(cls).items():
+      setattr(cls, key, _make_property(key, annotation))
+
+    return cls
+
+  def decorator(cls):
+    if not resolver:
+      _init_as_container(cls)
+    setattr(cls, UnionMetadata.ATTRIBUTE, metadata)
+    return cls
+
+  if cls:
+    return decorator(cls)
+
+  return decorator
 
 
 def is_uniontype(obj: Any) -> bool:
