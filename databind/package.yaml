@@ -1,7 +1,8 @@
-name: "databind"
-version: "0.1.0"
-author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
-license: "MIT"
-description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
-requirements:
-- python ^3.5
+package:
+  name: "databind"
+  version: "0.1.0"
+  author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
+  license: "MIT"
+  description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
+  requirements:
+  - python ^3.5
