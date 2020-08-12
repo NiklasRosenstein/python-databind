@@ -5,6 +5,10 @@ object-oriented programming. The `databind.core` package provides the abstractio
 generalize the (de-) serialization process such that it can be implemented for arbitrary
 data formats.
 
+Databind requires Python 3.6+ because of it's dependency on class-member type hints and
+the `dataclasses` module (for which there exists a backport from Python 3.7 to 3.6 on
+PyPI).
+
 ## Quickstart
 
 ```python

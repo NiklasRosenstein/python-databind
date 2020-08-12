@@ -1,6 +1,6 @@
-/.venv*/
-/dist
-/build
+.venv*/
+dist/
+build/
 *.py[cod]
 *.egg-info
 *.egg
