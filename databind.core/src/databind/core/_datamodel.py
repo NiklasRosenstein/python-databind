@@ -32,22 +32,22 @@ def _extract_dataclass_from_kwargs(dataclass: Type[T], kwargs: Dict[str, Any]) -
   dictionary *kwargs* and returns an instance of *dataclass*.
   """
 
-  return dataclass(**{
+  return dataclass(**{  # type: ignore
     field.name: kwargs.pop(field.name)
-    for field in dataclass.__dataclass_fields__.values()
+    for field in dataclass.__dataclass_fields__.values()  # type: ignore
     if field.name in kwargs
   })
 
 
 def _field_has_default(field: _Field) -> bool:
-  return any(not isinstance(x, _MISSING_TYPE) for x in (field.default, field.default_factory))
+  return any(not isinstance(x, _MISSING_TYPE) for x in (field.default, field.default_factory))  # type: ignore
 
 
 def _field_get_default(field: _Field) -> Any:
-  if not isinstance(field.default, _MISSING_TYPE):
+  if not isinstance(field.default, _MISSING_TYPE):  # type: ignore
     return field.default
-  if not isinstance(field.default_factory, _MISSING_TYPE):
-    return field.default_factory()
+  if not isinstance(field.default_factory, _MISSING_TYPE):  # type: ignore
+    return field.default_factory()  # type: ignore
   raise RuntimeError('{!r} has no default'.format(field))
 
 
@@ -216,7 +216,7 @@ def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[_EnumeratedField
     data_model = type(data_model)
 
   type_hints = get_type_hints(data_model)
-  for field in data_model.__dataclass_fields__.values():
+  for field in data_model.__dataclass_fields__.values():  # type: ignore
     yield _EnumeratedField(field, field.name, type_hints[field.name], FieldMetadata.for_field(field))
 
 
@@ -309,12 +309,14 @@ def uniontype(
         setattr(cls, key, scope[key])
 
     def _make_property(type_name: str, annotation: Any) -> property:
-      def getter(self) -> annotation:
+      def getter(self) -> annotation:  # type: ignore
+        assert type_field is not None
         has_type = getattr(self, type_field)
         if has_type != type_name:
           raise TypeError(f'{type_repr(cls)}.{type_name} cannot be accessed if {type_field} == {has_type!r}')
         return self._value
-      def setter(self, value: annotation) -> None:
+      def setter(self, value: annotation) -> None:  # type: ignore
+        assert type_field is not None
         setattr(self, type_field, type_name)
         self._value = value
       return property(getter, setter)
