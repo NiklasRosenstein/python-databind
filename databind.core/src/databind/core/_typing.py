@@ -4,13 +4,14 @@ Utilities for type hints not provided by the #typing module.
 """
 
 import types
+from typing import Any
 
 __all__ = [
   'type_repr',
 ]
 
 
-def _type_repr(obj):
+def _type_repr(obj: Any) -> str:
   # Borrowed from typing in CPython 3.7
   if isinstance(obj, type):
       if obj.__module__ == 'builtins':
