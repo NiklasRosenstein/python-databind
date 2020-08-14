@@ -40,7 +40,6 @@ class Locator:
     Accesses the value represented by this Locator object starting from *root*.
 
     >>> root = {'values': [1, 2, 3]}
-    >>> from nr.databind.core.context import Locator
     >>> Locator(['values', 1]).access(root)
     2
 

@@ -17,7 +17,6 @@ else:
 
 requirements = [
   'dataclasses >=0.6,<1.0.0',
-  'nr.collections >=0.1.0,<1.0.0',
 ]
 
 setuptools.setup(

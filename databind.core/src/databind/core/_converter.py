@@ -1,8 +1,7 @@
 
 import abc
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
-from nr.collections.chaindict import ChainDict
+from typing import Any, Dict, Generic, List, Mapping, Optional, Type, TypeVar, Union
 from ._datamodel import (
   BaseMetadata,
   FieldMetadata,
@@ -13,6 +12,7 @@ from ._datamodel import (
 )
 from ._locator import Locator
 from ._typing import type_repr
+from .utils import ChainDict
 
 T = TypeVar('T')
 
@@ -173,7 +173,7 @@ class Registry:
 
     self._type_options.setdefault(type_, {})[option_name] = value
 
-  def get_options(self, type_: Type) -> Dict[str, Any]:
+  def get_options(self, type_: Type) -> Mapping[str, Any]:
     """
     Returns a mapping that contains all options for the specified type or type hint, taking
     options defined on the parent #Registry into account.
@@ -181,7 +181,7 @@ class Registry:
     Note that this does not respect type inheritance.
     """
 
-    options = self._type_options.get(type_, {})
+    options: Mapping[str, Any] = self._type_options.get(type_, {})
     if self.parent:
       options = ChainDict(options, self.parent.get_options(type_))
     return options
