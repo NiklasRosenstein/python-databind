@@ -240,7 +240,8 @@ def normalize_type(type_, keep_parametrized: bool):
     type_ = datamodel
 
   # Resolve type hints to the original annotated form.
-  if hasattr(type_, '__origin__') and (not keep_parametrized or type_.__parameters__):
+  # NOTE: In Python 3.6, Dict.__origin__ is None whereas in Python 3.7 it is dict.
+  if getattr(type_, '__origin__', None) and (not keep_parametrized or type_.__parameters__):
     type_ = type_.__origin__
 
   return type_
