@@ -4,7 +4,8 @@ import datetime
 import decimal
 import enum
 from collections.abc import Mapping, Sequence
-from typing import Any, Dict, List, Optional, T, Type, Union
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, TypeVar, Type, Union
 
 from databind.core import (
   datamodel,
@@ -22,7 +23,9 @@ from databind.core import (
   UnionTypeError,
 )
 from databind.core.utils import find
-from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601
+from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601  # type: ignore
+
+T = TypeVar('T')
 
 
 class BoolConverter(Converter):
@@ -86,10 +89,10 @@ class DecimalConverter(Converter):
   def from_python(self, value: decimal.Decimal, context: Context) -> str:
     if not isinstance(value, decimal.Decimal):
       raise context.type_error(f'expected decimal.Decimal, got {type_repr(type(value))}')
-    context = self._get_decimal_context(context)
-    return str(context.create_decimal(value))
+    decimal_context = self._get_decimal_context(context)
+    return str(decimal_context.create_decimal(value))
 
-  def to_python(self, value: str, context: Context) -> str:
+  def to_python(self, value: str, context: Context) -> decimal.Decimal:
     if not isinstance(value, str):
       raise context.type_error(f'expected decimal (as string), from {type_repr(type(value))}')
     try:
@@ -172,28 +175,30 @@ class ObjectConverter(Converter):
     return self._do_conversion(value, context, 'to_python')
 
 
+@dataclass
+class _FieldConversionData:
+  name: str
+  type: Type
+  metadata: FieldMetadata
+  target: List[str]
+
+  @property
+  def immediate_target(self) -> str:
+    return self.target[-1]
+
+
+@dataclass
+class _ModelConversionData:
+  metadata: ModelMetadata
+  fields: List['_FieldConversionData']
+  targets: List['_FieldConversionData']
+  wildcard: Optional['_FieldConversionData']
+
+
 class ModelConverter(Converter):
   """
   Handles the conversion of data models to and from JSON structures.
   """
-
-  @datamodel
-  class _FieldConversionData:
-    name: str
-    type: Type
-    metadata: FieldMetadata
-    target: List[str]
-
-    @property
-    def immediate_target(self) -> str:
-      return self.target[-1]
-
-  @datamodel
-  class _ModelConversionData:
-    metadata: ModelMetadata
-    fields: List['_FieldConversionData']
-    targets: List['_FieldConversionData']
-    wildcard: Optional['_FieldConversionData']
 
   def _get_conversion_data(self, type_: Type) -> _ModelConversionData:
     fields = []
@@ -206,13 +211,13 @@ class ModelConverter(Converter):
         for field_data in self._get_conversion_data(field.type).fields:
           field_data.target.append(field.name)
           fields.append(field_data)
-        targets.append(self._FieldConversionData(field.name, field.type, field.metadata, ['*']))
+        targets.append(_FieldConversionData(field.name, field.type, field.metadata, ['*']))
       elif field.metadata.flatten:
         if not wildcard:
-          wildcard = self._FieldConversionData(field.name, field.type, field.metadata, [])
+          wildcard = _FieldConversionData(field.name, field.type, field.metadata, [])
       else:
-        fields.append(self._FieldConversionData(field.name, field.type, field.metadata, ['*']))
-    return self._ModelConversionData(ModelMetadata.for_type(type_), fields, targets, wildcard)
+        fields.append(_FieldConversionData(field.name, field.type, field.metadata, ['*']))
+    return _ModelConversionData(ModelMetadata.for_type(type_), fields, targets, wildcard)
 
   def to_python(self, value, context: Context) -> dict:
     if hasattr(context.type, 'databind_json_load'):
@@ -224,7 +229,7 @@ class ModelConverter(Converter):
       raise context.type_error(f'expected {type_repr(context.type)} (as mapping), got {type_repr(type(value))}')
 
     conversion_data = self._get_conversion_data(context.type)
-    targets = {'*': {}}
+    targets: Dict[str, Dict[str, Any]] = {'*': {}}
     wildcard = None
     seen_keys = set()
 
@@ -333,8 +338,8 @@ class ArrayConverter(Converter):
 
 class AbstractDateConverter(Converter):
 
-  default_format = None
-  py_type = None
+  default_format: DatetimeFormat
+  py_type: Type
   truncate = staticmethod(lambda d: d)
 
   def _get_format(self, context: Context) -> DatetimeFormat:
@@ -345,7 +350,7 @@ class AbstractDateConverter(Converter):
       if string_formats:
         datetime_format = create_datetime_format_set('field-formats', string_formats)
     if not datetime_format:
-      datetime_format = context.registry.get_option(datetime, 'format')
+      datetime_format = context.registry.get_option(datetime.datetime, 'format')
     if not datetime_format:
       datetime_format = self.default_format
     return datetime_format
