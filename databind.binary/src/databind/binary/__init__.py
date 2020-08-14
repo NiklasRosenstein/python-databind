@@ -6,6 +6,7 @@ import io
 import struct
 from typing import Type, T
 from databind.core import Context, Registry
+from . import _types
 from ._converters import BufferedBinaryStream, register_binary_converters
 from ._types import *
 
