@@ -3,7 +3,7 @@ __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
 __version__ = '0.1.0'
 
 import json
-from typing import Optional, T, Type, Union
+from typing import Optional, Type, TypeVar, Union
 from databind.core import Context, FieldMetadata, Registry
 from ._converters import register_json_converters
 
@@ -16,6 +16,7 @@ __all__ = [
   'to_str',
 ]
 
+T = TypeVar('T')
 JsonType = Union[dict, list, str, int, float]
 
 registry = Registry(None)
