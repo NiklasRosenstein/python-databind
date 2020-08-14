@@ -22,6 +22,6 @@ def _type_repr(obj):
 
 
 try:
-  from typing import _type_repr as type_repr
+  from typing import _type_repr as type_repr  # type: ignore
 except ImportError:
   type_repr = _type_repr

@@ -52,7 +52,7 @@ class Locator:
     value = root
     for item in self._items:
       try:
-        value = value[item]
+        value = value[item]  # type: ignore
       except KeyError as exc:
         raise KeyError(str(self))
       except IndexError as exc:

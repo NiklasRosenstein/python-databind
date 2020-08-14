@@ -51,7 +51,7 @@ class StaticUnionResolver(UnionResolver):
   def __getitem__(self, type_name: str) -> Type:
     return self._mapping[type_name]
 
-  def __setitem__(self, type_name: str, type_: Type) -> Type:
+  def __setitem__(self, type_name: str, type_: Type) -> None:
     self._mapping[type_name] = type_
 
   def __delitem__(self, type_name: str) -> None:
