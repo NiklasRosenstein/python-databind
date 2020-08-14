@@ -1,6 +1,6 @@
 package:
   name: "databind.core"
-  version: "0.1.0"
+  version: "0.1.1"
   author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
   license: "MIT"
   description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
