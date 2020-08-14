@@ -1,7 +1,7 @@
 
 import abc
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, Generic, List, Optional, T, Type, Union
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from nr.collections.chaindict import ChainDict
 from ._datamodel import (
   BaseMetadata,
@@ -13,6 +13,8 @@ from ._datamodel import (
 )
 from ._locator import Locator
 from ._typing import type_repr
+
+T = TypeVar('T')
 
 __all__ = [
   'ConversionError',
@@ -65,7 +67,7 @@ class Context:
     self,
     type_: Type,
     value: Any,
-    field_metadata: FieldMetadata=NotImplemented,
+    field_metadata: Optional[FieldMetadata] = NotImplemented,
   ) -> 'Context':
     """
     Create a fork in the context tree, re-using the same locator and parent but allowing to
@@ -135,8 +137,8 @@ class Registry:
 
   def __init__(self, parent: Optional['Registry']) -> None:
     self.parent = parent
-    self._mapping = {}
-    self._type_options = {}
+    self._mapping: Dict[Type, Converter] = {}
+    self._type_options: Dict[Type, Dict[str, Any]] = {}
 
   @property
   def root(self) -> 'Registry':

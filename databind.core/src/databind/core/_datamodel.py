@@ -7,9 +7,11 @@ Extends the functionality of the #dataclass module to provide additional metadat
 import types
 import textwrap
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
-from typing import Any, Dict, Iterable, List, Optional, Union, T, Tuple, Type, get_type_hints
+from typing import Any, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar, get_type_hints
 from ._typing import type_repr
 from ._union import UnionResolver, StaticUnionResolver
+
+T = TypeVar('T')
 
 __all__ = [
   'UnionMetadata',
@@ -47,9 +49,6 @@ def _field_get_default(field: _Field) -> Any:
   if not isinstance(field.default_factory, _MISSING_TYPE):
     return field.default_factory()
   raise RuntimeError('{!r} has no default'.format(field))
-
-
-class UnionResolver: pass
 
 
 @_dataclass
@@ -235,7 +234,7 @@ class UnionMetadata(BaseMetadata):
   container: bool = _field(default=False)
 
   #: The type field of the union container.
-  type_field: str = _field(default=None)
+  type_field: Optional[str] = _field(default=None)
 
   #: The key in the data structure that identifies the union type. Defaults to "type".
   type_key: str = _field(default='type')
@@ -247,7 +246,7 @@ class UnionMetadata(BaseMetadata):
 
 
 def uniontype(
-  resolver: Union[UnionMetadata, Dict[str, Type], Type] = None,
+  resolver: Union[UnionResolver, Dict[str, Type], Type] = None,
   container: bool = False,
   type_field: str = None,
   **kwargs

@@ -5,6 +5,7 @@ package:
   license: "MIT"
   description: "Bind object-oriented data models to JSON data."
   url: "https://github.com/NiklasRosenstein/python-databind"
+  typed: true
   requirements:
   - python ^3.6
   - databind.core ^0.1.0
