@@ -5,7 +5,7 @@
 #![feature(member_annotations)]
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '0.1.1'
+__version__ = '0.1.1.post1'
 
 from ._converter import *
 from ._datamodel import *
