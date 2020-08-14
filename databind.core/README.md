@@ -23,7 +23,7 @@ class Person:
   address: Optional[str] = field(default=None)
 ```
 
-Then you'll need to pick a serialization library. Below is an example for `databind.yaml`:
+Then you'll need to pick a serialization library. Below is an example for `databind.json`:
 
 ```python
 from databind import json
