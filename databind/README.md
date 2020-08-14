@@ -8,7 +8,6 @@ The `databind` package is purely an alias to allocate the name for it's related 
 * [databind.binary](https://pypi.org/project/databind.binary/)
 * [databind.core](https://pypi.org/project/databind.core/)
 * [databind.json](https://pypi.org/project/databind.json/)
-* [databind.yaml](https://pypi.org/project/databind.yaml/)
 
 ---
 
