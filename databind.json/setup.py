@@ -28,7 +28,7 @@ setuptools.setup(
   description = 'Bind object-oriented data models to JSON data.',
   long_description = long_description,
   long_description_content_type = 'text/markdown',
-  url = None,
+  url = 'https://github.com/NiklasRosenstein/python-databind',
   license = 'MIT',
   packages = setuptools.find_packages('src', ['test', 'test.*', 'tests', 'tests.*', 'docs', 'docs.*']),
   package_dir = {'': 'src'},
