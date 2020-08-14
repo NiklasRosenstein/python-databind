@@ -5,5 +5,6 @@ package:
   license: "MIT"
   description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
   url: "https://github.com/NiklasRosenstein/python-databind"
+  readme: "../README.md"
   requirements:
   - python ^3.6
