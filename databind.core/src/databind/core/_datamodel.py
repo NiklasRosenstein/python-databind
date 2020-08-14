@@ -7,11 +7,12 @@ Extends the functionality of the #dataclass module to provide additional metadat
 import types
 import textwrap
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
-from typing import Any, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar, get_type_hints
+from typing import Any, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar, cast, get_type_hints
 from ._typing import type_repr
 from ._union import UnionResolver, StaticUnionResolver
 
 T = TypeVar('T')
+T_BaseMetadata = TypeVar('T_BaseMetadata', bound='BaseMetadata')
 
 __all__ = [
   'UnionMetadata',
@@ -62,9 +63,9 @@ class BaseMetadata:
   ATTRIBUTE = '__databind_metadata__'
 
   @classmethod
-  def for_type(cls, type_: Type) -> 'BaseMetadata':
+  def for_type(cls: Type[T_BaseMetadata], type_: Type) -> T_BaseMetadata:
     try:
-      result = vars(type_).get(cls.ATTRIBUTE)
+      result = vars(type_).get(cast(BaseMetadata, cls).ATTRIBUTE)
     except TypeError:
       return cls()
     if result is None or not isinstance(result, cls):

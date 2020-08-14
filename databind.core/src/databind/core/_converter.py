@@ -137,8 +137,8 @@ class Registry:
 
   def __init__(self, parent: Optional['Registry']) -> None:
     self.parent = parent
-    self._mapping: Dict[Type, Converter] = {}
-    self._type_options: Dict[Type, Dict[str, Any]] = {}
+    self._mapping: Dict[Any, Converter] = {}
+    self._type_options: Dict[Any, Dict[str, Any]] = {}
 
   @property
   def root(self) -> 'Registry':
@@ -146,11 +146,12 @@ class Registry:
       return self
     return self.parent.root
 
-  def register_converter(self, type_: Type, converter: Converter, overwrite: bool = False) -> None:
+  def register_converter(self, type_: Any, converter: Converter, overwrite: bool = False) -> None:
     """
     Registers a convert for the specified Python type or type hint.
     """
 
+    old = type_
     type_ = normalize_type(type_, keep_parametrized=True)
     if type_ in self._mapping and not overwrite:
       raise RuntimeError(f'converter for {type_repr(type_)} already registered')
@@ -158,7 +159,7 @@ class Registry:
       raise TypeError(f'expected Converter, got {type_repr(type(converter))}')
     self._mapping[type_] = converter
 
-  def update_options(self, type_: Type, options: Dict[str, Any]) -> None:
+  def update_options(self, type_: Any, options: Dict[str, Any]) -> None:
     """
     Registers options with the specified Python type or type hint. Existing options are
     merged, with the options specified to this method taking precedence.
@@ -166,14 +167,14 @@ class Registry:
 
     self._type_options.setdefault(type_, {}).update(options)
 
-  def set_option(self, type_: Type, option_name: str, value: Any) -> None:
+  def set_option(self, type_: Any, option_name: str, value: Any) -> None:
     """
     Set a specific option.
     """
 
     self._type_options.setdefault(type_, {})[option_name] = value
 
-  def get_options(self, type_: Type) -> Mapping[str, Any]:
+  def get_options(self, type_: Any) -> Mapping[str, Any]:
     """
     Returns a mapping that contains all options for the specified type or type hint, taking
     options defined on the parent #Registry into account.
@@ -186,7 +187,7 @@ class Registry:
       options = ChainDict(options, self.parent.get_options(type_))
     return options
 
-  def get_option(self, type_: Type, option_name: str, default: Any = None) -> Any:
+  def get_option(self, type_: Any, option_name: str, default: Any = None) -> Any:
     """
     Return a specific option associated with the specified type or type hint.
     """
@@ -225,7 +226,7 @@ class Registry:
     return Context.new(self, type_, value, field_metadata)
 
 
-def normalize_type(type_, keep_parametrized: bool):
+def normalize_type(type_: Any, keep_parametrized: bool) -> Type:
   """
   Normalizes a Python type or type hint. For type hints, this will return the `__origin__`.
   If *keep_parametrized* is `True`, then the `__origin__` will only be returned if the type
