@@ -3,6 +3,8 @@
 Utilities for type hints not provided by the #typing module.
 """
 
+import types
+
 __all__ = [
   'type_repr',
 ]
