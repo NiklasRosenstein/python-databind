@@ -26,17 +26,14 @@ class Person:
 Then you'll need to pick a serialization library. Below is an example for `databind.yaml`:
 
 ```python
-from databind import yaml
+from databind import json
 
-person = yaml.from_str(Person, '''
-name: John Wick
-age: 55
-''')
+person = json.from_str(Person, '{"name": "John Wick", "age": 55}')
 
 assert isinstance(person, Person)
 assert person.name == 'John Wick'
 
-print(yaml.to_str(person))
+print(json.to_str(person))
 ```
 
 ---
