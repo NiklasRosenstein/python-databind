@@ -4,10 +4,10 @@ __version__ = '0.1.0'
 
 import io
 import struct
-from typing import Type, T
+from typing import Type, TypeVar
 from databind.core import Context, Registry
 from . import _types
-from ._converters import BufferedBinaryStream, register_binary_converters
+from ._converters import _BinaryConverter, BufferedBinaryStream, register_binary_converters
 from ._types import *
 
 __all__ = [
@@ -17,22 +17,24 @@ __all__ = [
   'to_bytes',
 ] + _types.__all__
 
-
+T = TypeVar('T')
 registry = Registry(None)
 register_binary_converters(registry)
 
 
-def from_bytes(type_: Type[T], data: bytes, registry: Registry=None) -> T:
+def from_bytes(type_: Type[T], data: bytes, registry: Registry = None) -> T:
   stream = BufferedBinaryStream(io.BytesIO(data))
   return Context.new(registry or globals()['registry'], type_, stream).to_python()
 
 
-def to_bytes(value: T, type_: Type[T]=None, registry: Registry=None) -> bytes:
+def to_bytes(value: T, type_: Type[T]=None, registry: Registry = None) -> bytes:
   type_ = type_ or type(value)
   return Context.new(registry or globals()['registry'], type_, value).from_python()
 
 
-def calc_size(type_: Type[T], registry: Registry=None) -> int:
+def calc_size(type_: Type[T], registry: Registry = None) -> int:
   context = Context.new(registry or globals()['registry'], type_, None)
-  format_parts, _ = zip(*context.get_converter().get_format_parts(context))
+  converter = context.get_converter()
+  assert isinstance(converter, _BinaryConverter)
+  format_parts, _ = zip(*converter.get_format_parts(context))
   return struct.calcsize(''.join(format_parts))

@@ -1,5 +1,5 @@
 
-from typing import Type
+from typing import TYPE_CHECKING
 from databind.core import type_repr
 
 __all__ = [
@@ -12,41 +12,38 @@ __all__ = [
 ]
 
 
+if TYPE_CHECKING:
+  from typing import Protocol, Type, Union
+  class FormattableType(Protocol):
+    fmt: str
+
+
 class i8(int):
   fmt = 'b'
-
 
 class u8(int):
   fmt = 'B'
 
-
 class i16(int):
   fmt = 'h'
-
 
 class u16(int):
   fmt = 'H'
 
-
 class i32(int):
   fmt = 'i'
-
 
 class u32(int):
   fmt = 'I'
 
-
 class i64(int):
   fmt = 'l'
-
 
 class u64(int):
   fmt = 'L'
 
-
 class pointer(int):
   fmt = 'P'
-
 
 class cstring:
 
@@ -58,7 +55,7 @@ class cstring:
 all_plain_types = [globals()[k] for k in __all__]
 
 
-def get_format_for_type(type_: Type) -> str:
+def get_format_for_type(type_: 'Union[Type[FormattableType], bool, cstring]') -> str:
   if isinstance(type_, type) and issubclass(type_, int) and hasattr(type_, 'fmt'):
     return type_.fmt
   elif type_ == bool:

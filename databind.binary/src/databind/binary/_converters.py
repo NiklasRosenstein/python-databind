@@ -2,7 +2,7 @@
 import abc
 import contextlib
 import struct
-from typing import Any, BinaryIO, Iterable, Tuple, Type
+from typing import Any, BinaryIO, Iterable, Iterator, Generator, Tuple, Type
 from databind.core import (
   enumerate_fields,
   datamodel,
@@ -24,7 +24,7 @@ class BufferedBinaryStream:
     self._buffer = b''
 
   @contextlib.contextmanager
-  def try_read(self, n: int) -> bytes:
+  def try_read(self, n: int) -> Iterator[bytes]:
     data = self.read(n)
     try:
       yield data
