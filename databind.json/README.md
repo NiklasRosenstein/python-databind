@@ -8,14 +8,14 @@ types, data models and union types to serialize and deserialize JSON payloads.
 
 ```python
 from typing import Optional
-from databind.core import datamodel, field
+from databind.core import datamodel
 from databind.json import from_json
 
 @datamodel
 class Geolocation:
   latitude: float
   longitude: float
-  altitude: Optional[Double]
+  altitude: Optional[float] = None
 
 @datamodel
 class ResolvedLocation:
