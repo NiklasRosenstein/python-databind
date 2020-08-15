@@ -4,3 +4,8 @@ changes:
   component: general
   description: update type hints to pass mypy checks
   fixes: []
+- type: improvement
+  component: general
+  description: '`FieldMetadata` now keeps a reference to the `dataclasses.Field` object
+    and it''s'' metadata'
+  fixes: []
