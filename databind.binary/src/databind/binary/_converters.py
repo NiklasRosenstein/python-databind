@@ -56,20 +56,20 @@ class _BinaryConverter(Converter):
 
 class PlainTypeConverter(_BinaryConverter):
 
-  def get_format_parts(self, context):
-    yield get_format_for_type(context.type), context.value
+  def get_format_parts(self, context: Context):
+    yield get_format_for_type(context.type, context.field_metadata), context.value
 
   def from_python(self, value: int, context: Context) -> bytes:
-    fmt = get_format_for_type(context.type)
+    fmt = get_format_for_type(context.type, context.field_metadata)
     return struct.pack(fmt, value)
 
   def to_python(self, value: BufferedBinaryStream, context: Context) -> int:
-    fmt = get_format_for_type(context.type)
+    fmt = get_format_for_type(context.type, context.field_metadata)
     with value.try_read(struct.calcsize(fmt)) as data:
       return struct.unpack(fmt, data)[0]
 
 
-class DatamodelConverter(Converter):
+class DatamodelConverter(_BinaryConverter):
 
   def get_format_parts(self, context):
     for field in enumerate_fields(context.type):
