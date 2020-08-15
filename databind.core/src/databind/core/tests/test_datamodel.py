@@ -107,11 +107,11 @@ def test_FieldMetadata_constructor():
 def test_field_function():
   f = field(default=32, required=True)
   assert f.default == 32
-  assert FieldMetadata.for_field(f) == FieldMetadata(required=True)
+  assert FieldMetadata.for_field(f) == FieldMetadata(required=True, _owning_field=f, metadata=f.metadata)
   assert FieldMetadata.for_field(f).required == True
 
   f = field(formats=['%Y-%m-%d'])
-  assert FieldMetadata.for_field(f) == FieldMetadata(formats=['%Y-%m-%d'])
+  assert FieldMetadata.for_field(f) == FieldMetadata(formats=['%Y-%m-%d'], _owning_field=f, metadata=f.metadata)
 
   f = field()
-  assert FieldMetadata.for_field(f) == FieldMetadata(formats=[])
+  assert FieldMetadata.for_field(f) == FieldMetadata(formats=[], _owning_field=f, metadata=f.metadata)
