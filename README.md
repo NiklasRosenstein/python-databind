@@ -5,9 +5,16 @@ object-oriented programming.
 
 The `databind` package is purely an alias to allocate the name for it's related packages:
 
+__Core__
+
+* [databind.core](https://pypi.org/project/databind.core/) &ndash; Provides the `@datamodel` and `@uniontype` decorators
+* [databind.mypy](https://pypi.org/project/databind.mypy/) &ndash; A Mypy plugin for `databind.core`
+
+__Serialization/Deserialization__
+
 * [databind.binary](https://pypi.org/project/databind.binary/)
-* [databind.core](https://pypi.org/project/databind.core/)
 * [databind.json](https://pypi.org/project/databind.json/)
+* [databind.yaml](https://pypi.org/project/databind.yaml/)
 
 ---
 
