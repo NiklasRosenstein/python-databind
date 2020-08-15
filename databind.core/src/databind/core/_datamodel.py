@@ -6,8 +6,10 @@ Extends the functionality of the #dataclass module to provide additional metadat
 
 import types
 import textwrap
-from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 from typing import Any, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar, cast, get_type_hints
+
+from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
+
 from ._typing import type_repr
 from ._union import UnionResolver, StaticUnionResolver
 
@@ -109,6 +111,16 @@ class FieldMetadata(BaseMetadata):
   #: date types or #decimal.Context for #decimal.Decimal fields.
   formats: List[Any] = _field(default_factory=list)
 
+  #: The original #_Field that this #FieldMetadata is associated with. This may not be set
+  #: if the #FieldMetadata is instantiated at the top level. NOTE: We should use a weak
+  #: reference here, but the #_Field class is not compatible with weakrefs.
+  _owning_field: 'Optional[_Field]' = _field(default=None)
+
+  #: Metadata that supplements the original #_Field's metadata. When a #FieldMetadata is
+  #: instantiated for a field in a #datamodel, the metadata will be set to the metadata
+  #: of the #_Field.
+  metadata: Dict[str, Any] = _field(default_factory=dict)
+
   KEYSPACE = 'databind.core'
 
   def __post_init__(self):
@@ -117,7 +129,7 @@ class FieldMetadata(BaseMetadata):
 
   @classmethod
   def for_field(cls, field: _Field) -> 'FieldMetadata':
-    return field.metadata.get(cls.KEYSPACE) or cls()
+    return field.metadata.get(cls.KEYSPACE) or cls(_owning_field=field)
 
 
 def datamodel(*args, **kwargs):
@@ -188,9 +200,14 @@ def field(*args, **kwargs) -> _Field:
   #FieldMetadata.
   """
 
-  metadata = kwargs.setdefault('metadata', {})
-  metadata[FieldMetadata.KEYSPACE] = _extract_dataclass_from_kwargs(FieldMetadata, kwargs)
-  return _field(*args, **kwargs)
+  metadata = kwargs.pop('metadata', {})
+  field_metadata = _extract_dataclass_from_kwargs(FieldMetadata, kwargs)
+  metadata[FieldMetadata.KEYSPACE] = field_metadata
+  kwargs['metadata'] = metadata
+  field = _field(*args, **kwargs)
+  field_metadata._owning_field = field
+  field_metadata.metadata = field.metadata
+  return field
 
 
 @_dataclass
