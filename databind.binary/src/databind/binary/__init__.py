@@ -15,7 +15,15 @@ __all__ = [
   'registry',
   'from_bytes',
   'to_bytes',
-] + _types.__all__
+
+  # types
+  'u8','i8',
+  'u16', 'i16',
+  'u32', 'i32',
+  'u64', 'i64',
+  'pointer',
+  'cstr',
+]
 
 T = TypeVar('T')
 registry = Registry(None)

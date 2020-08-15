@@ -1,6 +1,6 @@
 
-from typing import TYPE_CHECKING
-from databind.core import type_repr
+from typing import TYPE_CHECKING, Optional, Type, Union
+from databind.core import FieldMetadata, type_repr
 
 __all__ = [
   'u8','i8',
@@ -8,12 +8,12 @@ __all__ = [
   'u32', 'i32',
   'u64', 'i64',
   'pointer',
-  'cstring',
+  'cstr',
 ]
 
 
 if TYPE_CHECKING:
-  from typing import Protocol, Type, Union
+  from typing import Protocol
   class FormattableType(Protocol):
     fmt: str
 
@@ -45,24 +45,25 @@ class u64(int):
 class pointer(int):
   fmt = 'P'
 
-class cstring:
-
-  def __init__(self, size: int) -> None:
-    self.size = size
-    self.__origin__ = cstring
+class cstr(str):
+  pass
 
 
 all_plain_types = [globals()[k] for k in __all__]
 
 
-def get_format_for_type(type_: 'Union[Type[FormattableType], bool, cstring]') -> str:
+def get_format_for_type(
+  type_: 'Union[Type[FormattableType], bool, Type[cstr]]',
+  field_metadata: Optional[FieldMetadata],
+) -> str:
   if isinstance(type_, type) and issubclass(type_, int) and hasattr(type_, 'fmt'):
     return type_.fmt
   elif type_ == bool:
     return '?'
-  elif type_ == cstring:
-    raise TypeError(f'"cstring" must be instantiated to supply size information')
-  elif isinstance(type_, cstring):
-    return f'{type_.size}s'
+  elif type_ == cstr:
+    if not field_metadata or not 'size' in field_metadata.metadata:
+      raise TypeError(f'type "cstr" must have metadata field "size"')
+    size: int = field_metadata.metadata['size']
+    return f'{size}s'
   else:
     raise TypeError(f'unable to get struct format specifier for {type_repr(type_)}')

@@ -4,3 +4,9 @@ changes:
   component: general
   description: update type hints to pass mypy checks
   fixes: []
+- type: change
+  component: general
+  description: '`cstring` was removed in favor of `cstr` type, the size must now be
+    indicated in the field metadata as in `name: cstr = field(metadata={"size": 10})`
+    to be compatible with Mypy checks'
+  fixes: []
