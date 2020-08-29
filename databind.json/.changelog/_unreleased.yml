@@ -1,0 +1,6 @@
+release_date: null
+changes:
+- type: improvement
+  component: general
+  description: '`ArrayConverter` now supports subclasses of the `typing.List` generic'
+  fixes: []
