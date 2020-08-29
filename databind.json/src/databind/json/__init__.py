@@ -1,6 +1,6 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 import json
 from typing import Optional, Type, TypeVar, Union
