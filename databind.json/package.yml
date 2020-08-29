@@ -1,5 +1,5 @@
 name: "databind.json"
-version: "0.2.0"
+version: "0.3.0"
 author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
 license: "MIT"
 description: "Bind object-oriented data models to JSON data."
