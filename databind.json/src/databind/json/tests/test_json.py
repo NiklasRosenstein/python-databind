@@ -123,7 +123,7 @@ def test_model_converter_flatten():
     b: str
 
   assert from_json(B, {'a': 'foo', 'b': 'bar'}) == B(A('foo'), 'bar')
-  #assert to_json(B(A('foo'), 'bar')) == {'a': 'foo', 'b': 'bar'}
+  assert to_json(B(A('foo'), 'bar')) == {'a': 'foo', 'b': 'bar'}
 
 
 def test_model_converter_flatten_wildcard():
