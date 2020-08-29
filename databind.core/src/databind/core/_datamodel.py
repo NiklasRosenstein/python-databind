@@ -140,10 +140,10 @@ def datamodel(*args, **kwargs):
 
   metadata = _extract_dataclass_from_kwargs(ModelMetadata, kwargs)
   uninitialized = object()  # Placeholder object to inidicate that a field does not actually have a default.
+  no_default_fields = []
 
   def _before_dataclass(cls):
     # Allow non-default arguments to follow default-arguments.
-    no_default_fields = []
     for key, value in getattr(cls, '__annotations__', {}).items():
       if not hasattr(cls, key):
         f = field()
@@ -178,6 +178,10 @@ def datamodel(*args, **kwargs):
       def __init__(self, **kwargs):
         old_init(self, **kwargs)
       cls.__init__ = __init__
+
+    for key in no_default_fields:
+      assert getattr(cls, key) is uninitialized
+      delattr(cls, key)
 
     return cls
 
