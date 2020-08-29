@@ -1,12 +1,11 @@
-package:
-  name: "databind.json"
-  version: "0.2.0"
-  author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
-  license: "MIT"
-  description: "Bind object-oriented data models to JSON data."
-  url: "https://github.com/NiklasRosenstein/python-databind"
-  typed: true
-  requirements:
-  - python ^3.6
-  - databind.core ^0.1.0
-  - nr.parsing.date ^0.3.0
+name: "databind.json"
+version: "0.2.0"
+author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
+license: "MIT"
+description: "Bind object-oriented data models to JSON data."
+url: "https://github.com/NiklasRosenstein/python-databind"
+typed: true
+requirements:
+- python ^3.6
+- databind.core ^0.1.0
+- nr.parsing.date ^0.3.0
