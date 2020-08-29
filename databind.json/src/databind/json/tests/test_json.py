@@ -152,6 +152,24 @@ def test_model_converter_strict():
   assert str(excinfo.value) == f"$: strict conversion of {type_repr(A)} does not permit additional keys {{'b'}}"
 
 
+def test_model_converter_multiple_inheritance():
+  @datamodel
+  class A:
+    a: int
+
+  @datamodel
+  class B:
+    b: str
+
+  @datamodel
+  class C(B, A):
+    c: float
+
+  assert from_json(C, {'a': 42, 'b': 'foo', 'c': 4.0}) == C(a=42, b='foo', c=4.0)
+  assert from_json(C, {'a': 42, 'b': 'foo', 'c': 4.0}) == C(42, 'foo', 4.0)
+  assert to_json(C(42, 'foo', 4.0)) == {'a': 42, 'b': 'foo', 'c': 4.0}
+
+
 def test_datetime_converter():
   assert from_json(datetime.datetime, '2020-01-04T14:23:00.0Z') == Iso8601().parse('2020-01-04T14:23:00.0Z')
 
