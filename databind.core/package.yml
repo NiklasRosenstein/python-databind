@@ -1,11 +1,10 @@
-package:
-  name: "databind.core"
-  version: "0.2.0"
-  author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
-  license: "MIT"
-  description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
-  url: "https://github.com/NiklasRosenstein/python-databind"
-  typed: true
-  requirements:
-  - python ^3.6
-  - dataclasses ^0.6
+name: "databind.core"
+version: "0.2.0"
+author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
+license: "MIT"
+description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
+url: "https://github.com/NiklasRosenstein/python-databind"
+typed: true
+requirements:
+- python ^3.6
+- dataclasses ^0.6
