@@ -3,6 +3,8 @@ import abc
 import datetime
 import decimal
 import enum
+import logging
+import traceback
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, TypeVar, Type, Union
@@ -26,6 +28,24 @@ from databind.core.utils import find
 from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601  # type: ignore
 
 T = TypeVar('T')
+logger = logging.getLogger(__name__)
+
+
+def _get_log_level(logger: logging.Logger) -> int:
+  while logger.level == 0 and logger:
+    logger = logger.parent
+  if logger:
+    return logger.level
+  return 0
+
+
+def _indent_exc(exc: Exception) -> str:
+  lines = []
+  for index, line in enumerate(str(exc).splitlines()):
+    if index > 0:
+      line = '| ' + line
+    lines.append(line)
+  return '\n'.join(lines)
 
 
 class BoolConverter(Converter):
@@ -134,13 +154,27 @@ class MixtypeConverter(Converter):
     args = context.type.__args__
     if type(None) in args and value is None:
       return None
+    errors = []
+    tracebacks = []
+    is_debug = _get_log_level(logger) >= logging.DEBUG
     for type_ in args:
       if type_ == type(None): continue
       try:
         return getattr(context.fork(type_, value), method)()
-      except ConversionTypeError:
-        pass
-    raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
+      except ConversionTypeError as exc:
+        errors.append(f'{type_repr(type_)}: {exc}')
+        if is_debug:
+          tracebacks.append(traceback.format_exc())
+    if is_debug:
+      logger.debug(
+        f'Error converting `{type_repr(context.type)}` ({method}). This message is logged in '
+        f'conjunction with a ConversionTypeError to provide information about the tracebacks '
+        f'that have been caught when converting the individiual union members. This might not '
+        f'indicate an error in the program if the exception is handled.\n'
+        + '\n'.join(tracebacks))
+    errors_text = '\n'.join(errors)
+    raise context.type_error(_indent_exc(
+      f'expected {type_repr(context.type)}, got {type_repr(type(value))}\n{errors_text}'))
 
   def from_python(self, value: Any, context: Context) -> Any:
     return self._do_conversion(value, context, 'from_python')

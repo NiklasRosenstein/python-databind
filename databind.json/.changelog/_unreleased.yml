@@ -4,3 +4,8 @@ changes:
   component: general
   description: update type hints to pass mypy checks
   fixes: []
+- type: improvement
+  component: general
+  description: add DEBUG log when `MixtypeConverter` is unable to convert a value
+    at all to make debugging easier
+  fixes: []
