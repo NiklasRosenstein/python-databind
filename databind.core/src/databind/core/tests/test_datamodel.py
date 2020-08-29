@@ -99,6 +99,28 @@ def test_datamodel_mixed_order_default_arguments():
   assert str(excinfo.value) == "missing required argument 'b'"
 
 
+def test_datamodel_multiple_inheritance():
+  @datamodel
+  class A:
+    a: int
+
+  @datamodel
+  class B:
+    b: str
+
+  @datamodel
+  class C(B, A):
+    c: float
+
+  assert C(42, 'foo', 4.0) == C(a=42, b='foo', c=4.0)
+
+  @datamodel
+  class D(A, B):
+    d: float
+
+  assert D('foo', 42, 4.0) == D(a=42, b='foo', d=4.0)
+
+
 def test_FieldMetadata_constructor():
   assert FieldMetadata().derived == False
   assert FieldMetadata(raw=True).derived == True
