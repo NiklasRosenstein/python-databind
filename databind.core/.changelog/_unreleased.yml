@@ -1,0 +1,8 @@
+release_date: null
+changes:
+- type: improvement
+  component: general
+  description: ensure that non-default arguments do not have a class attribute of
+    type `object` (which is used as a workaround to support non-default fields following
+    default fields in `dataclasses`)
+  fixes: []

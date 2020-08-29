@@ -91,6 +91,9 @@ def test_datamodel_mixed_order_default_arguments():
     a: int = field(default=0)
     b: int
 
+  assert A.a == 0
+  assert not hasattr(A, 'b')
+
   assert A(b=10) == A(0, 10)
   assert A(b=10, a=20) == A(20, 10)
 
