@@ -390,6 +390,8 @@ class AbstractDateConverter(Converter):
     return datetime_format
 
   def to_python(self, value: str, context: Context) -> datetime.datetime:
+    if isinstance(value, self.py_type):
+      return value
     if not isinstance(value, str):
       raise context.type_error(f'expected {type_repr(context.type)} (as string), got {type_repr(type(value))}')
     formatter = self._get_format(context)
