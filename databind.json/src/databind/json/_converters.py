@@ -353,10 +353,19 @@ class ModelConverter(Converter):
 class ArrayConverter(Converter):
 
   def _do_conversion(self, value, context, method):
-    item_type = context.type.__args__[0]
+    if not hasattr(context.type, '__args__') and hasattr(context.type, '__orig_bases__'):
+      # For subclasses of the List generic.
+      item_type = next(v.__args__[0] for v in context.type.__orig_bases__ if v.__origin__ in (list, List))
+      constructor = context.type
+    elif context.type.__origin__ in (list, List):
+      # For the List generic.
+      item_type = context.type.__args__[0]
+      constructor = list
+    else:
+      raise RuntimeError(f'unsure how to handle type {type_repr(context.type)}')
     if not isinstance(value, Sequence):
       raise context.type_error(f'expected {type_repr(context.type)} (as sequence), got {type_repr(type(value))}')
-    result = []  # TODO(NiklasRosenstein): Option to set conversion target type
+    result = constructor()
     for index, item in enumerate(value):
       # Note: forwarding the FieldMetadata from the parent to the items.
       child_context = context.child(index, item_type, item, context.field_metadata)
