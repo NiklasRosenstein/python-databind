@@ -88,18 +88,21 @@ def test_datamodel_mixed_order_default_arguments():
 
   @datamodel
   class A:
-    a: int = field(default=0)
-    b: int
+    a: int
 
-  assert A.a == 0
-  assert not hasattr(A, 'b')
+  @datamodel
+  class B(A):
+    b: int = field(default=0)
 
-  assert A(b=10) == A(0, 10)
-  assert A(b=10, a=20) == A(20, 10)
+  assert not hasattr(B, 'a')
+  assert B.b == 0
+
+  assert B(a=10) == B(10, 0)
+  assert B(b=10, a=20) == B(20, 10)
 
   with raises(TypeError) as excinfo:
-    A(42)
-  assert str(excinfo.value) == "missing required argument 'b'"
+    B(b=10)
+  assert str(excinfo.value) == "missing required argument 'a'"
 
 
 def test_datamodel_multiple_inheritance():

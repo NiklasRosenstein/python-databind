@@ -6,3 +6,7 @@ changes:
     type `object` (which is used as a workaround to support non-default fields following
     default fields in `dataclasses`)
   fixes: []
+- type: fix
+  component: general
+  description: raise for uninitialized fields inherited from parent datamodels
+  fixes: []

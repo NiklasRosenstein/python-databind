@@ -15,6 +15,7 @@ from ._union import UnionResolver, StaticUnionResolver
 
 T = TypeVar('T')
 T_BaseMetadata = TypeVar('T_BaseMetadata', bound='BaseMetadata')
+uninitialized = object()  # Placeholder object to inidicate that a field does not actually have a default.
 
 __all__ = [
   'UnionMetadata',
@@ -139,12 +140,11 @@ def datamodel(*args, **kwargs):
   """
 
   metadata = _extract_dataclass_from_kwargs(ModelMetadata, kwargs)
-  uninitialized = object()  # Placeholder object to inidicate that a field does not actually have a default.
   no_default_fields = []
 
   def _before_dataclass(cls):
     # Allow non-default arguments to follow default-arguments.
-    for key, value in getattr(cls, '__annotations__', {}).items():
+    for key in getattr(cls, '__annotations__', {}).keys():
       if not hasattr(cls, key):
         f = field()
         setattr(cls, key, f)
@@ -161,9 +161,9 @@ def datamodel(*args, **kwargs):
     old_postinit = getattr(cls, '__post_init__', None)
     def __post_init__(self):
       # Ensure that no field has a "uninitialized" value.
-      for name in no_default_fields:
-        if getattr(self, name) == uninitialized:
-          raise TypeError(f'missing required argument {name!r}')
+      for key in self.__dataclass_fields__.keys():
+        if getattr(self, key) == uninitialized:
+          raise TypeError(f'missing required argument {key!r}')
       if old_postinit:
         old_postinit(self)
     cls.__post_init__ = __post_init__
@@ -180,8 +180,8 @@ def datamodel(*args, **kwargs):
       cls.__init__ = __init__
 
     for key in no_default_fields:
-      assert getattr(cls, key) is uninitialized
-      delattr(cls, key)
+      if getattr(cls, key, None) is uninitialized:
+        delattr(cls, key)
 
     return cls
 
