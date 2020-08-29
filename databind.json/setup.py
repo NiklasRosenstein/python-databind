@@ -22,7 +22,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.json',
-  version = '0.1.0',
+  version = '0.2.0',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Bind object-oriented data models to JSON data.',
@@ -36,7 +36,7 @@ setuptools.setup(
   install_requires = requirements,
   extras_require = {},
   tests_require = [],
-  python_requires = '>=3.6,<4.0.0',
+  python_requires = '>=3.6.0,<4.0.0',
   data_files = [],
   entry_points = {},
   cmdclass = {},
