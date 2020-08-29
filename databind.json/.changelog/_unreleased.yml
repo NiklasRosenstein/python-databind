@@ -9,3 +9,9 @@ changes:
   description: add DEBUG log when `MixtypeConverter` is unable to convert a value
     at all to make debugging easier
   fixes: []
+- type: fix
+  component: general
+  description: accept `datetime.date`/`datetime.datetime` objects when converting
+    to python if the target type is a respective match (rather than forcing a string
+    as an input)
+  fixes: []
