@@ -1,7 +1,8 @@
 
 import abc
+import contextlib
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, Generic, List, Mapping, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, Mapping, Optional, Type, TypeVar, Union
 from ._datamodel import (
   BaseMetadata,
   FieldMetadata,
@@ -108,6 +109,19 @@ class Context:
   def value_error(self, message: str) -> ConversionValueError:
     return ConversionValueError(self, message)
 
+  @contextlib.contextmanager
+  def coerce_errors(self) -> Generator[None, None, None]:
+    """
+    A context manager that catches #ValueError and #TypeError exceptions to convert them to the
+    corresponding #ConversionTypeError and #ConversionValueError types.
+    """
+
+    try:
+      yield
+    except ValueError as exc:
+      raise self.value_error(str(exc))
+    except TypeError as exc:
+      raise self.type_error(str(exc))
 
 
 class Converter(Generic[T], metaclass=abc.ABCMeta):
