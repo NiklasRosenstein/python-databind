@@ -23,7 +23,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.tagline',
-  version = '0.1.0',
+  version = '0.1.1',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Package description here.',
