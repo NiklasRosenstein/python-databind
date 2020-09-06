@@ -6,4 +6,4 @@ requirements:
 - python ^3.5
 - databind.core ^0.4.0
 - databind.json ^0.5.0
-- nr.parsing.core ~0.0.1
+- nr.parsing.core ~1.0.0
