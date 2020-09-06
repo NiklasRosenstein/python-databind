@@ -7,5 +7,5 @@ url: "https://github.com/NiklasRosenstein/python-databind"
 typed: true
 requirements:
 - python ^3.6
-- databind.core ^0.1.0
+- databind.core ^0.4.0
 - nr.parsing.date ^0.3.0

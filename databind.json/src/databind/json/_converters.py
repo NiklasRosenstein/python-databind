@@ -5,6 +5,7 @@ import decimal
 import enum
 import logging
 import traceback
+import types
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, TypeVar, Type, Union
@@ -23,6 +24,7 @@ from databind.core import (
   uniontype,
   UnionMetadata,
   UnionTypeError,
+  TypeHint,
 )
 from databind.core.utils import find
 from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601  # type: ignore
@@ -253,11 +255,22 @@ class ModelConverter(Converter):
         fields.append(_FieldConversionData(field.name, field.type, field.metadata, ['*']))
     return _ModelConversionData(ModelMetadata.for_type(type_), fields, targets, wildcard)
 
+  def _get_serialize_as(self, context: Context) -> Optional[TypeHint]:
+    metadata = ModelMetadata.for_type(context.type)
+    if isinstance(metadata.serialize_as, types.FunctionType):
+      return metadata.serialize_as()
+    return metadata.serialize_as
+
   def to_python(self, value, context: Context) -> dict:
+    serialize_as = self._get_serialize_as(context)
+    if serialize_as is not None:
+      return context.fork(serialize_as, value).to_python()
+
     if hasattr(context.type, 'databind_json_load'):
-      result = context.type.databind_json_load(value, context)
-      if result is not NotImplemented:
-        return result
+      with context.coerce_errors():
+        result = context.type.databind_json_load(value, context)
+        if result is not NotImplemented:
+          return result
 
     if not isinstance(value, Mapping):
       raise context.type_error(f'expected {type_repr(context.type)} (as mapping), got {type_repr(type(value))}')
@@ -313,13 +326,18 @@ class ModelConverter(Converter):
       raise context.type_error(str(exc))
 
   def from_python(self, value, context: Context) -> Any:
+    serialize_as = self._get_serialize_as(context)
+    if serialize_as is not None:
+      return context.fork(serialize_as, value).from_python()
+
     if not isinstance(value, context.type):
       raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
 
     if hasattr(value, 'databind_json_dump'):
-      result = value.databind_json_dump(context)
-      if result is not NotImplemented:
-        return result
+      with context.coerce_errors():
+        result = value.databind_json_dump(context)
+        if result is not NotImplemented:
+          return result
 
     skip_defaults = context.registry.get_option(datamodel, 'skip_defaults', False)
     result = {}  # TODO(NiklasRosenstein): Option to override target conversion type.
