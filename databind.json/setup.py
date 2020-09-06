@@ -15,11 +15,14 @@ else:
   print("warning: file \"{}\" does not exist.".format(readme_file), file=sys.stderr)
   long_description = None
 
-requirements = []
+requirements = [
+  'databind.core >=0.4.0,<1.0.0',
+  'nr.parsing.date >=0.3.0,<1.0.0',
+]
 
 setuptools.setup(
   name = 'databind.json',
-  version = '0.4.0',
+  version = '0.4.1',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Bind object-oriented data models to JSON data.',
