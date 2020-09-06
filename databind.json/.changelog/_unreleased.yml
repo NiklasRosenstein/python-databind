@@ -1,0 +1,7 @@
+release_date: null
+changes:
+- type: feature
+  component: general
+  description: Add `strict` argument to `register_json_converters()` which will allow
+    converters for plain-old-datatypes to accept string representations as well
+  fixes: []
