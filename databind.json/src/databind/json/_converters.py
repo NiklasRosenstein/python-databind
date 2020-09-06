@@ -50,23 +50,34 @@ def _indent_exc(exc: Exception) -> str:
   return '\n'.join(lines)
 
 
-class BoolConverter(Converter):
+class _PodConverter(Converter):
+
+  def __init__(self, strict: bool = True) -> None:
+    self.strict = strict
+
+
+class BoolConverter(_PodConverter):
 
   def from_python(self, value, context):
-    if not isinstance(value, context.type):
+    if not isinstance(value, context.type) and self.strict:
       raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
     return bool(value)
 
   to_python = from_python
 
 
-class IntConverter(Converter):
+class IntConverter(_PodConverter):
 
   def from_python(self, value: Any, context: Context) -> int:
     if hasattr(value, '__index__'):
       return value.__index__()
     if isinstance(value, int):
       return value
+    if not self.strict and isinstance(value, str):
+      try:
+        return int(value)
+      except ValueError:
+        pass  # fallthrough
     raise context.type_error(f'expected integer, got {type_repr(type(value))}')
 
   to_python = from_python
@@ -82,11 +93,16 @@ class StringConverter(Converter):
   to_python = from_python
 
 
-class FloatConverter(Converter):
+class FloatConverter(_PodConverter):
 
   def from_python(self, value: Any, context: Context) -> float:
     if isinstance(value, (float, int)):
       return float(value)
+    if not self.strict and isinstance(value, str):
+      try:
+        return float(value)
+      except ValueError:
+        pass  # fallthrough
     raise context.type_error(f'expected float, got {type_repr(type(value))}')
 
   to_python = from_python
@@ -531,11 +547,21 @@ class UnionConverter(Converter):
     return result
 
 
-def register_json_converters(registry: Registry) -> None:
-  registry.register_converter(bool, BoolConverter())
-  registry.register_converter(int, IntConverter())
+def register_json_converters(registry: Registry, strict: bool = True) -> None:
+  """
+  Register the JSON converts to the specified *registry*.
+
+  # Arguments
+  registry (Registry): The registry to register the converters to.
+  strict (bool): Enable or disable strict mode for converters (default: True). In
+    non-strict mode, converters of plain-old-datatypes can accept a string additionally
+    to the closest JSON type.
+  """
+
+  registry.register_converter(bool, BoolConverter(strict))
+  registry.register_converter(int, IntConverter(strict))
   registry.register_converter(str, StringConverter())
-  registry.register_converter(float, FloatConverter())
+  registry.register_converter(float, FloatConverter(strict))
   registry.register_converter(List, ArrayConverter())
   registry.register_converter(Dict, ObjectConverter())
   registry.register_converter(decimal.Decimal, DecimalConverter())
