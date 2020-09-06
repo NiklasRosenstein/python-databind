@@ -17,12 +17,13 @@ else:
 
 requirements = [
   'databind.core >=0.4.0,<1.0.0',
+  'databind.json >=0.5.0,<1.0.0',
   'nr.parsing.core >=0.0.1,<0.1.0',
 ]
 
 setuptools.setup(
   name = 'databind.tagline',
-  version = '0.0.0',
+  version = '0.1.0',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Package description here.',
