@@ -6,7 +6,8 @@ Extends the functionality of the #dataclass module to provide additional metadat
 
 import types
 import textwrap
-from typing import Any, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar, cast, get_type_hints
+from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar,
+  cast, get_type_hints)
 
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 
@@ -15,6 +16,7 @@ from ._union import UnionResolver, StaticUnionResolver
 
 T = TypeVar('T')
 T_BaseMetadata = TypeVar('T_BaseMetadata', bound='BaseMetadata')
+TypeHint = Any  # Supposed to represent the type of a Python type hint.
 uninitialized = object()  # Placeholder object to inidicate that a field does not actually have a default.
 
 __all__ = [
@@ -27,6 +29,7 @@ __all__ = [
   'enumerate_fields',
   'is_datamodel',
   'is_uniontype',
+  'TypeHint',
 ]
 
 
@@ -80,6 +83,9 @@ class BaseMetadata:
 class ModelMetadata(BaseMetadata):
   #: Allow only keyword arguments when constructing an instance of the model.
   kwonly: bool = _field(default=False)
+
+  #: A type definition which overrides the type for deserializing/serializing the datamodel.
+  serialize_as: Union[Callable[[], TypeHint], TypeHint, None] = None
 
 
 @_dataclass
