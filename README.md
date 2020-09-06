@@ -14,6 +14,7 @@ __Serialization/Deserialization__
 
 * [databind.binary](https://pypi.org/project/databind.binary/)
 * [databind.json](https://pypi.org/project/databind.json/)
+* [databind.tagline](https://pypi.org/project/databind.tagline/)
 * [databind.yaml](https://pypi.org/project/databind.yaml/)
 
 ---
