@@ -1,0 +1,7 @@
+release_date: null
+changes:
+- type: fix
+  component: general
+  description: conversion of values of a `List` subtype *from Python* are now converted
+    to a built-in `list` instead of the same `List` subtype
+  fixes: []

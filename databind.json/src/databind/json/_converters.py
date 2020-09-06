@@ -383,7 +383,7 @@ class ArrayConverter(Converter):
       raise RuntimeError(f'unsure how to handle type {type_repr(context.type)}')
     if not isinstance(value, Sequence):
       raise context.type_error(f'expected {type_repr(context.type)} (as sequence), got {type_repr(type(value))}')
-    result = constructor()
+    result = constructor() if method == 'to_python' else list()
     for index, item in enumerate(value):
       # Note: forwarding the FieldMetadata from the parent to the items.
       child_context = context.child(index, item_type, item, context.field_metadata)

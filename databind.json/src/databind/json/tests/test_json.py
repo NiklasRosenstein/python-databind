@@ -112,6 +112,18 @@ def test_array_converter():
   assert to_json([A('foo'), A('bar')], List[A]) == [{'a': 'foo'}, {'a': 'bar'}]
 
 
+def test_array_converter_with_custom_list_type():
+  class MyListType(List[int]):
+    def mult(self, num: int) -> 'MyListType':
+      return MyListType(n * num for n in self)
+
+  assert from_json(MyListType, [1, 2, 3]) == [1, 2, 3]
+  assert type(from_json(MyListType, [1, 2, 3])) is MyListType
+
+  assert to_json(MyListType([1, 2, 3])) == [1, 2, 3]
+  assert type(to_json(MyListType([1, 2, 3]))) is list
+
+
 def test_model_converter_flatten():
   @datamodel
   class A:
