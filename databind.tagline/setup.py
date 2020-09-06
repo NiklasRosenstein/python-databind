@@ -18,7 +18,7 @@ else:
 requirements = [
   'databind.core >=0.4.0,<1.0.0',
   'databind.json >=0.5.0,<1.0.0',
-  'nr.parsing.core >=0.0.1,<0.1.0',
+  'nr.parsing.core >=1.0.0,<1.1.0',
 ]
 
 setuptools.setup(
