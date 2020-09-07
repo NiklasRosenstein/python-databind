@@ -1,11 +1,10 @@
-package:
-  name: "databind.binary"
-  version: "0.1.0"
-  author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
-  license: "MIT"
-  description: "Bind object-oriented data models to binary data encoded with the struct module."
-  url: "https://github.com/NiklasRosenstein/python-databind"
-  typed: true
-  requirements:
-  - python ^3.6
-  - databind.core ^0.1.0
+name: "databind.binary"
+version: "0.1.0"
+author: "Niklas Rosenstein <rosensteinniklas@gmail.com>"
+license: "MIT"
+description: "Bind object-oriented data models to binary data encoded with the struct module."
+url: "https://github.com/NiklasRosenstein/python-databind"
+typed: true
+requirements:
+- python ^3.6
+- databind.core ^0.1.0

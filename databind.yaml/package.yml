@@ -1,9 +1,8 @@
-package:
-  name: databind.yaml
-  version: 0.1.0
-  author: Niklas Rosenstein <rosensteinniklas@gmail.com>
-  description: Package description here.
-  requirements:
-  - python ^3.5
-  - databind.core ^0.1.0
-  - PyYAML ^5
+name: databind.yaml
+version: 0.1.0
+author: Niklas Rosenstein <rosensteinniklas@gmail.com>
+description: Package description here.
+requirements:
+- python ^3.5
+- databind.core ^0.1.0
+- PyYAML ^5

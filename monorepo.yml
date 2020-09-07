@@ -1,5 +1,2 @@
 name: databind
 author: Niklas Rosenstein <rosensteinniklas@gmail.com>
-version: 0.1.0
-release:
-  single-version: true
