@@ -1,0 +1,7 @@
+release_date: null
+changes:
+- type: fix
+  component: general
+  description: Re-render setup file, materializing missing dependency on `dataclasses`.
+    This fixes using the moule in Python 3.6
+  fixes: []
