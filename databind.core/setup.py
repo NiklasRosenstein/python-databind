@@ -21,7 +21,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.core',
-  version = '0.4.0',
+  version = '0.4.1',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming.',
