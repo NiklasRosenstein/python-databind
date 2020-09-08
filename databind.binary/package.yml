@@ -8,3 +8,5 @@ typed: true
 requirements:
 - python ^3.6
 - databind.core ^0.1.0
+test-driver:
+  type: pytest
