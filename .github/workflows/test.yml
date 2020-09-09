@@ -27,5 +27,5 @@ jobs:
     - name: Run tests
       run: |
         #shut mono test --isolate
-        pip install -e databind.core -e databind.binary -e databind.json -e databind.tagline -e databind.yaml pytest
+        pip install -e databind.core -e databind.binary -e databind.json -e databind.tagline -e databind.yaml pytest -q
         pytest

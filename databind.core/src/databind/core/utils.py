@@ -45,8 +45,13 @@ def find_orig_base(type_: Type, generic_type: Any) -> Optional[Any]:
   """
 
   bases = getattr(type_, '__orig_bases__', [])
+
+  generic_choices = (generic_type,)
+  if generic_type.__origin__:
+    generic_choices += (generic_type.__origin__,)
+
   for base in bases:
-    if base == generic_type or getattr(base, '__origin__', None) == generic_type:
+    if base == generic_type or getattr(base, '__origin__', None) in generic_choices:
       return base
   for base in bases:
     result = find_orig_base(base, generic_type)
