@@ -2,7 +2,7 @@
 import abc
 import dataclasses
 from typing import Dict, List, Type, Union
-from ._typing import type_repr
+from .utils import type_repr
 
 __all__ = [
   'UnionTypeError',
