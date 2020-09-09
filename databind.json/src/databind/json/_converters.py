@@ -395,7 +395,7 @@ class ArrayConverter(Converter):
       constructor = context.type
 
     # Otherwise, catch instances of the typing.List generic.
-    elif issubclass(context.type, List):
+    elif getattr(context.type, '__origin__', None) in (list, List):
       # For the List generic.
       item_type = context.type.__args__[0]
       constructor = list
