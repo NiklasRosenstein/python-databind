@@ -1,0 +1,7 @@
+release_date: '2020-09-09'
+changes:
+- type: fix
+  component: general
+  description: Fix Python 3.6 support for `typing.List` subclasses by reading the
+    generic paraemter from the right object
+  fixes: []

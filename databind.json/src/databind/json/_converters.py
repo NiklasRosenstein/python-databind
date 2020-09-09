@@ -26,7 +26,7 @@ from databind.core import (
   UnionTypeError,
   TypeHint,
 )
-from databind.core.utils import find
+from databind.core.utils import find, find_orig_base
 from nr.parsing.date import create_datetime_format_set, DatetimeFormat, Duration, Iso8601  # type: ignore
 
 T = TypeVar('T')
@@ -387,23 +387,31 @@ class ModelConverter(Converter):
 class ArrayConverter(Converter):
 
   def _do_conversion(self, value, context, method):
-    if not hasattr(context.type, '__args__') and hasattr(context.type, '__orig_bases__'):
-      # For subclasses of the List generic.
-      item_type = next(v.__args__[0] for v in context.type.__orig_bases__ if v.__origin__ in (list, List))
+    # Catch subclasses of the typing.List generics. The instantiated generic with the type
+    # parameter will be stored in __orig_bases__.
+    list_base = find_orig_base(context.type, List)
+    if list_base:
+      item_type = list_base.__args__[0]
       constructor = context.type
-    elif context.type.__origin__ in (list, List):
+
+    # Otherwise, catch instances of the typing.List generic.
+    elif getattr(context.type, '__origin__', None) in (list, List):
       # For the List generic.
       item_type = context.type.__args__[0]
       constructor = list
+
     else:
       raise RuntimeError(f'unsure how to handle type {type_repr(context.type)}')
+
     if not isinstance(value, Sequence):
       raise context.type_error(f'expected {type_repr(context.type)} (as sequence), got {type_repr(type(value))}')
+
     result = constructor() if method == 'to_python' else list()
     for index, item in enumerate(value):
       # Note: forwarding the FieldMetadata from the parent to the items.
       child_context = context.child(index, item_type, item, context.field_metadata)
       result.append(getattr(child_context, method)())
+
     return result
 
   def from_python(self, value, context):

@@ -11,8 +11,8 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple,
 
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 
-from ._typing import type_repr
 from ._union import UnionResolver, StaticUnionResolver
+from .utils import type_repr
 
 T = TypeVar('T')
 T_BaseMetadata = TypeVar('T_BaseMetadata', bound='BaseMetadata')
