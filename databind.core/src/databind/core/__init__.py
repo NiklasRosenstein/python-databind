@@ -10,5 +10,5 @@ __version__ = '0.4.1'
 from ._converter import *
 from ._datamodel import *
 from ._locator import Locator
-from ._typing import *
 from ._union import *
+from .utils import type_repr

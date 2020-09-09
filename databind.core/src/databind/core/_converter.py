@@ -12,8 +12,7 @@ from ._datamodel import (
   uniontype,
 )
 from ._locator import Locator
-from ._typing import type_repr
-from .utils import ChainDict
+from .utils import ChainDict, type_repr
 
 T = TypeVar('T')
 

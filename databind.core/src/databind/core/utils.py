@@ -1,16 +1,60 @@
 
-from typing import Callable, Iterable, Optional, TypeVar
-from typing import Any, Iterator, Optional, MutableMapping, TypeVar, Union, overload
+import types
+import typing
+from typing import Any, Callable, Iterable, Iterator, Optional, MutableMapping, Type, TypeVar, Union, overload
 from collections import abc
 
-__all__ = ['find', 'ChainDict']
+__all__ = [
+  'find',
+  'type_repr',
+  'ChainDict',
+]
+
 T = TypeVar('T')
 KT = TypeVar('KT')
 VT = TypeVar('VT')
+T_GenericMeta = TypeVar('T_GenericMeta', bound=typing.GenericMeta)
 
 
 def find(predicate: Callable[[Optional[T]], bool], it: Iterable[T]) -> Optional[T]:
   return next(filter(predicate, it), None)
+
+
+def _type_repr(obj: Any) -> str:
+  # Borrowed from typing in CPython 3.7
+  if isinstance(obj, type):
+      if obj.__module__ == 'builtins':
+          return obj.__qualname__
+      return f'{obj.__module__}.{obj.__qualname__}'
+  if obj is ...:
+      return('...')
+  if isinstance(obj, types.FunctionType):
+      return obj.__name__
+  return repr(obj)
+
+
+try:
+  from typing import _type_repr as type_repr  # type: ignore
+except ImportError:
+  type_repr = _type_repr
+
+
+def find_orig_base(type_: Type, generic_type: Type[T_GenericMeta]) -> Optional[T_GenericMeta]:
+  """
+  Finds an instance of the specified *generic_meta* in the `__orig_bases__` attribute of
+  the specified *type_*. This is used to find the parametrized generic in the bases of a
+  class.
+  """
+
+  bases = getattr(type_, '__orig_bases__', [])
+  for base in bases:
+    if base == generic_type or getattr(base, '__origin__', None) == generic_type:
+      return base
+  for base in bases:
+    result = find_orig_base(base, generic_type)
+    if result is not None:
+      return result
+  return None
 
 
 class ChainDict(MutableMapping[KT, VT]):
