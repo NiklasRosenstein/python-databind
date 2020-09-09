@@ -26,4 +26,4 @@ jobs:
         pipx install shut==0.7.2
     - name: Run tests
       run: |
-        shut mono test --isolate
+        ~/.local/bin/shut mono test --isolate
