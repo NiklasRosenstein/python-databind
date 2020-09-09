@@ -1,6 +1,5 @@
 
 import types
-import typing
 from typing import Any, Callable, Iterable, Iterator, Optional, MutableMapping, Type, TypeVar, Union, overload
 from collections import abc
 
@@ -13,7 +12,6 @@ __all__ = [
 T = TypeVar('T')
 KT = TypeVar('KT')
 VT = TypeVar('VT')
-T_GenericMeta = TypeVar('T_GenericMeta', bound=typing.GenericMeta)
 
 
 def find(predicate: Callable[[Optional[T]], bool], it: Iterable[T]) -> Optional[T]:
@@ -39,7 +37,7 @@ except ImportError:
   type_repr = _type_repr
 
 
-def find_orig_base(type_: Type, generic_type: Type[T_GenericMeta]) -> Optional[T_GenericMeta]:
+def find_orig_base(type_: Type, generic_type: Any) -> Optional[Any]:
   """
   Finds an instance of the specified *generic_meta* in the `__orig_bases__` attribute of
   the specified *type_*. This is used to find the parametrized generic in the bases of a
