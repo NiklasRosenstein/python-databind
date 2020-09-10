@@ -1,0 +1,10 @@
+release_date: null
+changes:
+- type: fix
+  component: general
+  description: Declare missing dependency on `databind.json`
+  fixes: []
+- type: fix
+  component: general
+  description: Declare missing dependency on `databind.json`
+  fixes: []
