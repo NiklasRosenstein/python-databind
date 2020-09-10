@@ -216,7 +216,7 @@ class ObjectConverter(Converter):
       constructor = context.type
 
     # Otherwise, catch instances of the typing.List generic.
-    elif getattr(context.type, '__origin__', None) in (dict, typing.Dict):
+    elif getattr(context.type, '__origin__', None) in (dict, Dict):
       # For the List generic.
       key_type, value_type = context.type.__args__[0], context.type.__args__[1]
       constructor = list
