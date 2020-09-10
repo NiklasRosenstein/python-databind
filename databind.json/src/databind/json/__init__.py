@@ -3,7 +3,7 @@ __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
 __version__ = '0.5.1'
 
 import json
-from typing import Optional, Type, TypeVar, Union
+from typing import Optional, TextIO, Type, TypeVar, Union
 from databind.core import Context, FieldMetadata, Registry
 from ._converters import register_json_converters
 
@@ -54,6 +54,15 @@ def from_str(
   return from_json(type_, json.loads(value), field_metadata, registry)
 
 
+def from_stream(
+  type_: Type[T],
+  stream: TextIO,
+  field_metadata: FieldMetadata = None,
+  registry: Registry = None,
+) -> T:
+  return from_json(type_, json.load(stream), field_metadata, registry)
+
+
 def to_str(
   value: T,
   type_: Type[T]=None,
@@ -61,3 +70,13 @@ def to_str(
   registry: Registry=None,
 ) -> str:
   return json.dumps(to_json(value, type_, field_metadata, registry))
+
+
+def to_stream(
+  stream: TextIO,
+  value: T,
+  type_: Type[T]=None,
+  field_metadata: FieldMetadata = None,
+  registry: Registry=None,
+) -> str:
+  return json.dump(to_json(value, type_, field_metadata, registry), stream)
