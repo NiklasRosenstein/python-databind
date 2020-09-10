@@ -5,4 +5,5 @@ description: Package description here.
 requirements:
 - python ^3.5
 - databind.core ^0.1.0
+- databind.json ^0.1.0
 - PyYAML ^5

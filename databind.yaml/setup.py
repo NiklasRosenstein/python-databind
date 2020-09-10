@@ -17,6 +17,7 @@ else:
 
 requirements = [
   'databind.core >=0.1.0,<1.0.0',
+  'databind.json >=0.1.0,<1.0.0',
   'PyYAML >=5.0.0,<6.0.0',
 ]
 
