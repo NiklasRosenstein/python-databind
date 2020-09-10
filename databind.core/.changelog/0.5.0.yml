@@ -1,10 +1,2 @@
 release_date: '2020-09-10'
-changes:
-- type: feature
-  component: general
-  description: Add `to_stream()` and `from_stream()` functions
-  fixes: []
-- type: feature
-  component: general
-  description: Add support for `typing.Dict` subclasses
-  fixes: []
+changes: []
