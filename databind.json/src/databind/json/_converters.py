@@ -208,9 +208,26 @@ class ObjectConverter(Converter):
     return context.registry.get_option(Dict, 'py_type', dict)
 
   def _do_conversion(self, value: Mapping, context: Context, method: str) -> Mapping:
+    # Catch subclasses of the typing.Dict generics. The instantiated generic with the type
+    # parameter will be stored in __orig_bases__.
+    dict_base = find_orig_base(context.type, Dict)
+    if dict_base:
+      key_type, value_type = dict_base.__args__[0], dict_base.__args__[1]
+      constructor = context.type
+
+    # Otherwise, catch instances of the typing.List generic.
+    elif getattr(context.type, '__origin__', None) in (dict, typing.Dict):
+      # For the List generic.
+      key_type, value_type = context.type.__args__[0], context.type.__args__[1]
+      constructor = list
+
+    else:
+      raise RuntimeError(f'unsure how to handle type {type_repr(context.type)}')
+
+
     if not isinstance(value, Mapping):
       raise context.type_error(f'expected object, got {type_repr(type(value))}')
-    key_type, value_type = context.type.__args__
+
     result = self._get_python_type(context)()
     for key, value in value.items():
       if key_type is not None:
