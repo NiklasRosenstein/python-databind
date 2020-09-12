@@ -222,16 +222,16 @@ class Registry:
       except UnknownTypeError:
         pass
 
+    normalized = normalize_type(type_, keep_parametrized=False)
+    if normalized != type_:
+      return self.get_converter(normalized)
+
     # Try base classes.
     for base in getattr(type_, '__bases__', ()):
       try:
         return self.get_converter(base)
       except UnknownTypeError:
         pass
-
-    normalized = normalize_type(type_, keep_parametrized=False)
-    if normalized != type_:
-      return self.get_converter(normalized)
 
     raise UnknownTypeError(f'no converter found for type {type_repr(type_)}')
 

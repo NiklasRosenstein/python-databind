@@ -1,0 +1,8 @@
+release_date: null
+changes:
+- type: fix
+  component: general
+  description: '`Registry.get_converter()` now looks for a converter in the base classes
+    only if it could not find it for the normalized version of the current type, making
+    converter resolution more predictable'
+  fixes: []
