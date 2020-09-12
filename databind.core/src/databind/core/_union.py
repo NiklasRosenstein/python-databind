@@ -1,7 +1,7 @@
 
 import abc
 import dataclasses
-from typing import Dict, List, Type, Union
+from typing import Dict, List, Type, Union, get_type_hints
 from .utils import type_repr
 
 __all__ = [
@@ -40,13 +40,10 @@ class UnionResolver(metaclass=abc.ABCMeta):
     """
 
 
-class StaticUnionResolver(UnionResolver):
+class _MappingUnionResolverMixin(UnionResolver):
   """
   Wraps a dictionary for resolving union members.
   """
-
-  def __init__(self, mapping: Dict[str, Type]) -> None:
-    self._mapping = dict(mapping)
 
   def __getitem__(self, type_name: str) -> Type:
     return self._mapping[type_name]
@@ -85,3 +82,19 @@ class StaticUnionResolver(UnionResolver):
 
   def members(self) -> List[str]:
     return list(self._mapping.keys())
+
+
+class StaticUnionResolver(_MappingUnionResolverMixin):
+
+  def __init__(self, mapping: Dict[str, Type]) -> None:
+    self._mapping = dict(mapping)
+
+
+class ClassUnionResolver(_MappingUnionResolverMixin):
+
+  def __init__(self, cls: Type) -> None:
+    self._cls = cls
+
+  @property
+  def _mapping(self) -> Dict[str, Type]:
+    return get_type_hints(self._cls)

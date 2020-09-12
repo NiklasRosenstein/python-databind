@@ -11,7 +11,7 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple,
 
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 
-from ._union import UnionResolver, StaticUnionResolver
+from ._union import UnionResolver, ClassUnionResolver, StaticUnionResolver
 from .utils import type_repr
 
 T = TypeVar('T')
@@ -362,12 +362,10 @@ def uniontype(
 
   def decorator(cls):
     nonlocal resolver
-    if not resolver or container:
-      type_hints = get_type_hints(cls)
     if not resolver:
-      resolver = StaticUnionResolver(type_hints)
+      resolver = ClassUnionResolver(cls)
     if container:
-      _init_as_container(cls, type_hints)
+      _init_as_container(cls, get_type_hints(cls))
     else:
       _prevent_init(cls)
 
