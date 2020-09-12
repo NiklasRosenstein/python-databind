@@ -118,6 +118,9 @@ class DecimalConverter(Converter):
   a decimal string with a higher precision than defined into Python will truncate it's precision.
   """
 
+  def __init__(self, strict: bool = False) -> None:
+    self.strict = strict
+
   def _get_decimal_context(self, context: Context) -> decimal.Context:
     dec_context = find(lambda x: isinstance(x, decimal.Context),
                        (context.field_metadata and context.field_metadata.formats) or [])
@@ -131,6 +134,8 @@ class DecimalConverter(Converter):
     return str(decimal_context.create_decimal(value))
 
   def to_python(self, value: str, context: Context) -> decimal.Decimal:
+    if not self.strict and isinstance(value, (float, int)):
+      value = repr(value)
     if not isinstance(value, str):
       raise context.type_error(f'expected decimal (as string), from {type_repr(type(value))}')
     try:
@@ -545,6 +550,7 @@ class UnionConverter(Converter):
     if not isinstance(value, Mapping):
       raise context.type_error(f'expected {type_repr(context.type)} (as mapping), got {type_repr(type(value))}')
     metadata = UnionMetadata.for_type(context.type)
+    assert metadata, f'expected {type_repr(context.type)} to provide UnionMetadata'
     if metadata.type_key not in value:
       raise context.type_error(f'missing {metadata.type_key!r} to convert {type_repr(context.type)}')
 
@@ -589,7 +595,7 @@ def register_json_converters(registry: Registry, strict: bool = True) -> None:
   registry.register_converter(float, FloatConverter(strict))
   registry.register_converter(List, ArrayConverter())
   registry.register_converter(Dict, ObjectConverter())
-  registry.register_converter(decimal.Decimal, DecimalConverter())
+  registry.register_converter(decimal.Decimal, DecimalConverter(False))
   registry.register_converter(enum.Enum, EnumConverter())
   registry.register_converter(datetime.date, DateConverter())
   registry.register_converter(datetime.datetime, DatetimeConverter())
