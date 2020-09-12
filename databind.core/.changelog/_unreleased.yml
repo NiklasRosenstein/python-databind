@@ -6,3 +6,8 @@ changes:
     only if it could not find it for the normalized version of the current type, making
     converter resolution more predictable'
   fixes: []
+- type: feature
+  component: general
+  description: Add `ClassUnionResolver` which evaluates type hints dynamically, allowing
+    to use forward references in the type hints of a `@uniontype()`
+  fixes: []
