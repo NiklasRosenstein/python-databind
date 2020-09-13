@@ -16,7 +16,7 @@ else:
   long_description = None
 
 requirements = [
-  'mypy >=0.782,<1.0.0',
+  'mypy >=0.782.0,<1.0.0',
 ]
 
 setuptools.setup(
@@ -35,7 +35,7 @@ setuptools.setup(
   install_requires = requirements,
   extras_require = {},
   tests_require = [],
-  python_requires = '>=3.6,<4.0.0',
+  python_requires = '>=3.6.0,<4.0.0',
   data_files = [],
   entry_points = {},
   cmdclass = {},
