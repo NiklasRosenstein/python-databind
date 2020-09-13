@@ -2,6 +2,7 @@ name: databind.yaml
 version: 0.1.1
 author: Niklas Rosenstein <rosensteinniklas@gmail.com>
 description: Package description here.
+typed: true
 requirements:
 - python ^3.5
 - databind.core ^0.1.0
