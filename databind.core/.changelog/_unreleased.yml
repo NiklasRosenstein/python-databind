@@ -11,3 +11,7 @@ changes:
   description: Add `ClassUnionResolver` which evaluates type hints dynamically, allowing
     to use forward references in the type hints of a `@uniontype()`
   fixes: []
+- type: feature
+  component: general
+  description: Add `@interface()` and `@implementation()` decorators
+  fixes: []

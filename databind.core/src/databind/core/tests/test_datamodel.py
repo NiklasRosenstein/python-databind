@@ -1,10 +1,11 @@
 
+import abc
 from databind.core import *
-from databind.core._union import StaticUnionResolver
+from databind.core._union import InterfaceUnionResolver, StaticUnionResolver
 from pytest import raises
 
 
-def test_uniontype_decorator():
+def test_uniontype_with_static_resolver():
   @uniontype({
     'int': int,
     'str': str,
@@ -52,6 +53,42 @@ def test_uniontype_decorator():
   b = B('int', 42)
   b.str = 'foo'
   assert b.type == 'str'
+
+
+def test_interface_and_implementation_decorator():
+  @interface
+  class BaseClass(metaclass=abc.ABCMeta):
+    pass
+
+  @implementation('a')
+  class ASubclass(BaseClass):
+    pass
+
+  @implementation('b', BaseClass)
+  class BNotSubclass:
+    pass
+
+  assert UnionMetadata.for_type(BaseClass) == UnionMetadata(resolver=InterfaceUnionResolver({
+    'a': ASubclass,
+    'b': BNotSubclass,
+  }))
+
+  @uniontype
+  class AnotherBaseClass:
+    pass
+
+  with raises(RuntimeError) as excinfo:
+    @implementation('c')
+    class C(AnotherBaseClass):
+      pass
+  assert str(excinfo.value) == '@imlpementation() can only be used if at least one base is decorated with @interface() and uses an InterfaceUnionResolver'
+
+
+  with raises(RuntimeError) as excinfo:
+    @implementation('c', AnotherBaseClass)
+    class C(AnotherBaseClass):
+      pass
+  assert str(excinfo.value) == f'@implementation(for_={type_repr(AnotherBaseClass)}) can only be used if the for_ argument is a class decorated with @interface() and uses an InterfaceUnionResolver'
 
 
 def test_datamodel_decorator():
