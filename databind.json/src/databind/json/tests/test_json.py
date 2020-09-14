@@ -1,4 +1,5 @@
 
+import abc
 import datetime
 import decimal
 import enum
@@ -199,7 +200,7 @@ def test_duration_converter():
   assert to_json(Duration(years=20, hours=3, seconds=15)) == 'P20YT3H15S'
 
 
-def test_uniontype_converter():
+def test_uniontype_converter_class_resolver():
   @uniontype(type_key='T', flat=False)
   class A:
     int: Optional[int]
@@ -253,3 +254,47 @@ def test_uniontype_converter_with_models():
   assert from_json(C, {'type': 'b', 'field_b': "foo"}) == B("foo")
   assert to_json(A(42), C) == {'type': 'a', 'field_a': 42}
   assert to_json(B("foo"), C) == {'type': 'b', 'field_b': "foo"}
+
+
+def test_interface_and_implementation_decorator():
+  @interface
+  class BaseClass(metaclass=abc.ABCMeta):
+    def get_number(self) -> int: ...
+
+  @datamodel
+  @implementation('a')
+  class ASubclass(BaseClass):
+    number: int
+    def get_number(self) -> int: return self.number
+
+  @datamodel
+  @implementation('b', BaseClass)
+  class BNotSubclass:
+    def get_number(self) -> int: return 10
+
+  assert to_json(ASubclass(42), BaseClass) == {'type': 'a', 'number': 42}
+  assert to_json(ASubclass(42)) == {'number': 42}
+  assert to_json(BNotSubclass(), BaseClass) == {'type': 'b'}
+  assert to_json(BNotSubclass()) == {}
+
+  @interface
+  class Authenticator(metaclass=abc.ABCMeta):
+
+    @abc.abstractmethod
+    def start_oauth2_session(self) -> 'OAuth2Session':
+      ...
+
+  @datamodel
+  @implementation('github')
+  class GithubAuthenticator(Authenticator):
+    client_id: str
+    client_secret: str
+
+    def start_oauth2_session(self) -> 'OAuth2Session':
+      raise NotImplementedError
+
+  github = GithubAuthenticator('id', 'secret')
+  payload = {'type': 'github', 'client_id': 'id', 'client_secret': 'secret'}
+
+  assert to_json(github, Authenticator) == payload
+  assert from_json(Authenticator, payload) == github
