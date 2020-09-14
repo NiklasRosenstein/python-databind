@@ -36,6 +36,35 @@ assert person.name == 'John Wick'
 print(json.to_str(person))
 ```
 
+Databind also makes it easy to define configurable plugin systems:
+
+```python
+import abc
+from databind.core import datamodel, interface, implementation
+from databind.json import from_json, to_json
+
+@interface
+class Authenticator(metaclass=abc.ABCMeta):
+
+  @abc.abstractmethod
+  def start_oauth2_session(self) -> 'OAuth2Session':
+    ...
+
+@datamodel
+@implementation('github')
+class GithubAuthenticator(Authenticator):
+  client_id: str
+  client_secret: str
+
+  # ...
+
+github = GithubAuthenticator('id', 'secret')
+payload = {'type': 'github', 'client_id': 'id', 'client_secret': 'secret'}
+
+assert to_json(github, Authenticator) == payload
+assert from_json(Authenticator, payload) == github
+```
+
 ---
 
 <p align="center">Copyright &copy; 2020 &ndash; Niklas Rosenstein</p>

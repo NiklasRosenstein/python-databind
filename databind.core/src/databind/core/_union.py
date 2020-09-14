@@ -1,12 +1,12 @@
 
 import abc
 import dataclasses
-from typing import Dict, List, Type, Union, get_type_hints
+from typing import Dict, List, Optional, Type, Union, get_type_hints
 from .utils import type_repr
 
 __all__ = [
-  'UnionTypeError',
   'UnionResolver',
+  'UnionTypeError',
 ]
 
 
@@ -55,12 +55,12 @@ class _MappingUnionResolverMixin(UnionResolver):
     del self._mapping[type_name]
 
   def __eq__(self, other):
-    if not isinstance(other, StaticUnionResolver):
+    if not isinstance(other, _MappingUnionResolverMixin):
       return False
     return self._mapping == other._mapping
 
   def __ne__(self, other):
-    if not isinstance(other, StaticUnionResolver):
+    if not isinstance(other, _MappingUnionResolverMixin):
       return True
     return self._mapping != other._mapping
 
@@ -98,3 +98,15 @@ class ClassUnionResolver(_MappingUnionResolverMixin):
   @property
   def _mapping(self) -> Dict[str, Type]:
     return get_type_hints(self._cls)
+
+
+class InterfaceUnionResolver(_MappingUnionResolverMixin):
+
+  def __init__(self, mapping: Optional[Dict[str, Type]] = None) -> None:
+    self._mapping = mapping or {}
+
+  def register_implementation(self, name: str, impl: Type) -> None:
+    assert isinstance(impl, type), 'implementations must be types'
+    if name in self._mapping:
+      raise ValueError(f'an implementation with name {name!r} is already defined')
+    self._mapping[name] = impl

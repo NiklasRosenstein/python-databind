@@ -11,7 +11,7 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple,
 
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 
-from ._union import UnionResolver, ClassUnionResolver, StaticUnionResolver
+from ._union import UnionResolver, ClassUnionResolver, InterfaceUnionResolver, StaticUnionResolver
 from .utils import type_repr
 
 T = TypeVar('T')
@@ -20,16 +20,18 @@ TypeHint = Any  # Supposed to represent the type of a Python type hint.
 uninitialized = object()  # Placeholder object to inidicate that a field does not actually have a default.
 
 __all__ = [
-  'UnionMetadata',
-  'ModelMetadata',
-  'FieldMetadata',
-  'uniontype',
   'datamodel',
-  'field',
   'enumerate_fields',
+  'FieldMetadata',
+  'field',
+  'implementation',
+  'interface',
   'is_datamodel',
   'is_uniontype',
+  'ModelMetadata',
+  'uniontype',
   'TypeHint',
+  'UnionMetadata',
 ]
 
 
@@ -274,7 +276,7 @@ class UnionMetadata(BaseMetadata):
 
 
 def uniontype(
-  resolver: Union[UnionResolver, Dict[str, Type], Type] = None,
+  resolver: Union[UnionResolver, Dict[str, Type], Type, None] = None,
   container: bool = False,
   type_field: str = None,
   **kwargs
@@ -295,7 +297,6 @@ def uniontype(
   cls = None
   if isinstance(resolver, type):
     resolver, cls = None, resolver
-    #import pdb; pdb.set_trace()
 
   if container:
     if not type_field:
@@ -384,3 +385,63 @@ def uniontype(
 
 def is_uniontype(obj: Any) -> bool:
   return isinstance(BaseMetadata.for_type(obj), UnionMetadata)
+
+
+def interface(resolver: Union[UnionResolver, Type, None] = None, **kwargs):
+  """
+  This decorator is a specialized form of the #@uniontype() decorator that sets an abstract
+  base class up for extension by subclasses. Type hints of the base class are deserialized
+  as unions of all of it's registered subclasses.
+
+  Subclasses are registered based on the specified *resolver*. It defaults to an
+  #InterfaceUnionResolver, which recognizes only subclasses decorated with the #@implementation()
+  decorator.
+  """
+
+  def _decorator(type_: Type):
+    nonlocal resolver
+    if resolver is None:
+      resolver = InterfaceUnionResolver()
+    return uniontype(resolver, container=False, **kwargs)(type_)
+
+  if isinstance(resolver, type):
+    # @interface
+    resolver, type_ = None, resolver
+    return _decorator(type_)
+  else:
+    # @interface()
+    # @interface(resolver)
+    return _decorator
+
+
+def implementation(name: str, for_: Optional[Type] = None):
+  """
+  This decorator must be used on a subclass of a class decorated with #@interface() if the
+  default #InterfaceUnionResolver() is used. It will register the subclass as a member of
+  the interface union.
+  """
+
+  def _decorator(type_: Type):
+    if for_:
+      resolver = UnionMetadata.for_type(for_).resolver
+      if not isinstance(resolver, InterfaceUnionResolver):
+        raise RuntimeError(f'@implementation(for_={type_repr(for_)}) can only be used if the '
+          'for_ argument is a class decorated with @interface() and uses an InterfaceUnionResolver')
+      targets = [resolver]
+    else:
+      # Find the base-class(es) to register the implementation for.
+      targets = []
+      for cls in type_.__bases__:
+        resolver = UnionMetadata.for_type(cls).resolver
+        if isinstance(resolver, InterfaceUnionResolver):
+          targets.append(resolver)
+      if not targets:
+        raise RuntimeError('@imlpementation() can only be used if at least one base is '
+          'decorated with @interface() and uses an InterfaceUnionResolver')
+
+    for resolver in targets:
+      resolver.register_implementation(name, type_)
+
+    return type_
+
+  return _decorator
