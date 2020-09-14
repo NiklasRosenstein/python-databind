@@ -1,8 +1,0 @@
-release_date: null
-changes:
-- type: change
-  component: general
-  description: '`DecimalConverter` now behaves non-strict by default, but has an argument
-    to restore the previous behavior. In non-strict mode, when converting to Python,  `float`
-    and `int` values are cast to a string before conversion to a decimal'
-  fixes: []
