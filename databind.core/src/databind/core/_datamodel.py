@@ -71,13 +71,13 @@ class BaseMetadata:
   ATTRIBUTE = '__databind_metadata__'
 
   @classmethod
-  def for_type(cls: Type[T_BaseMetadata], type_: Type) -> T_BaseMetadata:
+  def for_type(cls: Type[T_BaseMetadata], type_: Type) -> Optional[T_BaseMetadata]:
     try:
       result = vars(type_).get(cast(BaseMetadata, cls).ATTRIBUTE)
     except TypeError:
-      return cls()
-    if result is None or not isinstance(result, cls):
-      result = cls()
+      return None
+    if result is not None and not isinstance(result, cls):
+      result = None
     return result
 
 
@@ -88,6 +88,13 @@ class ModelMetadata(BaseMetadata):
 
   #: A type definition which overrides the type for deserializing/serializing the datamodel.
   serialize_as: Union[Callable[[], TypeHint], TypeHint, None] = None
+
+  @classmethod
+  def for_type(cls, type_: Type) -> 'ModelMetadata':
+    result = super().for_type(type_)
+    if result is None and hasattr(type_, '__dataclass_fields__'):
+      result = cls()
+    return result
 
 
 @_dataclass
