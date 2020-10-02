@@ -3,7 +3,7 @@ import abc
 import datetime
 import decimal
 import enum
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Set, Union
 from databind.core import *
 from databind.json import *
 from nr.parsing.date import Duration, Iso8601
@@ -24,6 +24,11 @@ def test_int_converter():
   with raises(ConversionTypeError) as excinfo:
     from_json(int, "foo")
   assert str(excinfo.value) == '$: expected integer, got str'
+
+
+def test_set_converter():
+  assert from_json(Set[str], ['a', 'b', 'b', 'c']) == set(['a', 'b', 'c'])
+  assert to_json(set(['a', 'b', 'b', 'c']), Set[str]) == ['a', 'b', 'c']
 
 
 def test_decimal_converter():

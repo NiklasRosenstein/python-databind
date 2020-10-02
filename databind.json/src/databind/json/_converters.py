@@ -8,7 +8,7 @@ import traceback
 import types
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, TypeVar, Type, Union
+from typing import Any, Callable, Container, Dict, List, Optional, Set, TypeVar, Type, Union
 
 from databind.core import (
   datamodel,
@@ -408,31 +408,50 @@ class ModelConverter(Converter):
 
 class ArrayConverter(Converter):
 
+  def __init__(
+    self,
+    generic_base: Any = List,
+    concrete_base: Type[Container] = list,
+    py_type: Type[Container] = list,
+    json_type: Type[Container] = list,
+    post_from_python: Optional[Callable[[Container], Container]] = None,
+  ) -> None:
+
+    self.generic_base = generic_base
+    self.concrete_base = concrete_base
+    self.py_type = py_type
+    self.json_type = json_type
+    self.post_from_python = post_from_python
+
   def _do_conversion(self, value, context, method):
     # Catch subclasses of the typing.List generics. The instantiated generic with the type
     # parameter will be stored in __orig_bases__.
-    list_base = find_orig_base(context.type, List)
+    list_base = find_orig_base(context.type, self.generic_base)
     if list_base:
       item_type = list_base.__args__[0]
       constructor = context.type
 
     # Otherwise, catch instances of the typing.List generic.
-    elif getattr(context.type, '__origin__', None) in (list, List):
+    elif getattr(context.type, '__origin__', None) in (self.concrete_base, self.generic_base):
       # For the List generic.
       item_type = context.type.__args__[0]
-      constructor = list
+      constructor = self.py_type
 
     else:
       raise RuntimeError(f'unsure how to handle type {type_repr(context.type)}')
 
-    if not isinstance(value, Sequence):
+    if not isinstance(value, Container):
       raise context.type_error(f'expected {type_repr(context.type)} (as sequence), got {type_repr(type(value))}')
 
-    result = constructor() if method == 'to_python' else list()
+    result = constructor() if method == 'to_python' else self.json_type()
+    result_append = result.append if hasattr(result, 'append') else result.add
     for index, item in enumerate(value):
       # Note: forwarding the FieldMetadata from the parent to the items.
       child_context = context.child(index, item_type, item, context.field_metadata)
-      result.append(getattr(child_context, method)())
+      result_append(getattr(child_context, method)())
+
+    if method == 'from_python' and self.post_from_python:
+      result = self.post_from_python(result)
 
     return result
 
@@ -593,7 +612,8 @@ def register_json_converters(registry: Registry, strict: bool = True) -> None:
   registry.register_converter(int, IntConverter(strict))
   registry.register_converter(str, StringConverter())
   registry.register_converter(float, FloatConverter(strict))
-  registry.register_converter(List, ArrayConverter())
+  registry.register_converter(List, ArrayConverter(List, list, list, list))
+  registry.register_converter(Set, ArrayConverter(Set, set, set, list, sorted))
   registry.register_converter(Dict, ObjectConverter())
   registry.register_converter(decimal.Decimal, DecimalConverter(False))
   registry.register_converter(enum.Enum, EnumConverter())
