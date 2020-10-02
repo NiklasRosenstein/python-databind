@@ -247,11 +247,10 @@ def normalize_type(type_: Any, keep_parametrized: bool) -> Type:
   """
 
   # Map type's decoreated with uniontype/datamodel to the respective functions.
-  metadata = BaseMetadata.for_type(type_)
-  if isinstance(metadata, UnionMetadata):
-    type_ = uniontype
-  elif isinstance(metadata, ModelMetadata):
+  if ModelMetadata.for_type(type_):
     type_ = datamodel
+  elif UnionMetadata.for_type(type_):
+    type_ = uniontype
 
   # Resolve type hints to the original annotated form.
   # NOTE: In Python 3.6, Dict.__origin__ is None whereas in Python 3.7 it is dict.
