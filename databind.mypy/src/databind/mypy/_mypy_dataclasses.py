@@ -3,9 +3,17 @@
 Code copied from #mypy.plugins.dataclasses and adapter to work with the #databind.core package.
 """
 
+import typing as t
 import mypy
 from mypy.plugins.dataclasses import *
 from mypy.plugins.dataclasses import _get_decorator_bool_argument
+
+
+def no_rhs(context: t.Optional[mypy.nodes.Context] = None) -> mypy.nodes.TempNode:
+    node = mypy.nodes.TempNode(mypy.types.AnyType(mypy.types.TypeOfAny.special_form), no_rhs=True)
+    if context:
+        node.set_line(context)
+    return node
 
 
 class DataclassTransformer:
@@ -187,12 +195,14 @@ class DataclassTransformer:
                 # Make all non-default attributes implicit because they are de-facto set
                 # on self in the generated __init__(), not in the class body.
                 sym.implicit = True
+                stmt.rvalue = no_rhs(stmt.rvalue)
 
             # FORK: replace rvalue with default or default_factory
             elif 'default' in field_args:
                 stmt.rvalue = field_args['default']
             elif 'default_factory' in field_args:
                 stmt.rvalue = mypy.nodes.CallExpr(field_args['default_factory'], [], [], [])
+                stmt.rvalue.set_line(field_args['default_factory'])
 
             known_attrs.add(lhs.name)
             attrs.append(DataclassAttribute(
