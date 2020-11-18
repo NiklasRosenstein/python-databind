@@ -3,7 +3,7 @@ import abc
 import contextlib
 import typing
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, Generator, Generic, List, Mapping, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, Mapping, Optional, Tuple, Type, TypeVar, Union
 from ._datamodel import (
   BaseMetadata,
   FieldMetadata,
@@ -18,8 +18,8 @@ from .utils import ChainDict, type_repr
 try:
   from typing import get_args
 except ImportError:
-  def get_args(v: Any) -> t.Tuple[t.Any, ...]:
-    return v.__args__
+  def get_args(tp: Any) -> Tuple[Any, ...]:
+    return tp.__args__
 
 
 T = TypeVar('T')
