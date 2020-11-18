@@ -89,13 +89,13 @@ def test_optional_converter():
   assert from_json(Optional[int], 242) == 242
   with raises(ConversionTypeError) as excinfo:
     from_json(Optional[int], "foo")
-  assert str(excinfo.value).splitlines()[0] == '$: expected typing.Union[int, NoneType], got str'
+  assert str(excinfo.value).splitlines()[0] == '$: expected typing.Optional[int], got str'
 
   assert to_json(None, Optional[int]) == None
   assert to_json(242, Optional[int]) == 242
   with raises(ConversionTypeError) as excinfo:
     to_json("foo", Optional[int])
-  assert str(excinfo.value).splitlines()[0] == '$: expected typing.Union[int, NoneType], got str'
+  assert str(excinfo.value).splitlines()[0] == '$: expected typing.Optional[int], got str'
 
 
 def test_mixtype_converter():
