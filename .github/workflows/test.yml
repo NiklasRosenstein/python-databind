@@ -22,7 +22,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Upgrade Pip, install Pipx and Shut
       run: |
-        python -m pip install --upgrade pip pipx -q
+        python -m pip install -q --upgrade pip pytest -e databind.binary -e databind.core -e databind.json -e databind.yaml
     - name: Run tests
       run: |
-        pipx run --spec shut==0.8.0 shut mono test --isolate
+        pytest
