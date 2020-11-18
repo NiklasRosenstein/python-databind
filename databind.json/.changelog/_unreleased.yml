@@ -2,9 +2,5 @@ release_date: null
 changes:
 - type: fix
   component: general
-  description: Python 3.9 support in type hint normalization
-  fixes: []
-- type: fix
-  component: general
   description: Fix mypy errors
   fixes: []
