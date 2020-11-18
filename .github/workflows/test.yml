@@ -23,7 +23,6 @@ jobs:
     - name: Upgrade Pip, install Pipx and Shut
       run: |
         python -m pip install --upgrade pip pipx -q
-        pipx install shut==0.7.2
     - name: Run tests
       run: |
-        ~/.local/bin/shut mono test --isolate
+        pipx run --spec shut==0.8.0 shut mono test --isolate
