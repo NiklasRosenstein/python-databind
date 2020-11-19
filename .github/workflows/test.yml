@@ -16,13 +16,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
     - name: Upgrade Pip and Packages
       run: |
-        python -m pip install --upgrade pip pytest -e databind.binary -e databind.core -e databind.json -e databind.yaml
+        python -m pip install -q --upgrade pip pytest
+        pip install -e databind.core -e databind.json -e databind.tagline -e databind.binary -e databind.yaml
     - name: Run tests
       run: |
         pytest
