@@ -274,7 +274,7 @@ def normalize_type(type_: Any, keep_parametrized: bool) -> Type:
   if getattr(type_, '__origin__', None) and (not keep_parametrized or get_args(type_)):
     type_ = type_.__origin__
 
-  # Since Python 3.6, parametrized type hint's __origin__ points to the builtin Python type,
+  # Since Python 3.9, parametrized type hint's __origin__ points to the builtin Python type,
   # meaning that in the previous block we may have normalized t.Set[int] down to set, but we
   # would actually like to have t.Set.
   type_ = _SPECIAL_FORM_ORIGIN_REVERSE_MAP.get(type_, type_)
