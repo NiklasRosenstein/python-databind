@@ -1,8 +1,9 @@
 
 import enum
 import string
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
+from databind.json import JsonType
 from nr.parsing import core as _parsing
 
 
@@ -51,7 +52,7 @@ class Loader:
     self.scanner = _parsing.Scanner(text)
     self.lexer = _parsing.Lexer(self.scanner, self.RULES)
 
-  def parse(self):
+  def parse(self) -> JsonType:
     result = self._parse_expression(ValueType.ANY)
     if self.lexer.token.type != _parsing.eof:
       raise self._unexpected_token(_parsing.eof)
@@ -123,11 +124,11 @@ class Loader:
     self.lexer.next()
     return result
 
-  def _unexpected_token(self, expected: str) -> ParseError:
+  def _unexpected_token(self, expected: Union[Token, str]) -> ParseError:
     token = self.lexer.token
     raise ParseError(self.filename, token.cursor,
       f'unexpected token {token.type}, expected {expected}')
 
 
-def loads(string: str, filename: Optional[str] = None) -> ValueType:
+def loads(string: str, filename: Optional[str] = None) -> JsonType:
   return Loader(string, filename).parse()

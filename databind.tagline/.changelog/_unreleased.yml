@@ -4,3 +4,7 @@ changes:
   component: general
   description: Indicate that package is typed
   fixes: []
+- type: fix
+  component: general
+  description: update type hints
+  fixes: []
