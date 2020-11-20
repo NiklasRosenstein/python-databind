@@ -1,8 +1,9 @@
 
 import abc
 import contextlib
+import typing
 from dataclasses import dataclass as _dataclass
-from typing import Any, Dict, Generator, Generic, List, Mapping, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generator, Generic, List, Mapping, Optional, Tuple, Type, TypeVar, Union
 from ._datamodel import (
   BaseMetadata,
   FieldMetadata,
@@ -14,7 +15,23 @@ from ._datamodel import (
 from ._locator import Locator
 from .utils import ChainDict, type_repr
 
+try:
+  from typing import get_args
+except ImportError:
+  def get_args(tp: Any) -> Tuple[Any, ...]:
+    return tp.__args__
+
+
 T = TypeVar('T')
+
+# Since Python 3.9, the __origin__ of a parametrized typing.Generic points to the Python
+# builtin type rather than the unparametrized Generic. This is a mapping that reverses the
+# Generic -> builtin type mapping.
+_SPECIAL_FORM_ORIGIN_REVERSE_MAP = {
+  v.__origin__: v
+  for v in vars(typing).values()
+  if hasattr(v, '__origin__')
+}
 
 __all__ = [
   'ConversionError',
@@ -254,7 +271,12 @@ def normalize_type(type_: Any, keep_parametrized: bool) -> Type:
 
   # Resolve type hints to the original annotated form.
   # NOTE: In Python 3.6, Dict.__origin__ is None whereas in Python 3.7 it is dict.
-  if getattr(type_, '__origin__', None) and (not keep_parametrized or type_.__parameters__):
+  if getattr(type_, '__origin__', None) and (not keep_parametrized or get_args(type_)):
     type_ = type_.__origin__
+
+  # Since Python 3.9, parametrized type hint's __origin__ points to the builtin Python type,
+  # meaning that in the previous block we may have normalized t.Set[int] down to set, but we
+  # would actually like to have t.Set.
+  type_ = _SPECIAL_FORM_ORIGIN_REVERSE_MAP.get(type_, type_)
 
   return type_

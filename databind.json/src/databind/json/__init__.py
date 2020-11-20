@@ -78,5 +78,5 @@ def to_stream(
   type_: Type[T]=None,
   field_metadata: FieldMetadata = None,
   registry: Registry=None,
-) -> str:
-  return json.dump(to_json(value, type_, field_metadata, registry), stream)
+) -> None:
+  json.dump(to_json(value, type_, field_metadata, registry), stream)
