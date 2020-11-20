@@ -45,6 +45,8 @@ class _MappingUnionResolverMixin(UnionResolver):
   Wraps a dictionary for resolving union members.
   """
 
+  _mapping: Dict[str, Type]
+
   def __getitem__(self, type_name: str) -> Type:
     return self._mapping[type_name]
 
@@ -96,7 +98,7 @@ class ClassUnionResolver(_MappingUnionResolverMixin):
     self._cls = cls
 
   @property
-  def _mapping(self) -> Dict[str, Type]:
+  def _mapping(self) -> Dict[str, Type]:  # type: ignore
     return get_type_hints(self._cls)
 
 

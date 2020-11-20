@@ -12,7 +12,7 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple,
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 
 from ._union import UnionResolver, ClassUnionResolver, InterfaceUnionResolver, StaticUnionResolver
-from .utils import type_repr
+from .utils import type_repr, expect
 
 T = TypeVar('T')
 T_BaseMetadata = TypeVar('T_BaseMetadata', bound='BaseMetadata')
@@ -90,7 +90,7 @@ class ModelMetadata(BaseMetadata):
   serialize_as: Union[Callable[[], TypeHint], TypeHint, None] = None
 
   @classmethod
-  def for_type(cls, type_: Type) -> 'ModelMetadata':
+  def for_type(cls, type_: Type) -> Optional['ModelMetadata']:
     result = super().for_type(type_)
     if result is None and hasattr(type_, '__dataclass_fields__'):
       result = cls()
@@ -413,7 +413,8 @@ def interface(resolver: Union[UnionResolver, Type, None] = None, **kwargs):
 
   if isinstance(resolver, type):
     # @interface
-    resolver, type_ = None, resolver
+    type_ = resolver
+    resolver = None
     return _decorator(type_)
   else:
     # @interface()
@@ -430,7 +431,7 @@ def implementation(name: str, for_: Optional[Type] = None):
 
   def _decorator(type_: Type):
     if for_:
-      resolver = UnionMetadata.for_type(for_).resolver
+      resolver = expect(UnionMetadata.for_type(for_)).resolver
       if not isinstance(resolver, InterfaceUnionResolver):
         raise RuntimeError(f'@implementation(for_={type_repr(for_)}) can only be used if the '
           'for_ argument is a class decorated with @interface() and uses an InterfaceUnionResolver')
@@ -439,7 +440,7 @@ def implementation(name: str, for_: Optional[Type] = None):
       # Find the base-class(es) to register the implementation for.
       targets = []
       for cls in type_.__bases__:
-        resolver = UnionMetadata.for_type(cls).resolver
+        resolver = expect(UnionMetadata.for_type(cls)).resolver
         if isinstance(resolver, InterfaceUnionResolver):
           targets.append(resolver)
       if not targets:

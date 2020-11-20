@@ -8,7 +8,7 @@ import traceback
 import types
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Callable, Container, Dict, List, Optional, Set, TypeVar, Type, Union
+from typing import cast, Any, Callable, Container, Dict, Iterable, List, Optional, Set, TypeVar, Type, Union
 
 from databind.core import (
   datamodel,
@@ -33,9 +33,9 @@ T = TypeVar('T')
 logger = logging.getLogger(__name__)
 
 
-def _get_log_level(logger: logging.Logger) -> int:
-  while logger.level == 0 and logger:
-    logger = logger.parent
+def _get_log_level(logger: Optional[logging.Logger]) -> int:
+  while logger and logger.level == 0:
+    logger = cast(Optional[logging.Logger], logger.parent)
   if logger:
     return logger.level
   return 0
@@ -414,7 +414,7 @@ class ArrayConverter(Converter):
     concrete_base: Type[Container] = list,
     py_type: Type[Container] = list,
     json_type: Type[Container] = list,
-    post_from_python: Optional[Callable[[Container], Container]] = None,
+    post_from_python: Optional[Callable[[Iterable], Container]] = None,
   ) -> None:
 
     self.generic_base = generic_base

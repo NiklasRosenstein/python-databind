@@ -1,6 +1,6 @@
 
 import types
-from typing import Any, Callable, Iterable, Iterator, Optional, MutableMapping, Type, TypeVar, Union, overload
+from typing import Any, Callable, Iterable, Iterator, Optional, MutableMapping, Tuple, Type, TypeVar, Union, overload
 from collections import abc
 
 __all__ = [
@@ -12,6 +12,15 @@ __all__ = [
 T = TypeVar('T')
 KT = TypeVar('KT')
 VT = TypeVar('VT')
+
+
+def expect(val: Optional[T]) -> T:
+  """
+  Asserts that *val* is not #None and returns it.
+  """
+
+  assert val is not None, "expected not-None value"
+  return val
 
 
 def find(predicate: Callable[[Optional[T]], bool], it: Iterable[T]) -> Optional[T]:
@@ -46,7 +55,7 @@ def find_orig_base(type_: Type, generic_type: Any) -> Optional[Any]:
 
   bases = getattr(type_, '__orig_bases__', [])
 
-  generic_choices = (generic_type,)
+  generic_choices: Tuple[Any, ...] = (generic_type,)
   if generic_type.__origin__:
     generic_choices += (generic_type.__origin__,)
 
