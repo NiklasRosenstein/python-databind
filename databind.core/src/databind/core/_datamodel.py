@@ -447,6 +447,13 @@ def implementation(name: str, for_: Optional[Type] = None):
         raise RuntimeError('@imlpementation() can only be used if at least one base is '
           'decorated with @interface() and uses an InterfaceUnionResolver')
 
+    # The parent class' metadata will be a UnionMetadata, which is inherted by `type_`.
+    # We override the metadata of `type_` to None if it's not already set explicitly
+    # to reduce the confusion when an error occurs because no metadata is provided by
+    # this class.
+    if BaseMetadata.ATTRIBUTE not in vars(type_):
+      setattr(type_, BaseMetadata.ATTRIBUTE, None)
+
     for resolver in targets:
       resolver.register_implementation(name, type_)
 
