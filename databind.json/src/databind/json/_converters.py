@@ -597,6 +597,15 @@ class UnionConverter(Converter):
     return result
 
 
+class AnyConverter(Converter):
+
+  def from_python(self, value, context):
+    return value
+
+  def to_python(self, value, context):
+    return value
+
+
 def register_json_converters(registry: Registry, strict: bool = True) -> None:
   """
   Register the JSON converts to the specified *registry*.
@@ -623,3 +632,4 @@ def register_json_converters(registry: Registry, strict: bool = True) -> None:
   registry.register_converter(datamodel, ModelConverter())
   registry.register_converter(uniontype, UnionConverter())
   registry.register_converter(Union, MixtypeConverter())
+  registry.register_converter(Any, AnyConverter())
