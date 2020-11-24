@@ -55,11 +55,19 @@ class _PodConverter(Converter):
   def __init__(self, strict: bool = True) -> None:
     self.strict = strict
 
+  def _relaxed(self, context: Context) -> bool:
+    if context.field_metadata:
+      if context.field_metadata.relaxed:
+        return True
+      elif context.field_metadata.strict:
+        return False
+    return not self.strict
+
 
 class BoolConverter(_PodConverter):
 
   def from_python(self, value, context):
-    if not isinstance(value, context.type) and self.strict:
+    if not isinstance(value, context.type) and not self._relaxed(context):
       raise context.type_error(f'expected {type_repr(context.type)}, got {type_repr(type(value))}')
     return bool(value)
 
@@ -73,7 +81,7 @@ class IntConverter(_PodConverter):
       return value.__index__()
     if isinstance(value, int):
       return value
-    if not self.strict and isinstance(value, str):
+    if self._relaxed(context) and isinstance(value, str):
       try:
         return int(value)
       except ValueError:
@@ -98,7 +106,7 @@ class FloatConverter(_PodConverter):
   def from_python(self, value: Any, context: Context) -> float:
     if isinstance(value, (float, int)):
       return float(value)
-    if not self.strict and isinstance(value, str):
+    if self._relaxed(context) and isinstance(value, str):
       try:
         return float(value)
       except ValueError:
