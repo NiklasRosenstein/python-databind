@@ -243,12 +243,14 @@ class Registry:
     if normalized != type_:
       return self.get_converter(normalized)
 
-    # Try base classes.
-    for base in getattr(type_, '__bases__', ()):
-      try:
-        return self.get_converter(base)
-      except UnknownTypeError:
-        pass
+    # Try base classes. We don't need to do this if the __databind_metadata__ was set to None
+    # in this particular type (as is done by #@implementation()).
+    if vars(type_).get(BaseMetadata.ATTRIBUTE, NotImplemented) is not None:
+      for base in getattr(type_, '__bases__', ()):
+        try:
+          return self.get_converter(base)
+        except UnknownTypeError:
+          pass
 
     raise UnknownTypeError(f'no converter found for type {type_repr(type_)}')
 
