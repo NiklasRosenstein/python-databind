@@ -32,7 +32,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.tagline',
-  version = '0.1.2',
+  version = '0.1.3',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'De/serialize strings of comma-separated key-value pairs using Python type hints.',
