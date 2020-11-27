@@ -1,6 +1,6 @@
-name: "databind.json"
-version: "0.9.0"
-description: "Bind object-oriented data models to JSON data."
+name: databind.json
+version: 0.9.0
+description: Bind object-oriented data models to JSON data.
 typed: true
 requirements:
 - python ^3.6

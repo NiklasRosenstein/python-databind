@@ -1,6 +1,6 @@
 name: databind.yaml
 version: 0.1.2
-description: Package description here.
+description: De/serialize YAML payloads using Python type hints.
 typed: true
 requirements:
 - python ^3.5
