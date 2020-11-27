@@ -30,7 +30,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.binary',
-  version = '0.2.0',
+  version = '0.2.1',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Bind object-oriented data models to binary data encoded with the struct module.',
