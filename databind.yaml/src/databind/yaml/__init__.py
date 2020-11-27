@@ -1,6 +1,6 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 from typing import Any, Dict, Optional, TextIO, Type, TypeVar, Union
 from databind import json as _json

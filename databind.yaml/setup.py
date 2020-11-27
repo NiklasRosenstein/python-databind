@@ -32,7 +32,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.yaml',
-  version = '0.1.2',
+  version = '0.1.3',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'De/serialize YAML payloads using Python type hints.',
