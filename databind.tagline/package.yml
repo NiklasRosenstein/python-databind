@@ -1,6 +1,5 @@
 name: databind.tagline
 version: 0.1.2
-author: Niklas Rosenstein <rosensteinniklas@gmail.com>
 description: Package description here.
 typed: true
 requirements:

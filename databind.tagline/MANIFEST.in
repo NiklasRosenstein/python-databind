@@ -2,4 +2,5 @@
 include package.yml
 include src/databind/tagline/py.typed
 include README.md
+include LICENSE.txt
 # }

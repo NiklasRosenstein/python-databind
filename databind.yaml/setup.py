@@ -7,6 +7,15 @@ import os
 import setuptools
 import sys
 
+def _tempcopy(src, dst):
+  import atexit, shutil
+  if not os.path.isfile(dst):
+    shutil.copyfile(src, dst)
+    atexit.register(lambda: os.remove(dst))
+
+
+_tempcopy('../LICENSE.txt', 'LICENSE.txt')
+
 readme_file = 'README.md'
 if os.path.isfile(readme_file):
   with io.open(readme_file, encoding='utf8') as fp:
@@ -29,8 +38,8 @@ setuptools.setup(
   description = 'Package description here.',
   long_description = long_description,
   long_description_content_type = 'text/markdown',
-  url = None,
-  license = None,
+  url = 'https://github.com/NiklasRosenstein/python-databind',
+  license = 'MIT',
   packages = setuptools.find_packages('src', ['test', 'test.*', 'tests', 'tests.*', 'docs', 'docs.*']),
   package_dir = {'': 'src'},
   include_package_data = True,
