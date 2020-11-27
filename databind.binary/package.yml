@@ -1,6 +1,7 @@
-name: "databind.binary"
-version: "0.2.0"
-description: "Bind object-oriented data models to binary data encoded with the struct module."
+name: databind.binary
+version: 0.2.0
+description: Bind object-oriented data models to binary data encoded with the struct
+  module.
 typed: true
 requirements:
 - python ^3.6

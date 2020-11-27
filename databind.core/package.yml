@@ -1,6 +1,7 @@
-name: "databind.core"
-version: "0.8.0"
-description: "Databind is a library inspired by Jackson-databind to describe and bind data models for object-oriented programming."
+name: databind.core
+version: 0.8.0
+description: Databind is a library inspired by Jackson-databind to describe and bind
+  data models for object-oriented programming.
 typed: true
 requirements:
 - python ^3.6
