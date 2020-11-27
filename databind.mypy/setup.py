@@ -30,7 +30,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.mypy',
-  version = '0.0.1',
+  version = '0.0.2',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'MyPy plugin for the "databind" module.',
