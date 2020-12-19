@@ -1,0 +1,9 @@
+release_date: null
+changes:
+- type: feature
+  component: general
+  description: add `ImportingUnionResolver` and `EntrypointUnionResolver`, both which
+    can also be used with the `@interface` decorator. The `resolver` argument now
+    accepts a string which will be converted into a `UnionResolver` (supported formats
+    are `import` and `entrypoint:<group-name>`)
+  fixes: []
