@@ -11,7 +11,8 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple,
 
 from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
 
-from ._union import UnionResolver, ClassUnionResolver, InterfaceUnionResolver, StaticUnionResolver
+from ._union import (UnionResolver, ClassUnionResolver, InterfaceUnionResolver,
+  StaticUnionResolver, from_resolver_spec)
 from .utils import type_repr, expect
 
 T = TypeVar('T')
@@ -283,7 +284,7 @@ class UnionMetadata(BaseMetadata):
 
 
 def uniontype(
-  resolver: Union[UnionResolver, Dict[str, Type], Type, None] = None,
+  resolver: Union[UnionResolver, Dict[str, Type], Type, str, None] = None,
   container: bool = False,
   type_field: str = None,
   **kwargs
@@ -300,6 +301,9 @@ def uniontype(
   based on the type hints. The *type_field* will be used to store the type name in the
   container.
   """
+
+  if isinstance(resolver, str):
+    resolver = from_resolver_spec(resolver)
 
   cls = None
   if isinstance(resolver, type):
@@ -394,7 +398,7 @@ def is_uniontype(obj: Any) -> bool:
   return isinstance(BaseMetadata.for_type(obj), UnionMetadata)
 
 
-def interface(resolver: Union[UnionResolver, Type, None] = None, **kwargs):
+def interface(resolver: Union[UnionResolver, Type, str, None] = None, **kwargs):
   """
   This decorator is a specialized form of the #@uniontype() decorator that sets an abstract
   base class up for extension by subclasses. Type hints of the base class are deserialized
@@ -403,6 +407,8 @@ def interface(resolver: Union[UnionResolver, Type, None] = None, **kwargs):
   Subclasses are registered based on the specified *resolver*. It defaults to an
   #InterfaceUnionResolver, which recognizes only subclasses decorated with the #@implementation()
   decorator.
+
+  Another common use case is to use the #Import
   """
 
   def _decorator(type_: Type):

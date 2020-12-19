@@ -1,6 +1,9 @@
 
 import abc
 import dataclasses
+import importlib
+from pkg_resources import iter_entry_points, EntryPoint
+
 from typing import Dict, List, Optional, Type, Union, get_type_hints
 from .utils import type_repr
 
@@ -112,3 +115,66 @@ class InterfaceUnionResolver(_MappingUnionResolverMixin):
     if name in self._mapping:
       raise ValueError(f'an implementation with name {name!r} is already defined')
     self._mapping[name] = impl
+
+
+class ImportingUnionResolver(UnionResolver):
+  """
+  Resolves union members by their importable type name.
+  """
+
+  def type_for_name(self, type_name: str) -> Type:
+    module_name, member_name = type_name.rpartition('.')[::2]
+    module = importlib.import_module(module_name)
+    return getattr(module, member_name)  # TODO(NiklasRosenstein): Validation?
+
+  def name_for_type(self, type: Type) -> str:
+    return f'{type.__module__}.{type.__name__}'
+
+  def members(self) -> List[str]:
+    raise NotImplementedError
+
+
+class EntrypointUnionResolver(UnionResolver):
+  """
+  Resolves union members from package entrypoints.
+  """
+
+  def __init__(self, group_name: str) -> None:
+    self.group_name = group_name
+    self._entrypoints: Optional[Dict[str, EntryPoint]] = None
+
+  @property
+  def entrypoints(self) -> Dict[str, EntryPoint]:
+    if self._entrypoints is None:
+      self._entrypoints = {}
+      for ep in iter_entry_points(self.group_name):
+        self._entrypoints[ep.name] = ep
+    return self._entrypoints
+
+  def type_for_name(self, type_name: str) -> Type:
+    return self.entrypoints[type_name].load()  # TODO(NiklasRosenstein): Validation?
+
+  def name_for_type(self, type_: Type) -> str:
+    for ep in self.entrypoints.values():
+      if ep.load() == type_:
+        return ep.name
+    raise UnionTypeError(f'type {type_repr(type_)} could not be resolved')
+
+  def members(self) -> List[str]:
+    return list(self.entrypoints.keys())
+
+
+def from_resolver_spec(spec: str) -> UnionResolver:
+  """
+  Creates a #UnionResolver from a string. The folllwing spec formats are supported:
+
+  * `import`
+  * `entrypoint:<group-name>`
+  """
+
+  if spec == 'import':
+    return ImportingUnionResolver()
+  elif spec.startswith('entrypoint:'):
+    return EntrypointUnionResolver(spec[len('entrypoint:'):])
+  else:
+    raise ValueError(f'unrecognized resolver spec: {spec!r}')
