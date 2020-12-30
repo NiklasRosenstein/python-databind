@@ -11,9 +11,11 @@ __all__ = [
   'register_json_converters',
   'registry',
   'from_json',
-  'to_json',
   'from_str',
+  'from_stream',
+  'to_json',
   'to_str',
+  'to_stream',
 ]
 
 T = TypeVar('T')
