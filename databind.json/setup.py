@@ -34,7 +34,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.json',
-  version = '0.9.1',
+  version = '0.10.0',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Bind object-oriented data models to JSON data.',
