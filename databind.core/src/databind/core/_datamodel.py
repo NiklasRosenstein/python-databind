@@ -160,9 +160,13 @@ def datamodel(*args, **kwargs):
 
   def _before_dataclass(cls):
     # Allow non-default arguments to follow default-arguments.
-    for key in getattr(cls, '__annotations__', {}).keys():
+    existing_fields = getattr(cls, '__dataclass_fields__', {})
+    annotations = getattr(cls, '__annotations__', {})
+    if '__annotations__' not in cls.__dict__:
+      cls.__annotations__ = annotations
+    for key in annotations.keys():
       if not hasattr(cls, key):
-        f = field()
+        f = existing_fields.get(key, field())
         setattr(cls, key, f)
       else:
         f = getattr(cls, key)

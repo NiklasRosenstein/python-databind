@@ -13,3 +13,7 @@ changes:
     the `for_` parameter when decorating a class with multiple bases where only one
     base is a `@uniontype`'
   fixes: []
+- type: fix
+  component: general
+  description: fix inheritance of fields from `@dataclass` parent classes
+  fixes: []
