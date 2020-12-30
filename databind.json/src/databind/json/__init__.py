@@ -16,9 +16,11 @@ __all__ = [
   'to_json',
   'to_str',
   'to_stream',
+  'cast',
 ]
 
 T = TypeVar('T')
+R = TypeVar('R')
 JsonType = Union[dict, list, str, int, float]
 
 registry = Registry(None)
@@ -82,3 +84,12 @@ def to_stream(
   registry: Registry=None,
 ) -> None:
   json.dump(to_json(value, type_, field_metadata, registry), stream)
+
+
+def cast(
+  target_type: Type[R],
+  value: T,
+  type_: Optional[Type[T]] = None,
+  registry: Registry = None,
+) -> R:
+  return from_json(target_type, to_json(value, type_, registry=registry), registry=registry)
