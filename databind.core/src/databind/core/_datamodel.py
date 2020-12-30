@@ -446,9 +446,9 @@ def implementation(name: str, for_: Optional[Type] = None):
       # Find the base-class(es) to register the implementation for.
       targets = []
       for cls in type_.__bases__:
-        resolver = expect(UnionMetadata.for_type(cls)).resolver
-        if isinstance(resolver, InterfaceUnionResolver):
-          targets.append(resolver)
+        metadata = UnionMetadata.for_type(cls)
+        if metadata and isinstance(metadata.resolver, InterfaceUnionResolver):
+          targets.append(metadata.resolver)
       if not targets:
         raise RuntimeError('@imlpementation() can only be used if at least one base is '
           'decorated with @interface() and uses an InterfaceUnionResolver')

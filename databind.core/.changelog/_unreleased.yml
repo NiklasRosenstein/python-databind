@@ -7,3 +7,9 @@ changes:
     accepts a string which will be converted into a `UnionResolver` (supported formats
     are `import` and `entrypoint:<group-name>`)
   fixes: []
+- type: fix
+  component: general
+  description: '`@implementation()` can now be used without explicitly specifying
+    the `for_` parameter when decorating a class with multiple bases where only one
+    base is a `@uniontype`'
+  fixes: []
