@@ -5,7 +5,36 @@ Code copied from #mypy.plugins.dataclasses and adapter to work with the #databin
 
 import typing as t
 import mypy
-from mypy.plugins.dataclasses import *
+from mypy.plugins.dataclasses import (
+    Argument,
+    AssignmentStmt,
+    CallExpr,
+    ClassDefContext,
+    DataclassAttribute,
+    Dict,
+    Expression,
+    Instance,
+    List,
+    NameExpr,
+    NoneType,
+    Optional,
+    PlaceholderNode,
+    RefExpr,
+    SymbolTableNode,
+    TempNode,
+    Tuple,
+    TypeInfo,
+    TypeVarDef,
+    TypeVarExpr,
+    TypeVarType,
+    Var,
+    add_method,
+    get_proper_type,
+    make_wildcard_trigger,
+    ARG_POS,
+    MDEF,
+    SELF_TVAR_NAME,
+)
 from mypy.plugins.dataclasses import _get_decorator_bool_argument
 
 
@@ -213,6 +242,7 @@ class DataclassTransformer:
                 line=stmt.line,
                 column=stmt.column,
                 type=sym.type,
+                info=cls.info,
             ))
 
         # Next, collect attributes belonging to any class in the MRO

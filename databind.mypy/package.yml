@@ -3,4 +3,4 @@ version: 0.0.2
 description: MyPy plugin for the "databind" module.
 requirements:
 - python ^3.6
-- mypy ^0.782
+- mypy ^0.800
