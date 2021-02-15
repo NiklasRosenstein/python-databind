@@ -28,7 +28,7 @@ else:
   long_description = None
 
 requirements = [
-  'mypy >=0.782.0,<1.0.0',
+  'mypy >=0.800.0,<1.0.0',
 ]
 
 setuptools.setup(
