@@ -42,17 +42,24 @@ def test_uniontype_with_static_resolver():
   metadata = B.__databind_metadata__
   assert isinstance(metadata, UnionMetadata)
 
-  assert isinstance(B.int, property)
-  assert isinstance(B.str, property)
-
-  assert B('int', 42).int == 42
+  assert B(int=42).int == 42
   with raises(TypeError) as excinfo:
-    B('int', 42).str
-  assert str(excinfo.value) == f"{type_repr(B)}.str cannot be accessed if type == 'int'"
+    B(int=42).str
+  assert str(excinfo.value) == f"B.str cannot be accessed when type is .int"
 
-  b = B('int', 42)
+  b = B(int=42)
   b.str = 'foo'
   assert b.type == 'str'
+
+  @uniontype(container=True)
+  class C(B):
+    number: int
+    float: float
+
+  assert B(int=42) == B(int=42)
+  assert B(int=42) != B(int=43)
+  assert B(int=42) == C(int=42)
+  assert B(int=42) != C(number=42)
 
 
 def test_interface_and_implementation_decorator():

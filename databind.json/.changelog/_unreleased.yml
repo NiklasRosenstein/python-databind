@@ -1,0 +1,6 @@
+release_date: null
+changes:
+- type: change
+  component: general
+  description: Update union construction during deserialization
+  fixes: []
