@@ -227,18 +227,18 @@ def test_uniontype_converter_class_resolver():
     int: Optional[int]
     str: str
 
-  assert from_json(A, {'T': 'int', 'int': 42}) == A('int', 42)
-  assert from_json(A, {'T': 'int', 'int': 42}) != A('int', 43)
-  assert from_json(A, {'T': 'int', 'int': 42}) != A('str', "foo")
-  assert from_json(A, {'T': 'int', 'int': None}) == A('int', None)
-  assert from_json(A, {'T': 'str', 'str': "foo"}) == A('str', "foo")
+  assert from_json(A, {'T': 'int', 'int': 42}) == A(int=42)
+  assert from_json(A, {'T': 'int', 'int': 42}) != A(int=43)
+  assert from_json(A, {'T': 'int', 'int': 42}) != A(str="foo")
+  assert from_json(A, {'T': 'int', 'int': None}) == A(int=None)
+  assert from_json(A, {'T': 'str', 'str': "foo"}) == A(str="foo")
   with raises(ConversionTypeError) as excinfo:
     from_json(A, {'T': 'str', 'str': None})
   assert str(excinfo.value) == "$.str: expected str, got NoneType"
 
-  assert to_json(A('int', 42)) == {'T': 'int', 'int': 42}
-  assert to_json(A('int', None)) == {'T': 'int', 'int': None}
-  assert to_json(A('str', "foo")) == {'T': 'str', 'str': "foo"}
+  assert to_json(A(int=42)) == {'T': 'int', 'int': 42}
+  assert to_json(A(int=None)) == {'T': 'int', 'int': None}
+  assert to_json(A(str="foo")) == {'T': 'str', 'str': "foo"}
 
 
 def test_uniontype_converter_with_models():

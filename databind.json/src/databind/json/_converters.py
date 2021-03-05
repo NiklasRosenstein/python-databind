@@ -600,7 +600,7 @@ class UnionConverter(Converter):
 
     result = next_context.to_python()
     if metadata.container:
-      return context.type(type_name, result)
+      return context.type(**{type_name: result})
 
     return result
 

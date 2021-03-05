@@ -331,37 +331,44 @@ def uniontype(
     Initializes *cls* as a container for the union type members.
     """
 
+    # TODO(NiklasRosenstein): Parse with ast() module and set filename/lineno of the below code
+    #   to the location of where the @uniontype() decorator was used.
     scope = {}
     exec(textwrap.dedent(f"""
-      def __init__(self, {type_field}: str, value: Any) -> None:
-        self.{type_field} = {type_field}
-        self._value = value
+      def __init__(self, **kwarg):
+        if len(kwarg) != 1:
+          raise TypeError("{{}}.__init__() expected exactly one keyword argument".format(type(self).__name__))
+        self._type, self._value = next(iter(kwarg.items()))
+      @property
+      def {type_field}(self):
+        return self._type
       def __repr__(self) -> str:
-        return f'{{type(self).__name__}}({{self.{type_field}!r}}, {{self._value!r}})'
+        return '{{}}({type_field}={{!r}})'.format(type(self).__name__, self._value)
       def __eq__(self, other) -> bool:
-        if isinstance(other, cls):
-          return self.{type_field} == other.{type_field} and self._value == other._value
+        if isinstance(self, type(other)) or isinstance(other, type(self)):
+          return self._type == other._type and self._value == other._value
         return False
       def __ne__(self, other) -> bool:
-        if isinstance(other, cls):
-          return self.{type_field} != other.{type_field} or self._value != other._value
-        return True
-    """), {'Any': Any, 'cls': cls}, scope)
+        if not isinstance(self, type(other)) and not isinstance(other, type(self)):
+          return False
+        return self._type != other._type or self._value != other._value
+    """), {}, scope)
 
     for key, value in scope.items():
       if key not in vars(cls):
-        setattr(cls, key, scope[key])
+        setattr(cls, key, value)
 
     def _make_property(type_name: str, annotation: Any) -> property:
+
       def getter(self) -> annotation:  # type: ignore
         assert type_field is not None
-        has_type = getattr(self, type_field)
-        if has_type != type_name:
-          raise TypeError(f'{type_repr(cls)}.{type_name} cannot be accessed if {type_field} == {has_type!r}')
+        if self._type != type_name:
+          raise TypeError(f'{type(self).__name__}.{type_name} cannot be accessed when type is .{self._type}')
         return self._value
+
       def setter(self, value: annotation) -> None:  # type: ignore
         assert type_field is not None
-        setattr(self, type_field, type_name)
+        self._type = type_name
         self._value = value
       return property(getter, setter)
 
