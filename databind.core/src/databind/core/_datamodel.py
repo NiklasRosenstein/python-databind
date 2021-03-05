@@ -281,9 +281,9 @@ class UnionMetadata(BaseMetadata):
   #: The key in the data structure that identifies the union type. Defaults to "type".
   type_key: str = _field(default='type')
 
-  #: Whether union members should be converted from Python to flat data strucutres.
-  #: This option is required in order to de-serialize union members that cannot be
-  #: deserialized from mappings (like plain types). The default is `True`.
+  #: Whether union members should be converted from Python to flat data structures. This option
+  #: must be set to `False` in order to de-serialize union members that cannot be deserialized
+  #: from mappings (like plain types). The default is `True`.
   flat: bool = _field(default=True)
 
 
