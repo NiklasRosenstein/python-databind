@@ -9,7 +9,7 @@ import textwrap
 from typing import (Any, Callable, Dict, Iterable, List, Optional, Union, Tuple, Type, TypeVar,
   cast, get_type_hints)
 
-from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, _MISSING_TYPE
+from dataclasses import dataclass as _dataclass, field as _field, Field as _Field, MISSING as _MISSING, _MISSING_TYPE
 
 from ._union import (UnionResolver, ClassUnionResolver, InterfaceUnionResolver,
   StaticUnionResolver, from_resolver_spec)
@@ -250,16 +250,40 @@ class _EnumeratedField:
 
 def enumerate_fields(data_model: Union[T, Type[T]]) -> Iterable[_EnumeratedField]:
   """
-  Enumerate the fields of a datamodel. The items yielded by this generator are tuples of
-  the field name, the resolved type hint and the #FieldMetadata.
+  Enumerate the fields of a datamodel or uniontype.
+
+  If a `@uniontype` is passed, if it is an instance (it must be decorated with `container=True`)
+  only one field is enumerated and that is the current member of the union. If the type object is
+  passed, all potential union members are returned. If the union resolver does not support listing
+  members, a #TypeError is raised.
   """
 
+  arg = data_model
   if not isinstance(data_model, type):
     data_model = type(data_model)
 
   type_hints = get_type_hints(data_model)
-  for field in data_model.__dataclass_fields__.values():  # type: ignore
-    yield _EnumeratedField(field, field.name, type_hints[field.name], FieldMetadata.for_field(field))
+
+  if hasattr(data_model, '__dataclass_fields__'):
+    for field in data_model.__dataclass_fields__.values():  # type: ignore
+      yield _EnumeratedField(field, field.name, type_hints[field.name], FieldMetadata.for_field(field))
+  else:
+    metadata = UnionMetadata.for_type(data_model)
+    if metadata is None:
+      raise TypeError(f'expected datamodel or uniontype, got {type_repr(data_model)}')
+
+    if isinstance(arg, type):
+      try:
+        members = metadata.resolver.members()
+      except NotImplementedError:
+        raise TypeError(f'cannot collect all possible union members of {type_repr(data_model)} at runtime')
+      for k in members:
+        yield _EnumeratedField(_field(), k, type_hints.get(k), FieldMetadata.for_field(_field()))
+    else:
+      if not metadata.container:
+        raise RuntimeError(f'how did you even get an instance of a uniontype that is not a container ({type_repr(data_model)})')
+      type_name = getattr(arg, metadata.type_key)
+      yield _EnumeratedField(_field(), type_name, getattr(arg, type_name), FieldMetadata.for_field(_field()))
 
 
 def is_datamodel(obj: Any) -> bool:
