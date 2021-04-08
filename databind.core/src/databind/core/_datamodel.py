@@ -278,12 +278,18 @@ class UnionMetadata(BaseMetadata):
   #: The type field of the union container.
   type_field: Optional[str] = _field(default=None)
 
-  #: The key in the data structure that identifies the union type. Defaults to "type".
-  type_key: str = _field(default='type')
+  #: The key in the data structure that identifies the union type. Defaults to "type". If the type
+  #: key is set to `None`, the union is serialized/deserialized without a type key.
+  type_key: Optional[str] = _field(default='type')
+
+  #: Whether the type of the union shall be derived from the one (and only) key.
+  single_key_discriminator: bool = _field(default=False)
 
   #: Whether union members should be converted from Python to flat data structures. This option
   #: must be set to `False` in order to de-serialize union members that cannot be deserialized
   #: from mappings (like plain types). The default is `True`.
+  #:
+  #: This option is disregarded if #single_key_discriminator is set to #True.
   flat: bool = _field(default=True)
 
 

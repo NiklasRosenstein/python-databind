@@ -578,11 +578,18 @@ class UnionConverter(Converter):
       raise context.type_error(f'expected {type_repr(context.type)} (as mapping), got {type_repr(type(value))}')
     metadata = UnionMetadata.for_type(context.type)
     assert metadata, f'expected {type_repr(context.type)} to provide UnionMetadata'
-    if metadata.type_key not in value:
-      raise context.type_error(f'missing {metadata.type_key!r} to convert {type_repr(context.type)}')
 
     value = dict(value)
-    type_name = value.pop(metadata.type_key)
+    if metadata.single_key_discriminator:
+      if len(value) != 1:
+        raise context.type_error(f'expected single key in union discriminator')
+      type_name = next(iter(value.keys()))
+      metadata.flat = False
+    else:
+      if metadata.type_key not in value:
+        raise context.type_error(f'missing {metadata.type_key!r} key to discriminate {type_repr(context.type)} union')
+      type_name = value.pop(metadata.type_key)
+
     try:
       type_ = metadata.resolver.type_for_name(type_name)
     except UnionTypeError as exc:
