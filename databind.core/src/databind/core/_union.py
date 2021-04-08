@@ -42,6 +42,12 @@ class UnionResolver(metaclass=abc.ABCMeta):
     Enumerate the union members by name. Implementations may raise a #NotImplementedError.
     """
 
+  def alias_to_member_name(self, alias: str) -> str:
+    return alias
+
+  def member_name_to_alias(self, member: str) -> str:
+    return member
+
 
 class _MappingUnionResolverMixin(UnionResolver):
   """
@@ -97,12 +103,23 @@ class StaticUnionResolver(_MappingUnionResolverMixin):
 
 class ClassUnionResolver(_MappingUnionResolverMixin):
 
-  def __init__(self, cls: Type) -> None:
+  def __init__(self, cls: Type, altnames: Dict[str, str]) -> None:
     self._cls = cls
+    self._member_to_alias = altnames
+    self._alias_to_member = {v: k for k, v in altnames.items()}
+    self._cache: Optional[Dict[str, Type]] = None
 
   @property
   def _mapping(self) -> Dict[str, Type]:  # type: ignore
-    return get_type_hints(self._cls)
+    if self._cache is None:
+      self._cache = get_type_hints(self._cls)
+    return self._cache
+
+  def alias_to_member_name(self, alias: str) -> str:
+    return self._alias_to_member.get(alias, alias)
+
+  def member_name_to_alias(self, member: str) -> str:
+    return self._member_to_alias.get(member, member)
 
 
 class InterfaceUnionResolver(_MappingUnionResolverMixin):

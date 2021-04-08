@@ -8,3 +8,7 @@ changes:
   component: general
   description: update `@uniontype` generated `__repr__()` method
   fixes: []
+- type: feature
+  component: general
+  description: add support for member aliasing in `UnionResolver`
+  fixes: []

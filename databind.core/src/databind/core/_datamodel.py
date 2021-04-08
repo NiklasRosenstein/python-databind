@@ -414,9 +414,17 @@ def uniontype(
       cls.__init__ = __init__
 
   def decorator(cls):
+    altnames: Dict[str, str] = {}
+    for key, value in list(vars(cls).items()):
+      if isinstance(value, _Field):
+        metadata = FieldMetadata.for_field(value)
+        if metadata.altname:
+          altnames[key] = metadata.altname
+        delattr(cls, key)
+
     nonlocal resolver
     if not resolver:
-      resolver = ClassUnionResolver(cls)
+      resolver = ClassUnionResolver(cls, altnames)
     if container:
       _init_as_container(cls, get_type_hints(cls))
     else:
