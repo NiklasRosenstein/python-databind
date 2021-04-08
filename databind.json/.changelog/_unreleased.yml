@@ -9,3 +9,8 @@ changes:
   description: Generated `__eq__()` method for `uniontype(container=True)` is now
     injective to avoid issue when `type(other)` is `object`
   fixes: []
+- type: feature
+  component: general
+  description: add support for aliasing with `field(altname)` in `@uniontype` container
+    declarations
+  fixes: []

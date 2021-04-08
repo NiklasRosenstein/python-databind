@@ -558,7 +558,11 @@ class UnionConverter(Converter):
       except UnionTypeError as exc:
         raise context.value_error(f'unknown member {type_repr(type(value))} for union {type_repr(context.type)}')
 
-    result = {metadata.type_key: type_name}
+    type_name = metadata.resolver.member_name_to_alias(type_name)
+
+    result = {}
+    if not metadata.single_key_discriminator:
+      result[metadata.type_key] = type_name
 
     if metadata.flat:
       next_context = context.fork(member_type, member_value)
@@ -589,11 +593,12 @@ class UnionConverter(Converter):
       if metadata.type_key not in value:
         raise context.type_error(f'missing {metadata.type_key!r} key to discriminate {type_repr(context.type)} union')
       type_name = value.pop(metadata.type_key)
+    member_type_name = metadata.resolver.alias_to_member_name(type_name)
 
     try:
-      type_ = metadata.resolver.type_for_name(type_name)
+      type_ = metadata.resolver.type_for_name(member_type_name)
     except UnionTypeError as exc:
-      raise context.value_error(f'unknown member {type_name!r} for union {type_repr(context.type)}')
+      raise context.value_error(f'unknown member {member_type_name!r} for union {type_repr(context.type)}')
 
     if metadata.flat:
       next_context = context.fork(type_, value)
@@ -607,7 +612,7 @@ class UnionConverter(Converter):
 
     result = next_context.to_python()
     if metadata.container:
-      return context.type(**{type_name: result})
+      return context.type(**{member_type_name: result})
 
     return result
 
