@@ -12,3 +12,7 @@ changes:
   component: general
   description: add support for member aliasing in `UnionResolver`
   fixes: []
+- type: feature
+  component: general
+  description: add `Context.closed_field_metadata()` function
+  fixes: []

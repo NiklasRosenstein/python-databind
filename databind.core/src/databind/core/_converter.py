@@ -139,6 +139,13 @@ class Context:
     except TypeError as exc:
       raise self.type_error(str(exc))
 
+  def closest_field_metadata(self) -> Optional[FieldMetadata]:
+    if self.field_metadata:
+      return self.field_metadata
+    if self.parent:
+      return self.parent.closest_field_metadata()
+    return None
+
 
 class Converter(Generic[T], metaclass=abc.ABCMeta):
   """
