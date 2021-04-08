@@ -4,3 +4,7 @@ changes:
   component: general
   description: '`enumerate_fields()` now works with uniontype instances and classes'
   fixes: []
+- type: change
+  component: general
+  description: update `@uniontype` generated `__repr__()` method
+  fixes: []

@@ -373,7 +373,7 @@ def uniontype(
       def {type_field}(self):
         return self._type
       def __repr__(self) -> str:
-        return '{{}}({type_field}={{!r}})'.format(type(self).__name__, self._value)
+        return f'{{type(self).__name__}}[{{self._type}}: {{self._value!r}}]'
       def __eq__(self, other) -> bool:
         if isinstance(other, type(self)):
           return self._type == other._type and self._value == other._value
