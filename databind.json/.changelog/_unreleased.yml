@@ -19,3 +19,7 @@ changes:
   description: '`StringConverter` can now also be relaxed, `FieldMetadata.relaxed`
     is now inherited from the closest metadata in the context for POD data types'
   fixes: []
+- type: fix
+  component: general
+  description: deserializing a `List[str]` from a `str` object now results in an error
+  fixes: []

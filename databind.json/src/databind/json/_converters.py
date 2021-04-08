@@ -451,7 +451,7 @@ class ArrayConverter(Converter):
     else:
       raise RuntimeError(f'unsure how to handle type {type_repr(context.type)}')
 
-    if not isinstance(value, Container):
+    if not isinstance(value, Container) or isinstance(value, (str, bytes)):
       raise context.type_error(f'expected {type_repr(context.type)} (as sequence), got {type_repr(type(value))}')
 
     result = constructor() if method == 'to_python' else self.json_type()
