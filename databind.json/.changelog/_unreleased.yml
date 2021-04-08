@@ -14,3 +14,8 @@ changes:
   description: add support for aliasing with `field(altname)` in `@uniontype` container
     declarations
   fixes: []
+- type: feature
+  component: general
+  description: '`StringConverter` can now also be relaxed, `FieldMetadata.relaxed`
+    is now inherited from the closest metadata in the context for POD data types'
+  fixes: []

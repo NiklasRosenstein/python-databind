@@ -56,10 +56,11 @@ class _PodConverter(Converter):
     self.strict = strict
 
   def _relaxed(self, context: Context) -> bool:
-    if context.field_metadata:
-      if context.field_metadata.relaxed:
+    metadata = context.closest_field_metadata()
+    if metadata:
+      if metadata.relaxed:
         return True
-      elif context.field_metadata.strict:
+      elif metadata.strict:
         return False
     return not self.strict
 
@@ -91,12 +92,14 @@ class IntConverter(_PodConverter):
   to_python = from_python
 
 
-class StringConverter(Converter):
+class StringConverter(_PodConverter):
 
   def from_python(self, value: Any, context: Context) -> str:
-    if isinstance(value, str):
-      return value
-    raise context.type_error(f'expected str, got {type_repr(type(value))}')
+    if self._relaxed(context) and not isinstance(value, str):
+      value = str(value)
+    elif not isinstance(value, str):
+      raise context.type_error(f'expected str, got {type_repr(type(value))}')
+    return value
 
   to_python = from_python
 
@@ -639,7 +642,7 @@ def register_json_converters(registry: Registry, strict: bool = True) -> None:
 
   registry.register_converter(bool, BoolConverter(strict))
   registry.register_converter(int, IntConverter(strict))
-  registry.register_converter(str, StringConverter())
+  registry.register_converter(str, StringConverter(strict))
   registry.register_converter(float, FloatConverter(strict))
   registry.register_converter(List, ArrayConverter(List, list, list, list))
   registry.register_converter(Set, ArrayConverter(Set, set, set, list, sorted))
