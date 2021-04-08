@@ -28,7 +28,7 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=0.10.0,<1.0.0',
+  'databind.core >=0.11.0,<1.0.0',
   'nr.parsing.date >=0.3.0,<1.0.0',
 ]
 

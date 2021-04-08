@@ -23,3 +23,7 @@ changes:
   component: general
   description: deserializing a `List[str]` from a `str` object now results in an error
   fixes: []
+- type: change
+  component: general
+  description: bump dependency on databind.core to ^0.11.0
+  fixes: []
