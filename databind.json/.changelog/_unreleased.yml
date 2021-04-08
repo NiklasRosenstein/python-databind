@@ -4,3 +4,8 @@ changes:
   component: general
   description: Add `uniontype(single_key_discriminator)` argument
   fixes: []
+- type: fix
+  component: general
+  description: Generated `__eq__()` method for `uniontype(container=True)` is now
+    injective to avoid issue when `type(other)` is `object`
+  fixes: []

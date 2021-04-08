@@ -351,7 +351,7 @@ def uniontype(
       def __repr__(self) -> str:
         return '{{}}({type_field}={{!r}})'.format(type(self).__name__, self._value)
       def __eq__(self, other) -> bool:
-        if isinstance(self, type(other)) or isinstance(other, type(self)):
+        if isinstance(other, type(self)):
           return self._type == other._type and self._value == other._value
         return False
       def __ne__(self, other) -> bool:
