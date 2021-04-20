@@ -1,68 +1,69 @@
 # databind.core
 
-Databind is a library inspired by Jackson-databind to describe and bind data models for
-object-oriented programming. The `databind.core` package provides the abstractions to
-generalize the (de-) serialization process such that it can be implemented for arbitrary
-data formats.
+A `jackson-databind` inspired de-/serialization library for Python based on `@dataclass`es.
 
-Databind requires Python 3.6+ because of it's dependency on class-member type hints and
-the `dataclasses` module (for which there exists a backport from Python 3.7 to 3.6 on
-PyPI).
+## Introduction
 
-## Quickstart
+The `databind.core` package does not provide a concrete de-/serializer, but additions and
+extensions on top of the built-in `dataclasses` module to describe serialization behaviour. The
+`@dataclass` decorator and `field()` method provided by this package can act as a drop-in
+replacement, while providing some additional features such as
 
-```python
-from databind.core import datamodel, field
-from typing import Optional
+* non-optional fields following optional fields
+* common class and field annotations
+* union types
 
-@datamodel
+To de-/serialize data, choose one of the following libraries:
+
+* [databind.binary](https://pypi.org/projects/databind.binary)
+* [databind.json](https://pypi.org/projects/databind.json)
+* [databind.tagline](https://pypi.org/projects/databind.tagline)
+* [databind.yaml](https://pypi.org/projects/databind.yaml)
+
+> __Note__: Any of these de/-serializer implementations can work with the classes decorated by the
+> standard-library `@dataclasses.dataclass` decorator. Use `databind.core.dataclass` and
+> `databind.core.field` if you need to customize the de-/serialization behaviour.
+
+Use the [databind.mypy](https://pypi.org/projects/databind.yaml) for Mypy type-checking
+support when using the `databind.core` methods.
+
+## Example
+
+```py
+from databind.core import dataclass, unionclass
+
+@unionclass(subtypes = unionclass.Subtypes.DYNAMIC)
 class Person:
-  """ Class that represents a person's details. """
   name: str
-  age: Optional[int] = field(default=None)
-  address: Optional[str] = field(default=None)
+
+@dataclass
+@unionclass.subtype(Person)
+class Student(Person):
+  visits_courses: set[str]
+
+@dataclass
+@unionclass.subtype(Person)
+class Teacher(Person):
+  teaches_courses: set[str]
 ```
 
-Then you'll need to pick a serialization library. Below is an example for `databind.json`:
+Example using `databind.json` to deserialize a JSON payload from this datamodel:
 
-```python
-from databind import json
-
-person = json.from_str(Person, '{"name": "John Wick", "age": 55}')
-
-assert isinstance(person, Person)
-assert person.name == 'John Wick'
-
-print(json.to_str(person))
-```
-
-Databind also makes it easy to define configurable plugin systems:
-
-```python
-import abc
-from databind.core import datamodel, interface, implementation
-from databind.json import from_json, to_json
-
-@interface
-class Authenticator(metaclass=abc.ABCMeta):
-
-  @abc.abstractmethod
-  def start_oauth2_session(self) -> 'OAuth2Session':
-    ...
-
-@datamodel
-@implementation('github')
-class GithubAuthenticator(Authenticator):
-  client_id: str
-  client_secret: str
-
-  # ...
-
-github = GithubAuthenticator('id', 'secret')
-payload = {'type': 'github', 'client_id': 'id', 'client_secret': 'secret'}
-
-assert to_json(github, Authenticator) == payload
-assert from_json(Authenticator, payload) == github
+```py
+from databind.json import from_json
+student = from_json({
+  'type': 'student',
+  'student': {
+    'name': 'John Doe',
+    'visitsCourses': [
+      'Physics',
+      'Chemistry'
+    ]
+  }
+})
+assert isinstance(student, Student)
+assert student.name == 'John Doe'
+assert student.visits_courses == {'Physics', 'Chemistry'}
 ```
 
 ---
