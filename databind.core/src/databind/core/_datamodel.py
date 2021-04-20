@@ -100,6 +100,12 @@ class ModelMetadata(BaseMetadata):
 
 @_dataclass
 class FieldMetadata(BaseMetadata):
+  #: A list of arbitrary objects that server as additional information on the field that may be
+  #: considered during de-/serialization. Depending on the annotation and the implementation of the
+  #: de-/serializer, annotations on the field may propagate as if they were defined on the type
+  #: directly.
+  annotations: List[Any] = _field(default_factory=list)
+
   #: Alternative name of the field used during the (de-) serialization. This may be
   #: set to change the name of a field to a value that is not valid Python syntax
   #: (for example "field-name").
@@ -218,7 +224,7 @@ def datamodel(*args, **kwargs):
   return _after_dataclass(result)
 
 
-def field(*args, **kwargs) -> _Field:
+def field(**kwargs) -> _Field:
   """
   This function wraps the #dataclasses.field() function, equipping the field with additional
   #FieldMetadata.
@@ -228,7 +234,7 @@ def field(*args, **kwargs) -> _Field:
   field_metadata = _extract_dataclass_from_kwargs(FieldMetadata, kwargs)
   metadata[FieldMetadata.KEYSPACE] = field_metadata
   kwargs['metadata'] = metadata
-  field = _field(*args, **kwargs)
+  field = _field(**kwargs)
   field_metadata._owning_field = field
   field_metadata.metadata = field.metadata
   return field

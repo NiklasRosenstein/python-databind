@@ -4,3 +4,7 @@ changes:
   component: general
   description: add `Annotation` class and `get_annotation` method
   fixes: []
+- type: feature
+  component: general
+  description: Add `FieldMetadata.annotations`
+  fixes: []
