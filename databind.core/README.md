@@ -30,7 +30,8 @@ support when using the `databind.core` methods.
 ## Example
 
 ```py
-from databind.core import dataclass, unionclass
+from dataclasses import dataclass
+from databind.core import unionclass
 
 @unionclass(subtypes = unionclass.Subtypes.DYNAMIC)
 class Person:
