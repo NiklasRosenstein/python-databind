@@ -1,0 +1,2 @@
+
+from .location import Location
