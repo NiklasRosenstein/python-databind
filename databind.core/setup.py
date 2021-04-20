@@ -29,6 +29,7 @@ else:
 
 requirements = [
   'dataclasses >=0.6.0,<1.0.0',
+  'nr.preconditions >=0.0.2,<1.0.0',
 ]
 
 setuptools.setup(
