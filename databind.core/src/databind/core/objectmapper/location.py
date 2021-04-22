@@ -1,6 +1,7 @@
 
 import typing as t
 from dataclasses import dataclass
+from .typehint import TypeHint
 
 
 def _get_location_chain(location: 'Location') -> t.List['Location']:
@@ -20,12 +21,9 @@ def _get_filename_and_pos_string(filename: t.Optional[str], pos: t.Optional['Pos
   return f'[{result}]'
 
 
-def _render_typeinfo(typeinfo: t.Any) -> str:
-  from typing import _type_repr  # type: ignore
-  return _type_repr(typeinfo)
-
-
 class Position(t.NamedTuple):
+  # @:change-id Location.Position
+
   line: int
   col: int
 
@@ -37,6 +35,9 @@ class Location:
   source (which can be discriminated using a "filename" property). A location may also be associated
   with type information that is used to render the string representation.
   """
+
+  #: The expected type of the value at this location.
+  type: TypeHint
 
   #: The filename of the input source. If not set, the parent location's filename is considered
   #: this location's filename (although the value is not actively inherited when the #Location
@@ -54,14 +55,13 @@ class Location:
   #: represents a different source but was reached from another location.
   key: t.Union[str, int, None] = None
 
-  #: The expected type of the value at this location.
-  typeinfo: t.Any = None
+  Position = Position
 
   def __str__(self) -> str:
     """
     Converts the location to a string representation of the form
 
-        [filename:line:col] ($ typeinfo) -> (key typeinfo) -> ...
+        [filename:line:col] ($ type) -> (key type) -> ...
     """
 
     parts: t.List[str] = []
@@ -74,7 +74,7 @@ class Location:
         parts.append(' ')
 
       name = '$' if loc.key is None else f'.{loc.key}'
-      parts.append(f'({name} {_render_typeinfo(loc.typeinfo)})' if loc.typeinfo else name)
+      parts.append(f'({name} {loc.type})')
       parts.append(' -> ')
 
       if loc.filename:

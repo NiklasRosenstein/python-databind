@@ -4,33 +4,13 @@ import collections
 import typing as t
 from dataclasses import dataclass, field, Field as _Field
 import nr.preconditions as preconditions
+from .deser import IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, ISerializerProvider, DeserializerNotFound, SerializerNotFound
 from .settings import Settings
 from .typehint import Concrete, TypeHint
 from ..annotations import Annotation, get_annotation
 
-from . import typehint
-from .deser import IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, ISerializerProvider, DeserializerNotFound, SerializerNotFound
-from .location import Location
-from .settings import Settings
-
-__all__ = [
-  'IDeserializer',
-  'IDeserializerProvider',
-  'ISerializer',
-  'ISerializerProvider',
-  'DeserializerNotFound',
-  'SerializerNotFound',
-
-  'typehint',
-  'Location',
-
-  'IModule',
-  'SimpleModule',
-  'ObjectMapper',
-]
-
-
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
+
 
 
 class IModule(IDeserializerProvider, ISerializerProvider):
@@ -53,36 +33,35 @@ class IModule(IDeserializerProvider, ISerializerProvider):
 class SimpleModule(IModule):
   """
   A module that you can register de-/serializers to and even other submodules. Only de-/serializers
-  for concrete types can be registered in a #SimpleModule. Submodules are tested in the reversed
-  order that they were registered.
+  for concrete types can be registered in a #SimpleModule.
   """
 
   def __init__(self, name: str = None) -> None:
-    self.__name = name
-    self.__deserializers: t.Dict[type, IDeserializer] = {}
-    self.__serializers: t.Dict[type, ISerializer] = {}
-    self.__submodules: t.List[IModule] = []
+    self._name = name
+    self._deserializers: t.Dict[type, IDeserializer] = {}
+    self._serializers: t.Dict[type, ISerializer] = {}
+    self._submodules: t.List[IModule] = []
 
   def __repr__(self):
-    return f"<SimpleModule {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
+    return f"<SimpleModule {self._name + ' ' if self._name else ''}at {hex(id(self))}>"
 
   def add_deserializer(self, type_: t.Type, deserializer: IDeserializer) -> None:
     preconditions.check_instance_of(type_, type)
-    self.__deserializers[type_] = deserializer
+    self._deserializers[type_] = deserializer
 
   def add_serializer(self, type_: t.Type, serializer: ISerializer) -> None:
     preconditions.check_instance_of(type_, type)
-    self.__serializers[type_] = serializer
+    self._serializers[type_] = serializer
 
-  def add_module(self, module: IModule) -> None:
+  def add_submodule(self, module: IModule) -> None:
     preconditions.check_instance_of(module, IModule)
-    self.__submodules.append(module)
+    self._submodules.append(module)
 
   # IModule
   def get_deserializer(self, type: TypeHint) -> IDeserializer:
-    if isinstance(type, Concrete) and type.type in self.__deserializers:
-      return self.__deserializers[type.type]
-    for module in reversed(self.__submodules):
+    if isinstance(type, Concrete) and type.type in self._deserializers:
+      return self._deserializers[type.type]
+    for module in self._submodules:
       try:
         return module.get_deserializer(type)
       except DeserializerNotFound:
@@ -91,9 +70,9 @@ class SimpleModule(IModule):
 
   # IModule
   def get_serializer(self, type: TypeHint) -> ISerializer:
-    if isinstance(type, Concrete) and type.type in self.__serializers:
-      return self.__serializers[type.type]
-    for module in reversed(self.__submodules):
+    if isinstance(type, Concrete) and type.type in self._serializers:
+      return self._serializers[type.type]
+    for module in self._submodules:
       try:
         return module.get_serializer(type)
       except SerializerNotFound:
@@ -130,7 +109,7 @@ class AnnotationsRegistry(IAnnotationsProvider):
   """
   A registry for type annotations and type field annotations and additional annotation providers.
   Effectively this class allows to chain multiple annotation providers and manually override
-  individual annotations. Subproviders are tested in the reverse order that they were added.
+  individual annotations.
   """
 
   @dataclass
@@ -139,46 +118,42 @@ class AnnotationsRegistry(IAnnotationsProvider):
     fields: t.Dict[str, t.List[t.Any]] = field(default_factory=lambda: collections.defaultdict(list))
 
   def __init__(self) -> None:
-    self.__overrides: t.Dict[t.Type, AnnotationsRegistry._TypeOverrides] = collections.defaultdict(AnnotationsRegistry._TypeOverrides)
-    self.__subproviders: t.List[IAnnotationsProvider] = []
+    self._overrides: t.Dict[t.Type, AnnotationsRegistry._TypeOverrides] = collections.defaultdict(AnnotationsRegistry._TypeOverrides)
+    self._subproviders: t.List[IAnnotationsProvider] = []
 
-  def add_annotations_provider(self, provider: IAnnotationsProvider) -> None:
-    self.__subproviders.append(provider)
-
-  # IAnnotationsProvider
   def get_type_annotation(self,
       type: t.Type,
       annotation_cls: t.Type[T_Annotation]
   ) -> t.Optional[T_Annotation]:
-    overrides = self.__overrides.get(type)
+    overrides = self._overrides.get(type)
     if overrides:
       return get_annotation(overrides.annotations, annotation_cls, None)
-    for provider in reversed(self.__subproviders):
+    for provider in self._subproviders:
       result = provider.get_type_annotation(type, annotation_cls)
       if result is not None:
         return result
     return None
 
-  # IAnnotationsProvider
   def get_field_annotation(self,
       type: t.Type,
       field_name: str,
       annotation_cls: t.Type[T_Annotation]
   ) -> t.Optional[T_Annotation]:
-    overrides = self.__overrides.get(type)
+    overrides = self._overrides.get(type)
     if overrides:
       return get_annotation(overrides.fields.get(field_name, []), annotation_cls, None)
-    for provider in reversed(self.__subproviders):
+    for provider in self._subproviders:
       result = provider.get_field_annotation(type, field_name, annotation_cls)
       if result is not None:
         return result
     return None
 
 
-class ObjectMapper(SimpleModule, AnnotationsRegistry):
+class ObjectMapper(SimpleModule):
+  """
+  The #ObjectMapper is the entrypoint for de-/serializing data. It manages global annotations,
+  such as styles, annotation overrides on types and fields, and modules that provide de-/serializers
+  for the types that are encountered by the mapper.
 
-  def __init__(self, name: str = None):
-    SimpleModule.__init__(self, name)
-    AnnotationsRegistry.__init__(self)
-    self.add_annotations_provider(DefaultAnnotationsProvider())
-    self.settings = Settings()
+  An empty mapper must first be initialized with at least one #Module.
+  """
