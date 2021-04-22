@@ -23,7 +23,7 @@ class Annotation:
   This is the abstract base class for annotations. Subclasses need not implement any particular
   methods, rather their behaviour is usually defined by their existence alone and any implementation
   supporting the particular annotation will need to check for the annotation's existence using the
-  #get_annotation() function (usually through #databind.core.DeserContext.get_annotation()).
+  #get_annotation() function (usually through #IAnnotationsProvider.get_annotation()).
 
   Example:
 

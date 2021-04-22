@@ -9,7 +9,9 @@ from .typehint import Concrete, TypeHint
 from ..annotations import Annotation, get_annotation
 
 from . import typehint
-from .deser import IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, ISerializerProvider, DeserializerNotFound, SerializerNotFound
+from .deser import IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, \
+  ISerializerProvider, DeserializationError, DeserializerNotFound, SerializationError, \
+  SerializerNotFound
 from .location import Location
 from .settings import Settings
 
@@ -18,7 +20,9 @@ __all__ = [
   'IDeserializerProvider',
   'ISerializer',
   'ISerializerProvider',
+  'DeserializationError',
   'DeserializerNotFound',
+  'SerializationError',
   'SerializerNotFound',
 
   'typehint',

@@ -1,16 +1,4 @@
 
-__all__ = [
-  'IDeserializer',
-  'ISerializer',
-  'IDeserializerProvider'
-  'ISerializerProvider',
-  'IAnnotationsProvider',
-  'DeserializerContext',
-  'SerializerContext',
-  'DeserializerNotFound',
-  'SerializerNotFound',
-]
-
 import abc
 import typing as t
 from dataclasses import dataclass
@@ -90,10 +78,16 @@ class _BaseContext(t.Generic[_T_Context]):
 class DeserializerContext(_BaseContext['DeserializerContext']):
   deserializers: IDeserializerProvider
 
+  def error(self, message: t.Union[str, Exception]) -> 'DeserializationError':
+    return DeserializationError(message, self.location)
+
 
 @dataclass
 class SerializerContext(_BaseContext['SerializerContext']):
   serializers: ISerializerProvider
+
+  def error(self, message: t.Union[str, Exception]) -> 'SerializationError':
+    return SerializationError(message, self.location)
 
 
 @dataclass
@@ -104,3 +98,15 @@ class DeserializerNotFound(Exception):
 @dataclass
 class SerializerNotFound(Exception):
   type: TypeHint
+
+
+@dataclass
+class DeserializationError(Exception):
+  message: t.Union[str, Exception]
+  location: Location
+
+
+@dataclass
+class SerializationError(Exception):
+  message: t.Union[str, Exception]
+  location: Location

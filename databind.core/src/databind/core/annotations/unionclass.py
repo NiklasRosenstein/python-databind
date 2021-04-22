@@ -1,7 +1,9 @@
 
 import abc
 import enum
+import pkg_resources
 import typing as t
+from dataclasses import dataclass
 import nr.preconditions as preconditions
 from . import Annotation, get_annotation
 from .typeinfo import typeinfo
@@ -10,9 +12,23 @@ from .typeinfo import typeinfo
 T_Type = t.TypeVar('T_Type', bound=t.Type)
 
 
+@dataclass
+class UnionTypeError(Exception):
+  type: t.Union[str, t.Type]
+  subtypes: '_ISubtypes'
+
+
 class _ISubtypes(metaclass=abc.ABCMeta):
   # @:change-id unionclass.ISubtypes
-  pass
+
+  @abc.abstractmethod
+  def get_type_name(self, type: t.Type) -> str: ...
+
+  @abc.abstractmethod
+  def get_type_by_name(self, name: str) -> t.Type: ...
+
+  @abc.abstractmethod
+  def get_type_names(self) -> t.List[str]: ...  # raises NotImplementedError
 
 
 class _SubtypesEnum(enum.Enum):
@@ -66,6 +82,9 @@ class unionclass(Annotation):
 
   Subtypes = _Subtypes
   ISubtypes = _ISubtypes
+  UnionTypeError = UnionTypeError
+
+  subtypes: _ISubtypes
 
   def __init__(self, *, subtypes: U_Subtypes) -> None:
     """
@@ -79,8 +98,14 @@ class unionclass(Annotation):
     * A list of types
     """
 
-    self.subtypes = subtypes
-    self.registered_subtypes: t.List[t.Type] = []
+    if isinstance(subtypes, _ISubtypes):
+      self.subtypes = subtypes
+    elif isinstance(self.subtypes, _Entrypoint):
+      self.subtypes = _EntrypointSubtypes(subtypes.name)
+    elif self.subtypes == _SubtypesEnum.DYNAMIC:
+      self.subtypes = _DynamicSubtypes()
+    else:
+      raise TypeError(f'bad subtypes argument: {subtypes!r}')
 
   @staticmethod
   def subtype(extends: t.Type, name: str = None) -> t.Callable[[T_Type], T_Type]:
@@ -105,13 +130,13 @@ class unionclass(Annotation):
     preconditions.check_instance_of(extends, type)
     inst = preconditions.check_not_none(get_annotation(extends, unionclass, None),
       lambda: f'{extends.__name__} is not annotated with @unionclass')
-    preconditions.check_argument(inst.subtypes == _Subtypes.DYNAMIC,
+    subtypes = preconditions.check_instance_of(inst.subtypes, _DynamicSubtypes,
       lambda: f'{extends.__name__} is not using unionclass.Subtypes.DYNAMIC')
     def decorator(subtype: T_Type) -> T_Type:
       preconditions.check_subclass_of(subtype, extends)
-      inst.registered_subtypes.append(subtype)
       if name is not None:
         subtype = typeinfo(name)(subtype)
+      subtypes.add_type(typeinfo.get_name(subtype), subtype)
       return subtype
     return decorator
 
@@ -122,3 +147,68 @@ class unionclass(Annotation):
     """
 
     raise TypeError(f'@unionclass {type(self).__name__} is not constructible')
+
+  def get_type_name(self, type: t.Type) -> str:
+    pass
+
+
+class _EntrypointSubtypes(_ISubtypes):
+
+  def __init__(self, name: str) -> None:
+    self._name = name
+    self._entrypoints_cache: t.Optional[t.Dict[str, pkg_resources.EntryPoint]] = None
+
+  def __repr__(self) -> str:
+    return f'_EntrypointSubtypes(name={self._name!r})'
+
+  @property
+  def _entrypoints(self) -> t.Dict[str, pkg_resources.EntryPoint]:
+    if self._entrypoints_cache is None:
+      self._entrypoints_cache = {}
+      for ep in pkg_resources.iter_entry_points(self._name):
+        self._entrypoints_cache[ep.name] = ep
+    return self._entrypoints_cache
+
+  def get_type_name(self, type: t.Type) -> str:
+    for ep in self._entrypoints.values():
+      if ep.load() == type:
+        return ep.name
+    raise UnionTypeError(type, self)
+
+  def get_type_by_name(self, name: str) -> t.Type:
+    try:
+      return self._entrypoints[name].load()
+    except KeyError:
+      raise UnionTypeError(name, self)
+
+  def get_type_names(self) -> t.List[str]:
+    return list(self._entrypoints.keys())
+
+
+class _DynamicSubtypes(_ISubtypes):
+
+  def __init__(self) -> None:
+    self._members: t.Dict[str, t.Type] = {}
+
+  def __repr__(self) -> str:
+    return f'_DynamicSubtypes(members={self.get_type_names()})'
+
+  def get_type_name(self, type: t.Type) -> str:
+    for key, value in self._members.items():
+      if value == type:
+        return key
+    raise UnionTypeError(type, self)
+
+  def get_type_by_name(self, name: str) -> t.Type:
+    try:
+      return self._members[name]
+    except KeyError:
+      raise UnionTypeError(name, self)
+
+  def get_type_names(self) -> t.List[str]:
+    return list(self._members.keys())
+
+  def add_type(self, name: str, type: t.Type) -> None:
+    if name in self._members:
+      raise RuntimeError(f'type {name!r} already registered')
+    self._members[name] = type
