@@ -61,22 +61,23 @@ class unionclass(Annotation):
   Used to annotate that a class describes a union.
 
   Note that if the decorated class provides properties that should be inherited by the child
-  dataclasses, you need to also decorate the class as a `@dataclass`. You may choose to set
-  the `__init__` method to #unionclass.no_construct to prevent the creation of instances of the
-  #@unionclass` decorated class.
+  dataclasses, you need to also decorate the class as a `@dataclass`. In the natural scenario,
+  a union class in itself is not constructible. If you wish to be able to create instances of
+  the decorated class, set the `constructible` parameter to `True`.  If the parameter is not
+  specified or set to `False`, the decorated classes' constructor will be replaced with
+  #no_construct.
 
   Example:
 
   ```py
   from databind.core import unionclass
 
-  @unionclass(subtypes = unionclass.Subtypes.DYNAMIC)
+  @unionclass(subtypes = unionclass.Subtypes.DYNAMIC, constructible = True)
   @dataclass
   class Person:
-    __init__ = unionclass.no_consruct
     name: str
 
-  Person('John Doe')  # TypeError
+  Person('John Doe')  # works!
   ```
   """
 
@@ -86,7 +87,7 @@ class unionclass(Annotation):
 
   subtypes: _ISubtypes
 
-  def __init__(self, *, subtypes: U_Subtypes) -> None:
+  def __init__(self, *, subtypes: U_Subtypes, constructible: bool = False) -> None:
     """
     Create a union class decorator.
 
@@ -100,12 +101,14 @@ class unionclass(Annotation):
 
     if isinstance(subtypes, _ISubtypes):
       self.subtypes = subtypes
-    elif isinstance(self.subtypes, _Entrypoint):
+    elif isinstance(subtypes, _Entrypoint):
       self.subtypes = _EntrypointSubtypes(subtypes.name)
-    elif self.subtypes == _SubtypesEnum.DYNAMIC:
+    elif subtypes == _SubtypesEnum.DYNAMIC:
       self.subtypes = _DynamicSubtypes()
     else:
       raise TypeError(f'bad subtypes argument: {subtypes!r}')
+
+    self.constructible = constructible
 
   @staticmethod
   def subtype(extends: t.Type, name: str = None) -> t.Callable[[T_Type], T_Type]:
@@ -150,6 +153,13 @@ class unionclass(Annotation):
 
   def get_type_name(self, type: t.Type) -> str:
     pass
+
+  # Annotation
+
+  def __call__(self, cls: T_Type) -> T_Type:
+    if not self.constructible:
+      cls.__init__ = unionclass.no_construct
+    return super().__call__(cls)
 
 
 class _EntrypointSubtypes(_ISubtypes):

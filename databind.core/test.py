@@ -1,11 +1,10 @@
 import typing as t
 from dataclasses import dataclass
-from databind.core.annotations import unionclass
+from databind.core import unionclass
 
-@unionclass(subtypes = unionclass.Subtypes.DYNAMIC)
 @dataclass
+@unionclass(subtypes = unionclass.Subtypes.DYNAMIC, constructible=False)
 class Person:
-  __init__ = unionclass.no_construct
   name: str
 
 @dataclass
@@ -19,5 +18,4 @@ class Teacher(Person):
   teaches_courses: t.Set[str]
 
 
-Person()
 print(Student('John Doe', {'Physics', 'Chemistry'}))
