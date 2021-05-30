@@ -1,6 +1,11 @@
 
 """
-API representation of a subset of the #typing annotations.
+This module represents a subset of the #typing type hints as a stable API. The concepts exposed by
+the #typing module are represented as instances of the #TypeHint subclass (e.g., #Union, #List,
+#Map). The purpose of this module is to provide an easy method to introspect type hints.
+
+Use #from_typing() to convert an actual type hint to the stable API and #TypeHint.to_typing() for
+the reverse operation.
 """
 
 __all__ = [

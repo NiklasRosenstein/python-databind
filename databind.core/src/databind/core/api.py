@@ -2,10 +2,9 @@
 import abc
 import typing as t
 from dataclasses import dataclass
-
-from databind.core.objectmapper.typehint import TypeHint
+from .annotations import Annotation
 from .location import Location
-from ..annotations import Annotation
+from .typehint import TypeHint
 
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
