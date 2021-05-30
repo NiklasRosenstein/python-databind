@@ -93,8 +93,10 @@ class SimpleModule(IModule):
 
 class DefaultAnnotationsProvider(IAnnotationsProvider):
   """
-  Default implementation for reading annotations annotated with #Annotation subclasses and from
-  field annotations for #@dataclasses.dataclass decorated types.
+  Default implementation for reading #Annotation#s from types, and for the fields of types
+  decorated with #@dataclasses.dataclass. Field annotations are read from the field metadata
+  directly (if attached to the `databind.core.annotations` key) and secondary from the
+  `_annotations` class on the MRO.
   """
 
   def get_type_annotation(self,
@@ -108,12 +110,30 @@ class DefaultAnnotationsProvider(IAnnotationsProvider):
       field_name: str,
       annotation_cls: t.Type[T_Annotation]
   ) -> t.Optional[T_Annotation]:
+
+    # Look for annoations on the metadata of the dataclass fields.
     fields: t.Dict[str, _Field] = getattr(type, '__dataclass_fields__', {})
     field = fields.get(field_name)
     if not field:
       return None
     annotations = field.metadata.get('databind.core.annotations', [])
-    return get_annotation(annotations, annotation_cls, None)
+    ann = get_annotation(annotations, annotation_cls, None)
+    if ann is not None:
+      return ann
+
+    # Search for annotations of the field in the `_annotations` class.
+    for curr_type in type.__mro__:
+      if hasattr(curr_type, '_annotations'):
+        meta_cls: t.Type = curr_type._annotations
+        annotations = getattr(meta_cls, field_name, [])
+        if isinstance(annotations, Annotation):
+          ann = annotations
+        else:
+          ann = get_annotation(annotations, annotation_cls, None)
+        if ann is not None:
+          break
+
+    return ann
 
 
 class AnnotationsRegistry(IAnnotationsProvider):
