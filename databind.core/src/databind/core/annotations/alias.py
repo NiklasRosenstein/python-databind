@@ -17,4 +17,4 @@ class alias(Annotation):
     self.aliases = (alias,) + additional_aliases
 
   def __repr__(self) -> str:
-    return f'alias({self.aliases!r})'
+    return f'alias({", ".join(map(repr, self.aliases))})'
