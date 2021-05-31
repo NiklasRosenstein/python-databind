@@ -27,6 +27,9 @@ from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMappi
 from dataclasses import dataclass
 from typing import _type_repr, _GenericAlias  # type: ignore
 
+if t.TYPE_CHECKING:
+  from .schema import Schema
+
 
 class TypeHint(metaclass=abc.ABCMeta):
   """ Base class for an API representation of #typing type hints. """
@@ -44,7 +47,11 @@ class TypeHint(metaclass=abc.ABCMeta):
 
 @dataclass
 class Concrete(TypeHint):
-  """ Represents a concrete type. """
+  """
+  Represents a concrete type, that is an actual Python type, not a typing hint. Note that concrete
+  types may be reinterpreted as a #Datamodel by the object mapper, but #from_typing() cannot do
+  that because the reinterpretation is up to the object mapper configuration.
+  """
 
   type: t.Type
 
@@ -124,6 +131,17 @@ class Map(TypeHint):
 
   def to_typing(self) -> t.Any:
     return self.impl_hint[self.key_type.to_typing(), self.value_type.to_typing()]
+
+
+@dataclass
+class Datamodel(TypeHint):
+  """
+  Represents a type hint for a datamodel (or #Schema). Instances of this type hint are usually
+  constructed in a later stage after #from_typing() when a #Concrete type hint was encountered
+  that can be interpreted as a #Datamodel.
+  """
+
+  schema: 'Schema'
 
 
 def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:

@@ -7,6 +7,7 @@ from .location import Location
 from .typehint import TypeHint
 
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
+_T_Environment = t.TypeVar('_T_Environment', bound='_Environment')
 
 
 class IDeserializer(metaclass=abc.ABCMeta):
@@ -14,7 +15,8 @@ class IDeserializer(metaclass=abc.ABCMeta):
   Interface for deserializers.
   """
 
-  def deserialize(self, ctx: 'DeserializerContext') -> t.Any: ...
+  @abc.abstractmethod
+  def deserialize(self, ctx: 'Context[DeserializerEnvironment]') -> t.Any: ...
 
 
 class ISerializer(metaclass=abc.ABCMeta):
@@ -22,7 +24,8 @@ class ISerializer(metaclass=abc.ABCMeta):
   Interface for serializers.
   """
 
-  def serialize(self, ctx: 'SerializerContext') -> t.Any: ...
+  @abc.abstractmethod
+  def serialize(self, ctx: 'Context[SerializerEnvironment]') -> t.Any: ...
 
 
 class IDeserializerProvider(metaclass=abc.ABCMeta):
@@ -30,6 +33,7 @@ class IDeserializerProvider(metaclass=abc.ABCMeta):
   Provider for deserializers.
   """
 
+  @abc.abstractmethod
   def get_deserializer(self, type: TypeHint) -> IDeserializer: ...
 
 
@@ -38,6 +42,7 @@ class ISerializerProvider(metaclass=abc.ABCMeta):
   Provider for serializers.
   """
 
+  @abc.abstractmethod
   def get_serializer(self, type: TypeHint) -> ISerializer: ...
 
 
@@ -62,19 +67,13 @@ class IAnnotationsProvider(metaclass=abc.ABCMeta):
     ...
 
 
-_T_Context = t.TypeVar('_T_Context', bound='_BaseContext')
-
-
 @dataclass
-class _BaseContext(t.Generic[_T_Context]):
-  parent: t.Optional[_T_Context]
-  value: t.Any
-  location: Location
+class _Environment():
   annotations: IAnnotationsProvider
 
 
 @dataclass
-class DeserializerContext(_BaseContext['DeserializerContext']):
+class DeserializerEnvironment(_Environment):
   deserializers: IDeserializerProvider
 
   def error(self, message: t.Union[str, Exception]) -> 'DeserializationError':
@@ -82,11 +81,19 @@ class DeserializerContext(_BaseContext['DeserializerContext']):
 
 
 @dataclass
-class SerializerContext(_BaseContext['SerializerContext']):
+class SerializerEnvironment(_Environment):
   serializers: ISerializerProvider
 
   def error(self, message: t.Union[str, Exception]) -> 'SerializationError':
     return SerializationError(message, self.location)
+
+
+@dataclass
+class Context(t.Generic[_T_Environment]):
+  parent: t.Optional['Context[_T_Environment]']
+  env: _T_Environment
+  value: t.Any
+  location: Location
 
 
 @dataclass

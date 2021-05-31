@@ -28,17 +28,6 @@ class IModule(IDeserializerProvider, ISerializerProvider):
   Combines the #IDeserializerProvider and #ISerializerProvider interfaces.
   """
 
-  @abc.abstractmethod
-  def get_deserializer(self, type: TypeHint) -> IDeserializer:
-    """ Can throw a #DeserializerNotFound exception. """
-
-    pass
-
-  @abc.abstractmethod
-  def get_serializer(self, type: TypeHint) -> ISerializer:
-    """ Can throw a #SerializerNotFound exception. """
-    pass
-
 
 class SimpleModule(IModule):
   """
