@@ -1,7 +1,10 @@
 
+import typing as t
+from dataclasses import dataclass
 from . import Annotation
 
 
+@dataclass
 class alias(Annotation):
   # @:change-id !databind.core.alias
   """
@@ -12,6 +15,8 @@ class alias(Annotation):
   uses of the class as a field, it is usually used on a field descriptor to specify the alias only
   for that particular field.
   """
+
+  aliases: t.Tuple[str]
 
   def __init__(self, alias: str, *additional_aliases: str) -> None:
     self.aliases = (alias,) + additional_aliases

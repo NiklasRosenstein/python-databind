@@ -55,6 +55,7 @@ U_Subtypes = t.Union[
   t.List[t.Type]]
 
 
+@dataclass
 class unionclass(Annotation):
   # @:change-id !databind.core.unionclass
   """
@@ -86,6 +87,7 @@ class unionclass(Annotation):
   UnionTypeError = UnionTypeError
 
   subtypes: _ISubtypes
+  constructible: bool
 
   def __init__(self, *, subtypes: U_Subtypes, constructible: bool = False) -> None:
     """
