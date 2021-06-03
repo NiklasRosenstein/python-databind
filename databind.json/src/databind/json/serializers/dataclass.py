@@ -1,4 +1,9 @@
 
+"""
+The #DataclassModule provides the type adaptation for classes decorated with `@dataclass` to be
+interpreted as a datamodel.
+"""
+
 import typing as t
 from dataclasses import is_dataclass, Field as _DataclassField
 from databind.core.api import Context, DeserializerEnvironment, IDeserializer, ISerializer, SerializerEnvironment
@@ -35,16 +40,6 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
 class DataclassModule(IModule):
 
   # IModule
-  def get_deserializer(self, type: TypeHint) -> IDeserializer:
-    if isinstance(type, Concrete) and is_dataclass(type.type):
-      return DataclassDeser()
-    return None
-
-  # IModule
-  def get_serializer(self, type: TypeHint) -> ISerializer:
-    return self.get_deserializer(type)
-
-  # IModule
   def adapt_type_hint(self, type: TypeHint) -> TypeHint:
     if isinstance(type, Concrete) and is_dataclass(type.type):
       type = Datamodel(dataclass_to_schema(type.type))
@@ -61,12 +56,3 @@ class DataclassComposer(ISchemaComposer):
 
   def decompose(self, obj: t.Any) -> t.Dict[str, t.Any]:
     return {f.name: getattr(obj, f.name) for f in enumerate_fields(obj)}
-
-
-class DataclassDeser(IDeserializer, ISerializer):
-
-  def deserialize(self, ctx: Context[DeserializerEnvironment]) -> t.Any:
-    raise NotImplementedError  # TODO
-
-  def serialize(self, ctx: Context[SerializerEnvironment]) -> t.Any:
-    raise NotImplementedError  # TODO
