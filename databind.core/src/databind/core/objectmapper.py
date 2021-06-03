@@ -203,3 +203,11 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     [self.add_module(m) for m in modules]
     self.add_annotations_provider(DefaultAnnotationsProvider())
     self.settings = Settings()
+
+  # SimpleModule
+  def get_deserializer(self, type: TypeHint) -> IDeserializer:
+    return super().get_deserializer(self.adapt_type_hint(type))
+
+  # SimpleModule
+  def get_serializer(self, type: TypeHint) -> IDeserializer:
+    return super().get_serializer(self.adapt_type_hint(type))
