@@ -28,6 +28,7 @@ class DatamodelModule(IModule):
 class DatamodelDeser(IDeserializer, ISerializer):
 
   def deserialize(self, ctx: Context[DeserializerEnvironment]) -> t.Any:
+    print('--> deser', ctx)
     raise NotImplementedError  # TODO
 
   def serialize(self, ctx: Context[SerializerEnvironment]) -> t.Any:

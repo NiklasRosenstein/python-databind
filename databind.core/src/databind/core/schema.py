@@ -9,7 +9,7 @@ and to open it up for the possibility to extend it to other ways of describing t
 import abc
 import decimal
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from databind.core.annotations import get_annotation, alias
 from databind.core.typehint import TypeHint
 
@@ -103,13 +103,13 @@ class Schema:
   name: str
 
   #: A dictionary for the #Field#s of the schema.
-  fields: t.Dict[str, Field]
+  fields: t.Dict[str, Field] = field(repr=False)
 
   #: The underlying Python type of the schema.
   python_type: t.Type
 
   #: An object that acts as a composer and decomposer for instances of the #python_type.
-  composer: 'ISchemaComposer'
+  composer: 'ISchemaComposer' = field(repr=False)
 
 
 class ISchemaComposer(metaclass=abc.ABCMeta):

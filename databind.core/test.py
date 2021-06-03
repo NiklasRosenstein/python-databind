@@ -1,6 +1,12 @@
 import typing as t
-from dataclasses import dataclass
-from databind.core import unionclass
+from dataclasses import dataclass, field
+from databind.core.annotations.alias import alias
+from databind.core.annotations.unionclass import unionclass
+from databind.core.api import Context, DeserializerEnvironment
+from databind.core.location import Location
+from databind.core.objectmapper import ObjectMapper
+from databind.core.typehint import Concrete
+from databind.json import JsonModule
 
 @dataclass
 @unionclass(subtypes = unionclass.Subtypes.DYNAMIC, constructible=False)
@@ -12,10 +18,10 @@ class Person:
 class Student(Person):
   visits_courses: t.Set[str]
 
-@dataclass
-@unionclass.subtype(Person)
-class Teacher(Person):
-  teaches_courses: t.Set[str]
+  class _annotations:
+    visits_courses = [alias('teaches-courses')]
 
+mapper = ObjectMapper(JsonModule())
+v = Student('John Doe', {'Physics', 'Chemistry'})
+print(mapper.deserialize(v, Student))
 
-print(Student('John Doe', {'Physics', 'Chemistry'}))

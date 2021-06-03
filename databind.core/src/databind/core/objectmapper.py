@@ -6,13 +6,13 @@ from dataclasses import dataclass, field, Field as _Field
 from functools import reduce
 import nr.preconditions as preconditions
 from . import typehint
-from .api import IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, \
-  ISerializerProvider, DeserializationError, DeserializerNotFound, SerializationError, \
+from .api import Context, DeserializerEnvironment, IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, \
+  ISerializerProvider, DeserializationError, DeserializerNotFound, SerializationError, SerializerEnvironment, \
   SerializerNotFound, ITypeHintAdapter
 from .annotations import Annotation, get_annotation
-from .location import Location
+from .location import Location, Position
 from .settings import Settings
-from .typehint import Concrete, TypeHint
+from .typehint import Concrete, TypeHint, from_typing
 
 __all__ = [
   'IModule',
@@ -20,7 +20,7 @@ __all__ = [
   'ObjectMapper',
 ]
 
-
+T = t.TypeVar('T')
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
@@ -54,7 +54,7 @@ class SimpleModule(IModule):
     self.__submodules: t.List[IModule] = []
 
   def __repr__(self):
-    return f"<SimpleModule {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
+    return f"<{type(self).__name__} {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
 
   def add_deserializer(self, type_: t.Type, deserializer: IDeserializer) -> None:
     preconditions.check_instance_of(type_, type)
@@ -204,10 +204,36 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     self.add_annotations_provider(DefaultAnnotationsProvider())
     self.settings = Settings()
 
-  # SimpleModule
-  def get_deserializer(self, type: TypeHint) -> IDeserializer:
-    return super().get_deserializer(self.adapt_type_hint(type))
+  def deserialize(self,
+    value: t.Any,
+    type_hint: t.Type[T],
+    filename: t.Optional[str] = None,
+    pos: t.Optional[Position] = None,
+    key: t.Union[str, int, None] = None,
+    parent: t.Optional[Context[DeserializerEnvironment]] = None
+  ) -> T:
+    th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
+    ctx = Context(
+      parent,
+      DeserializerEnvironment(self, self),
+      value,
+      Location(th, filename, pos, parent.location if parent else None, key),
+    )
+    return self.get_deserializer(th).deserialize(ctx)
 
-  # SimpleModule
-  def get_serializer(self, type: TypeHint) -> IDeserializer:
-    return super().get_serializer(self.adapt_type_hint(type))
+  def serialize(self,
+    value: t.Any,
+    type_hint: t.Type[T],
+    filename: t.Optional[str] = None,
+    pos: t.Optional[Position] = None,
+    key: t.Union[str, int, None] = None,
+    parent: t.Optional[Context[DeserializerEnvironment]] = None
+  ) -> t.Any:
+    th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
+    ctx = Context(
+      parent,
+      SerializerEnvironment(self, self),
+      value,
+      Location(th, filename, pos, parent.location if parent else None, key),
+    )
+    return self.get_serializer(th).serialize(ctx)
