@@ -3,11 +3,12 @@ import abc
 import collections
 import typing as t
 from dataclasses import dataclass, field, Field as _Field
+from functools import reduce
 import nr.preconditions as preconditions
 from . import typehint
 from .api import IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, \
   ISerializerProvider, DeserializationError, DeserializerNotFound, SerializationError, \
-  SerializerNotFound
+  SerializerNotFound, ITypeHintAdapter
 from .annotations import Annotation, get_annotation
 from .location import Location
 from .settings import Settings
@@ -23,10 +24,19 @@ __all__ = [
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
-class IModule(IDeserializerProvider, ISerializerProvider):
+class IModule(IDeserializerProvider, ISerializerProvider, ITypeHintAdapter):
   """
-  Combines the #IDeserializerProvider and #ISerializerProvider interfaces.
+  Combination of various interfaces, with default implementations acting as a no-op.
   """
+
+  def get_deserializer(self, type: TypeHint) -> IDeserializer:
+    raise DeserializerNotFound(type)
+
+  def get_serializer(self, type: TypeHint) -> ISerializer:
+    raise SerializerNotFound(type)
+
+  def adapt_type_hint(self, type: TypeHint) -> TypeHint:
+    return type
 
 
 class SimpleModule(IModule):
@@ -40,6 +50,7 @@ class SimpleModule(IModule):
     self.__name = name
     self.__deserializers: t.Dict[type, IDeserializer] = {}
     self.__serializers: t.Dict[type, ISerializer] = {}
+    self.__type_hint_adapters: t.List[ITypeHintAdapter] = []
     self.__submodules: t.List[IModule] = []
 
   def __repr__(self):
@@ -52,6 +63,10 @@ class SimpleModule(IModule):
   def add_serializer(self, type_: t.Type, serializer: ISerializer) -> None:
     preconditions.check_instance_of(type_, type)
     self.__serializers[type_] = serializer
+
+  def add_type_hint_adapter(self, adapter: ITypeHintAdapter) -> None:
+    preconditions.check_instance_of(adapter, ITypeHintAdapter)
+    self.__type_hint_adapters.append(adapter)
 
   def add_module(self, module: IModule) -> None:
     preconditions.check_instance_of(module, IModule)
@@ -78,6 +93,10 @@ class SimpleModule(IModule):
       except SerializerNotFound:
         pass  # intentional
     raise SerializerNotFound(type)
+
+  # IModule
+  def adapt_type_hint(self, type_: TypeHint) -> TypeHint:
+    return reduce(lambda t, a: a.adapt_type_hint(t), self._type_hint_adapters, type_)
 
 
 class DefaultAnnotationsProvider(IAnnotationsProvider):

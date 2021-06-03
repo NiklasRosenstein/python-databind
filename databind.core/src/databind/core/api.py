@@ -67,6 +67,12 @@ class IAnnotationsProvider(metaclass=abc.ABCMeta):
     ...
 
 
+class ITypeHintAdapter(metaclass=abc.ABCMeta):
+
+  @abc.abstractmethod
+  def adapt_type_hint(self, type: TypeHint) -> TypeHint: ...
+
+
 @dataclass
 class _Environment():
   annotations: IAnnotationsProvider
