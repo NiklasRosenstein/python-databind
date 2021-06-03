@@ -23,9 +23,12 @@ __all__ = [
 
 import abc
 import typing as t
+import typing_extensions as te
 from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
 from dataclasses import dataclass
-from typing import _type_repr, _GenericAlias  # type: ignore
+from typing import _type_repr, _GenericAlias
+
+from nr import preconditions  # type: ignore
 
 if t.TYPE_CHECKING:
   from .schema import Schema
@@ -44,6 +47,26 @@ class TypeHint(metaclass=abc.ABCMeta):
   def to_typing(self) -> t.Any:
     """ Convert the type hint back to a #typing representation. """
 
+  @abc.abstractmethod
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint': ...
+
+  def normalize(self) -> 'TypeHint':
+    """
+    Bubbles up all annotations from nested #Annotated hints into a single #Annotated hint at
+    the root if there exists at least one annotation in the tree.
+    """
+
+    annotations: t.List[t.Any] = []
+    def visitor(hint: TypeHint) -> TypeHint:
+      if isinstance(hint, Annotated):
+        annotations.extend(hint.annotations)
+        return hint.type
+      return hint
+    new_hint = self.visit(visitor)
+    if annotations:
+      return Annotated(new_hint, tuple(annotations))
+    return new_hint
+
 
 @dataclass
 class Concrete(TypeHint):
@@ -58,6 +81,9 @@ class Concrete(TypeHint):
   def to_typing(self) -> t.Any:
     return self.type
 
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(self)
+
 
 @dataclass
 class Annotated(TypeHint):
@@ -66,10 +92,16 @@ class Annotated(TypeHint):
   type: TypeHint
   annotations: t.Tuple[t.Any, ...]
 
+  def __init__(self, type: TypeHint, annotations: t.Sequence[t.Any]) -> None:
+    preconditions.check_instance_of(type, TypeHint)
+    self.type = type
+    self.annotations = tuple(annotations)
+
   def to_typing(self) -> t.Any:
-    if not hasattr(t, 'Annotated'):
-      raise RuntimeError('this version of Python does not support typing.Annotated')
-    return t.Annotated[(self.type,) + self.annotations]  # type: ignore
+    return te.Annotated[(self.type.to_typing(),) + self.annotations]  # type: ignore
+
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(Annotated(self.type.visit(func), self.annotations))
 
 
 @dataclass
@@ -81,6 +113,9 @@ class Union(TypeHint):
   def to_typing(self) -> t.Any:
     return t.Union[self.types]
 
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(Union(tuple(t.visit(func) for t in self.types)))
+
 
 @dataclass
 class Optional(TypeHint):
@@ -91,11 +126,17 @@ class Optional(TypeHint):
   def to_typing(self) -> t.Any:
     return t.Optional[self.type]
 
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(Optional(self.type.visit(func)))
+
 
 class Collection(TypeHint):
   """ Represents a collection type. This is still abstract. """
 
   item_type: TypeHint
+
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(type(self)(self.item_type.visit(func)))
 
 
 @dataclass
@@ -132,6 +173,9 @@ class Map(TypeHint):
   def to_typing(self) -> t.Any:
     return self.impl_hint[self.key_type.to_typing(), self.value_type.to_typing()]
 
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(Map(self.key_type.visit(func), self.value_type.visit(func)))
+
 
 @dataclass
 class Datamodel(TypeHint):
@@ -143,14 +187,20 @@ class Datamodel(TypeHint):
 
   schema: 'Schema'
 
+  def to_typing(self) -> t.Any:
+    return self.schema.python_type
+
+  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+    return func(self)
+
 
 def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   """
   Unpacks a type hint into it's origin type and parameters.
   """
 
-  if hasattr(t, '_AnnotatedAlias') and isinstance(hint, t._AnnotatedAlias):  # type: ignore
-    return t.Annotated, list((hint.__origin__,) + hint.__metadata__)  # type: ignore
+  if hasattr(te, '_AnnotatedAlias') and isinstance(hint, te._AnnotatedAlias):  # type: ignore
+    return te.Annotated, list((hint.__origin__,) + hint.__metadata__)  # type: ignore
 
   if hasattr(t, '_SpecialGenericAlias') and isinstance(hint, t._SpecialGenericAlias):  # type: ignore
     return hint.__origin__, []
@@ -165,35 +215,6 @@ def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
     return hint, []
 
   return None, []
-
-
-def _unpack_annotations(hint: TypeHint) -> t.Tuple[TypeHint, t.List[t.Any]]:
-
-  args: t.List[t.Any]
-
-  if isinstance(hint, Annotated):
-    hint, args = _unpack_annotations(hint.type)
-    return hint, args
-
-  elif isinstance(hint, Union):
-    types: t.List[TypeHint] = []
-    args = []
-    for item in hint.types:
-      a, b = _unpack_annotations(item)
-      types.append(a)
-      args.extend(b)
-    return Union(tuple(types)), args
-
-  elif isinstance(hint, Optional):
-    hint, args = _unpack_annotations(hint.type)
-    return Optional(hint), args
-
-  elif isinstance(hint, Collection):
-    hint, args = _unpack_annotations(hint.item_type)
-    return type(hint)(hint), args   # type: ignore
-
-  # NOTE(NiklasRosenstein): We explicitly do not unpack the annotations for map keys and values.
-  return hint, []
 
 
 _ORIGIN_CONVERSION = {
@@ -227,14 +248,14 @@ def from_typing(type_hint: t.Any) -> TypeHint:
       else:
         raise ValueError(f'unexpected args for {generic}: {args}')
     elif generic == t.Union:
-      if None in args:
-        return Optional(from_typing(t.Union[tuple(x for x in args if x is not None)]))
+      if len(args) == 1:
+        return from_typing(args[0])
+      elif type(None) in args:
+        return Optional(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
       else:
         return Union(tuple(from_typing(a) for a in args))
-    elif hasattr(t, 'Annotated') and generic == t.Annotated:  # type: ignore
-      inner_type, args = from_typing(args[0]), args[1:]
-      inner_type, inner_args = _unpack_annotations(inner_type)
-      return Annotated(inner_type, tuple(inner_args + args))
+    elif hasattr(te, 'Annotated') and generic == te.Annotated:  # type: ignore
+      return Annotated(from_typing(args[0]), args[1:])
 
   if isinstance(type_hint, type):
     return Concrete(type_hint)
