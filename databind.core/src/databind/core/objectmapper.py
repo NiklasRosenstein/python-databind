@@ -197,8 +197,9 @@ class AnnotationsRegistry(IAnnotationsProvider):
 
 class ObjectMapper(SimpleModule, AnnotationsRegistry):
 
-  def __init__(self, name: str = None):
+  def __init__(self, *modules: IModule, name: str = None):
     SimpleModule.__init__(self, name)
     AnnotationsRegistry.__init__(self)
+    [self.add_module(m) for m in modules]
     self.add_annotations_provider(DefaultAnnotationsProvider())
     self.settings = Settings()
