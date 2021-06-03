@@ -97,7 +97,7 @@ class SimpleModule(IModule):
   # IModule
   def adapt_type_hint(self, type_: TypeHint) -> TypeHint:
     type_ = reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
-    type_ = reduce(lambda t, m: m.adapt_type_hint(m), self.__submodules, type_)
+    type_ = reduce(lambda t, m: m.adapt_type_hint(t), self.__submodules, type_)
     return type_
 
 
