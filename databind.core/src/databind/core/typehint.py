@@ -41,7 +41,7 @@ class TypeHint(metaclass=abc.ABCMeta):
     raise TypeError('TypeHint cannot be constructed')
 
   def __str__(self) -> str:
-    return _type_repr(self.to_typing())
+    return f'>> {_type_repr(self.to_typing())} <<'
 
   @abc.abstractmethod
   def to_typing(self) -> t.Any:
