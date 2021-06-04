@@ -56,6 +56,5 @@ class Settings:
     else:
       if isinstance(value, type):
         raise TypeError(f'cannot set type object as setting')
-      print('Setting', value)
       self._objects[type(value)] = value
 

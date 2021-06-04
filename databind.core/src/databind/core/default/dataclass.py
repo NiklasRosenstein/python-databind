@@ -8,7 +8,7 @@ import typing as t
 from dataclasses import is_dataclass, Field as _DataclassField
 from databind.core.annotations import get_type_annotations
 from databind.core.api import Context
-from databind.core.objectmapper import IModule
+from databind.core.objectmapper import Module
 from databind.core.schema import Field, ISchemaComposer, Schema
 from databind.core.typehint import Annotated, Concrete, Datamodel, TypeHint, from_typing
 from nr import preconditions
@@ -39,7 +39,7 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
   )
 
 
-class DataclassModule(IModule):
+class DataclassModule(Module):
 
   # IModule
   def adapt_type_hint(self, type: TypeHint) -> TypeHint:

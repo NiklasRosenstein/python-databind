@@ -21,7 +21,7 @@ T = t.TypeVar('T')
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
-class IModule(IConverterProvider, ITypeHintAdapter):
+class Module(IConverterProvider, ITypeHintAdapter):
   """
   Combination of various interfaces, with default implementations acting as a no-op.
   """
@@ -33,7 +33,7 @@ class IModule(IConverterProvider, ITypeHintAdapter):
     return type
 
 
-class SimpleModule(IModule):
+class SimpleModule(Module):
   """
   A module that you can register de-/serializers to and even other submodules. Only de-/serializers
   for concrete types can be registered in a #SimpleModule. Submodules are tested in the reversed
@@ -58,14 +58,14 @@ class SimpleModule(IModule):
     preconditions.check_instance_of(type_, type)
     preconditions.check_instance_of(converter, IConverter)
     preconditions.check_instance_of(direction, Direction)
-    self.__converters_by_type[direction][type] = converter
+    self.__converters_by_type[direction][type_] = converter
 
   def add_type_hint_adapter(self, adapter: ITypeHintAdapter) -> None:
     preconditions.check_instance_of(adapter, ITypeHintAdapter)
     self.__type_hint_adapters.append(adapter)
 
-  def add_module(self, module: IModule) -> None:
-    preconditions.check_instance_of(module, IModule)
+  def add_module(self, module: Module) -> None:
+    preconditions.check_instance_of(module, Module)
     self.__converter_providers.append(module)
     self.__type_hint_adapters.append(module)
 
@@ -181,7 +181,7 @@ class AnnotationsRegistry(IAnnotationsProvider):
 
 class ObjectMapper(SimpleModule, AnnotationsRegistry):
 
-  def __init__(self, *modules: IModule, name: str = None):
+  def __init__(self, *modules: Module, name: str = None):
     SimpleModule.__init__(self, name)
     AnnotationsRegistry.__init__(self)
     self.settings = Settings()
@@ -189,7 +189,7 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
       self.add_module(module)
 
   @classmethod
-  def default(cls, *modules: IModule, name: str = None) -> 'ObjectMapper':
+  def default(cls, *modules: Module, name: str = None) -> 'ObjectMapper':
     from .default.dataclass import DataclassModule
     mapper = cls(DataclassModule(), *modules, name=name)
     mapper.add_annotations_provider(DefaultAnnotationsProvider())

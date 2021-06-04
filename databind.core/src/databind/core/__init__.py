@@ -6,5 +6,5 @@ from .api import IConverter, IConverterProvider, IAnnotationsProvider, ITypeHint
   Context, Value, ConverterNotFound, ConversionError
 from .annotations import Annotation, get_annotation, alias, unionclass, typeinfo
 from .location import Location, Position
-from .objectmapper import IModule, SimpleModule, ObjectMapper
+from .objectmapper import Module, SimpleModule, ObjectMapper
 from .settings import Settings
