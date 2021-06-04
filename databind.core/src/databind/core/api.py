@@ -3,7 +3,9 @@ import abc
 import enum
 import typing as t
 from dataclasses import dataclass, field
-from .annotations import Annotation
+
+from databind.core.schema import Field
+from .annotations import Annotation, get_annotation
 from .location import Location
 from .typehint import TypeHint
 
@@ -57,6 +59,10 @@ class IAnnotationsProvider(metaclass=abc.ABCMeta):
   """
 
   @abc.abstractmethod
+  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    ...
+
+  @abc.abstractmethod
   def get_type_annotation(self,
       type: t.Type,
       annotation_cls: t.Type[T_Annotation]
@@ -100,9 +106,33 @@ class Value:
   Container for a value that is passed to the #IConverter for conversion to or from Python.
   """
 
+  #: The actual value wrapped by this container.
   current: t.Any
+
+  #: The location of the value in the source data.
   location: Location
+
+  #: The #Field data from the schema that the value is de/serialized from/to. Can be used to
+  #: read annotations that influence the conversion behaviour. Note that the #Field.type
+  #: may be different from the #Location.type if the de/serialization is executed on a field
+  #: representing a complex type (e.g., a list or map).
+  field: Field
+
+  #: Reference to the parent #Value object.
   parent: t.Optional['Value']
+
+  @property
+  def type(self) -> TypeHint:
+    return self.location.type
+
+  def get_annotation(self, ctx: Context, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    return get_annotation(self.field.annotations, annotation_cls, None) or \
+      ctx.annotations.get_global_annotation(annotation_cls)
+
+  def type_error(self, *, expected: str) -> 'ConversionError':
+    return ConversionError(
+      f'expected {expected} to deserialize {self.type}, got {type(self.current).__name__}',
+      self.location)
 
 
 @dataclass

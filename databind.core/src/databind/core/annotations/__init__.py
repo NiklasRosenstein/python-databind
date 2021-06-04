@@ -9,8 +9,6 @@ of the following ways:
 * associate the annotation with a type or field in the #databind.core.ObjectMapper
 """
 
-__all__ = ['Annotation', 'get_annotation', 'alias', 'unionclass']
-
 import typing as t
 
 T = t.TypeVar('T')
@@ -94,5 +92,20 @@ def get_type_annotations(source: t.Type) -> t.Dict[t.Type, t.Any]:
 
 
 from .alias import alias
+from .datefmt import datefmt
+from .fieldinfo import fieldinfo
+from .precision import precision
 from .unionclass import unionclass
 from .typeinfo import typeinfo
+
+__all__ = [
+  'Annotation',
+  'get_annotation',
+  'get_type_annotation',
+  'alias',
+  'datefmt',
+  'fieldinfo',
+  'precision',
+  'unionclass',
+  'typeinfo'
+]

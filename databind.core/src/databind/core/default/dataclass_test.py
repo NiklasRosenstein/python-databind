@@ -21,9 +21,9 @@ def test_dataclass_to_schema_conversion():
   assert schema == Schema(
     'MyDataclass',
     {
-      'a': Field('a', Concrete(int), []),
-      'b': Field('b', Optional(Concrete(str)), []),
-      'c': Field('c', Concrete(str), (alias('calias'),)),
+      'a': Field(Concrete(int), []),
+      'b': Field(Optional(Concrete(str)), []),
+      'c': Field(Concrete(str), (alias('calias'),)),
     },
     MyDataclass,
     schema.composer

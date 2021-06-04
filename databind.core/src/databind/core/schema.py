@@ -7,13 +7,11 @@ and to open it up for the possibility to extend it to other ways of describing t
 """
 
 import abc
-import decimal
 import typing as t
 from dataclasses import dataclass, field
-from databind.core.annotations import get_annotation, alias, typeinfo, unionclass
+from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
 from databind.core.typehint import TypeHint
-
-# TODO(NiklasRosenstein): Implement more of the Field properties
+from nr.optional import Optional
 
 
 @dataclass
@@ -22,11 +20,8 @@ class Field:
   Describes a field in a datamodel (aka #Schema).
   """
 
-  #: The name of the field.
-  name: str
-
   #: The type hint associated with this field.
-  typehint: TypeHint
+  type: TypeHint
 
   #: A list of the annotations that are associated with the field. Some of the data from these
   #: annotations may be extracted into the other properties on the #Field instance already (such
@@ -50,45 +45,37 @@ class Field:
   @property
   def required(self) -> bool:
     """
-    Marks the field as required during deserialization, even if the #typehint marks the field
+    Marks the field as required during deserialization, even if the #type marks the field
     as nullable/optional.
     """
 
-    return False
+    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.required)
 
   @property
   def flat(self) -> bool:
     """
     Specifies if the fields of the value in this field are to be embedded flat into the
-    parent structure. This is only respected for fields where the #typehint represents a
+    parent structure. This is only respected for fields where the #type represents a
     dataclass or mapping.
     """
 
-    return False
+    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.flat)
 
   @property
-  def date_format(self) -> t.Optional[str]:
+  def datefmt(self) -> t.Optional[datefmt]:
     """
     Returns the date format that is configured for the field via an annotation.
     """
 
-    return None
+    return get_annotation(self.annotations, datefmt, None)
 
   @property
-  def datetime_format(self) -> t.Optional[str]:
-    """
-    Returns the datetime format that is configured for the field via an annotation.
-    """
-
-    return None
-
-  @property
-  def decimal_context(self) -> t.Optional[decimal.Context]:
+  def precision(self) -> t.Optional[precision]:
     """
     Returns the decimal context that is configured for the field via an annotation.
     """
 
-    return None
+    return get_annotation(self.annotations, precision, None)
 
 
 @dataclass

@@ -29,7 +29,7 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
       field_type_hint, field_annotations = field_type_hint.type, field_type_hint.annotations  # type: ignore  # see https://github.com/python/mypy/issues/9731
     else:
       field_annotations = []
-    fields[field.name] = Field(field.name, field_type_hint, field_annotations)
+    fields[field.name] = Field(field_type_hint, field_annotations)
   return Schema(
     dataclass_type.__name__,
     fields,

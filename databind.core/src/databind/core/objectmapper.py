@@ -3,6 +3,7 @@ import collections
 import typing as t
 from dataclasses import dataclass, field, Field as _Field
 from functools import reduce
+from databind.core.schema import Field
 import nr.preconditions as preconditions
 from .api import Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter, \
   IConverterProvider, ITypeHintAdapter, Value
@@ -93,6 +94,9 @@ class DefaultAnnotationsProvider(IAnnotationsProvider):
   `_annotations` class on the MRO.
   """
 
+  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    return None
+
   def get_type_annotation(self,
       type: t.Type,
       annotation_cls: t.Type[T_Annotation]
@@ -145,9 +149,17 @@ class AnnotationsRegistry(IAnnotationsProvider):
   def __init__(self) -> None:
     self.__overrides: t.Dict[t.Type, AnnotationsRegistry._TypeOverrides] = collections.defaultdict(AnnotationsRegistry._TypeOverrides)
     self.__subproviders: t.List[IAnnotationsProvider] = []
+    self.__global_annotations: t.List[t.Any] = []
+
+  def add_global_annotation(self, annotation: t.Any) -> None:
+    self.__global_annotations.append(annotation)
 
   def add_annotations_provider(self, provider: IAnnotationsProvider) -> None:
     self.__subproviders.append(provider)
+
+  # IAnnotationsProvider
+  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    return get_annotation(self.__global_annotations, annotation_cls)
 
   # IAnnotationsProvider
   def get_type_annotation(self,
@@ -202,13 +214,15 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
-    parent: t.Optional[Value] = None
+    annotations: t.Optional[t.List[t.Any]] = None,
+    parent: t.Optional[Value] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
     th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
     ctx = Context(self, self, direction)
+    field = Field(th, annotations or [])
     loc = Location(th, filename, pos, parent.location if parent else None, key)
-    return ctx.convert(Value(value, loc, parent))
+    return ctx.convert(Value(value, loc, field, parent))
 
   def deserialize(self,
     value: t.Any,
@@ -216,9 +230,10 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
+    annotations: t.Optional[t.List[t.Any]] = None,
     parent: t.Optional[Value] = None
   ) -> T:
-    return self.convert(Direction.Deserialize, value, type_hint, filename, pos, key, parent)
+    return self.convert(Direction.Deserialize, value, type_hint, filename, pos, key, annotations, parent)
 
   def serialize(self,
     value: t.Any,
@@ -226,6 +241,7 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
+    annotations: t.Optional[t.List[t.Any]] = None,
     parent: t.Optional[Value] = None
   ) -> t.Any:
-    return self.convert(Direction.Serialize, value, type_hint, filename, pos, key, parent)
+    return self.convert(Direction.Serialize, value, type_hint, filename, pos, key, annotations, parent)
