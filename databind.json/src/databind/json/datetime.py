@@ -36,7 +36,7 @@ def expand_to_datetime(v: T_DateTypes) -> datetime.datetime:
   elif isinstance(v, datetime.date):
     return datetime.datetime(v.year, v.month, v.day)
   elif isinstance(v, datetime.time):
-    return datetime.datetime(1970, 1, 1, v.hour, v.min, v.second)
+    return datetime.datetime(1970, 1, 1, v.hour, v.minute, v.second)
   else:
     assert False, v
 
@@ -58,15 +58,15 @@ class DatetimeJsonConverter(IConverter):
   def convert(self, value: Value, ctx: Context) -> t.Any:
     preconditions.check_instance_of(value.type, Concrete)
     type_ = t.cast(Concrete, value.type).type
-    datefmt = value.get_annotation(ctx, A.datefmt) or self.DEFAULT_DATEFMT
+    datefmt = ctx.get_annotation(value, A.datefmt) or self.DEFAULT_DATEFMT
 
     if ctx.direction == Direction.Deserialize:
       if not isinstance(value.current, str):
-        raise value.type_error(expected='str')
+        raise ctx.type_error(value, expected='str')
       dt = datefmt.parse(value.current)  # TODO(NiklasRosenstein): Rethrow as ConversionError
       return trim_datetime(dt, type_)
 
     else:
       if not isinstance(value.current, type_):
-        raise value.type_error(expected=type_.__name__)
+        raise ctx.type_error(value, expected=type_)
       return datefmt.format(expand_to_datetime(value.current))
