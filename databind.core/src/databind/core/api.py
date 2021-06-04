@@ -99,6 +99,20 @@ class Context:
     converter = self.converters.get_converter(value.location.type, self.direction)
     return converter.convert(value, self)
 
+  def get_annotation(self, value: 'Value', annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    return get_annotation(value.field.annotations, annotation_cls, None) or \
+      self.annotations.get_global_annotation(annotation_cls)
+
+  def type_error(self, value: 'Value', *, expected: t.Union[str, t.Type, t.Tuple[t.Type, ...]]) -> 'ConversionError':
+    if isinstance(expected, tuple):
+      expected = '|'.join(x.__name__ for x in expected)
+    elif isinstance(expected, type):
+      expected = expected.__name__
+    return ConversionError(
+      f'expected {expected} to {self.direction.name.lower()} {value.type}, '
+      f'got {type(value.current).__name__}',
+      value.location)
+
 
 @dataclass
 class Value:
@@ -125,15 +139,6 @@ class Value:
   def type(self) -> TypeHint:
     return self.location.type
 
-  def get_annotation(self, ctx: Context, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
-    return get_annotation(self.field.annotations, annotation_cls, None) or \
-      ctx.annotations.get_global_annotation(annotation_cls)
-
-  def type_error(self, *, expected: str) -> 'ConversionError':
-    return ConversionError(
-      f'expected {expected} to deserialize {self.type}, got {type(self.current).__name__}',
-      self.location)
-
 
 @dataclass
 class ConverterNotFound(Exception):
@@ -145,3 +150,6 @@ class ConverterNotFound(Exception):
 class ConversionError(Exception):
   message: t.Union[str, Exception]
   location: Location
+
+  def __str__(self) -> str:
+    return f'{self.location}: {self.message}'

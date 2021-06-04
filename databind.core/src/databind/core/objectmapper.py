@@ -159,7 +159,7 @@ class AnnotationsRegistry(IAnnotationsProvider):
 
   # IAnnotationsProvider
   def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
-    return get_annotation(self.__global_annotations, annotation_cls)
+    return get_annotation(self.__global_annotations, annotation_cls, None)
 
   # IAnnotationsProvider
   def get_type_annotation(self,
