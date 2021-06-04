@@ -5,31 +5,28 @@ schemas (see #databind.core.schema).
 """
 
 import typing as t
-from databind.core.api import Context, DeserializerEnvironment, IDeserializer, ISerializer, SerializerEnvironment
+from databind.core.api import Context, ConverterNotFound, Direction, IConverter, Value
 from databind.core.objectmapper import IModule
 from databind.core.typehint import Datamodel, TypeHint
 
 
 class DatamodelModule(IModule):
 
-  # IModule
-  def get_deserializer(self, type: TypeHint) -> IDeserializer:
+  def get_converter(self, type: TypeHint, direction: Direction) -> IConverter:
     if isinstance(type, Datamodel):
-      return DatamodelDeser()
-    return None
-
-  # IModule
-  def get_serializer(self, type: TypeHint) -> ISerializer:
-    if isinstance(type, Datamodel):
-      return DatamodelDeser()
-    return None
+      return DatamodelDeserializer() if direction == Direction.Deserialize else DatamodelSerializer()
+    raise ConverterNotFound(type, direction)
 
 
-class DatamodelDeser(IDeserializer, ISerializer):
+class DatamodelDeserializer(IConverter):
 
-  def deserialize(self, ctx: Context[DeserializerEnvironment]) -> t.Any:
+  def convert(self, value: Value, ctx: Context) -> t.Any:
     print('--> deser', ctx)
     raise NotImplementedError  # TODO
 
-  def serialize(self, ctx: Context[SerializerEnvironment]) -> t.Any:
+
+class DatamodelSerializer(IConverter):
+
+  def convert(self, value: Value, ctx: Context) -> t.Any:
+    print('--> ser', ctx)
     raise NotImplementedError  # TODO
