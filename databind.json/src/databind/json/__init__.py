@@ -2,12 +2,13 @@
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
 __version__ = '0.12.0'
 
-from databind.core.objectmapper import Module, SimpleModule
+from databind.core.objectmapper import SimpleModule
 from .datamodel import DatamodelModule
-from .plain import PlainJsonModule
+from .datetime import DatetimeModule
+from .decimal import DecimalModule
+from .plain import PlainDatatypeModule
 
 __all__ = [
-  'DatamodelModule',
   'JsonModule',
 ]
 
@@ -20,4 +21,6 @@ class JsonModule(SimpleModule):
   def __init__(self, name: str = None) -> None:
     super().__init__(name)
     self.add_module(DatamodelModule())
-    self.add_module(PlainJsonModule())
+    self.add_module(DatetimeModule())
+    self.add_module(DecimalModule())
+    self.add_module(PlainDatatypeModule())
