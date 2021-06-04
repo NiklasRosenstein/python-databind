@@ -6,11 +6,11 @@ schemas (see #databind.core.schema).
 
 import typing as t
 from databind.core.api import Context, ConverterNotFound, Direction, IConverter, Value
-from databind.core.objectmapper import IModule
+from databind.core.objectmapper import Module
 from databind.core.typehint import Datamodel, TypeHint
 
 
-class DatamodelModule(IModule):
+class DatamodelModule(Module):
 
   def get_converter(self, type: TypeHint, direction: Direction) -> IConverter:
     if isinstance(type, Datamodel):

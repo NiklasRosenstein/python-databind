@@ -2,8 +2,9 @@
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
 __version__ = '0.12.0'
 
-from databind.core.objectmapper import IModule, SimpleModule
+from databind.core.objectmapper import Module, SimpleModule
 from .datamodel import DatamodelModule
+from .plain import PlainJsonModule
 
 __all__ = [
   'DatamodelModule',
@@ -19,3 +20,4 @@ class JsonModule(SimpleModule):
   def __init__(self, name: str = None) -> None:
     super().__init__(name)
     self.add_module(DatamodelModule())
+    self.add_module(PlainJsonModule())
