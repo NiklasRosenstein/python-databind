@@ -78,7 +78,7 @@ def get_annotation(
   """
 
   if isinstance(source, type):
-    return getattr(source, Annotation.ANNOTATIONS_ATTRIBUTE_NAME, {}).get(annotation_cls, default)
+    return get_type_annotations(source).get(annotation_cls, default)
 
   if isinstance(source, t.Iterable):
     for item in source:
@@ -87,6 +87,10 @@ def get_annotation(
     return default
 
   raise TypeError(f'expected type or Iterable, got {type(source).__name__!r} instead')
+
+
+def get_type_annotations(source: t.Type) -> t.Dict[t.Type, t.Any]:
+  return getattr(source, Annotation.ANNOTATIONS_ATTRIBUTE_NAME, {})
 
 
 from .alias import alias

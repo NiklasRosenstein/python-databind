@@ -1,49 +1,54 @@
 
 import abc
+import enum
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from .annotations import Annotation
 from .location import Location
 from .typehint import TypeHint
 
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
-_T_Environment = t.TypeVar('_T_Environment', bound='_Environment')
 
 
-class IDeserializer(metaclass=abc.ABCMeta):
+class Direction(enum.Enum):
   """
-  Interface for deserializers.
-  """
-
-  @abc.abstractmethod
-  def deserialize(self, ctx: 'Context[DeserializerEnvironment]') -> t.Any: ...
-
-
-class ISerializer(metaclass=abc.ABCMeta):
-  """
-  Interface for serializers.
+  Encodes the conversion direction in a #ConversionEnv.
   """
 
-  @abc.abstractmethod
-  def serialize(self, ctx: 'Context[SerializerEnvironment]') -> t.Any: ...
+  #: Conversion takes place from some data format to a Python object.
+  Deserialize = enum.auto()
+
+  #: Conversion takes place from a Python object to another data format.
+  Serialize = enum.auto()
 
 
-class IDeserializerProvider(metaclass=abc.ABCMeta):
+class IConverter(metaclass=abc.ABCMeta):
   """
-  Provider for deserializers.
+  Interface for deserializers and serializers.
   """
 
   @abc.abstractmethod
-  def get_deserializer(self, type: TypeHint) -> IDeserializer: ...
+  def convert(self, value: 'Value', ctx: 'Context') -> t.Any: ...
 
 
-class ISerializerProvider(metaclass=abc.ABCMeta):
+class IConverterProvider(metaclass=abc.ABCMeta):
   """
-  Provider for serializers.
+  Provider for an #IConverter for a #TypeHint.
   """
 
   @abc.abstractmethod
-  def get_serializer(self, type: TypeHint) -> ISerializer: ...
+  def get_converter(self, type: TypeHint, direction: 'Direction') -> IConverter: ...
+
+  Wrapper: t.Type['_ConverterProviderWrapper']
+
+
+class _ConverterProviderWrapper(IConverterProvider):
+
+  def __init__(self, func: t.Callable[[TypeHint], IConverter]) -> None:
+    self._func = func
+
+  def get_converter(self, type: TypeHint, direction: 'Direction') -> IConverter:
+    return self._func(type, direction)  # type: ignore
 
 
 class IAnnotationsProvider(metaclass=abc.ABCMeta):
@@ -74,51 +79,39 @@ class ITypeHintAdapter(metaclass=abc.ABCMeta):
 
 
 @dataclass
-class _Environment():
-  annotations: IAnnotationsProvider
+class Context:
+  """
+  The context provides static information and implementations for the recursive conversion of
+  a #Value.
+  """
+
+  annotations: IAnnotationsProvider = field(repr=False)
+  converters: IConverterProvider = field(repr=False)
+  direction: Direction
+
+  def convert(self, value: 'Value') -> t.Any:
+    converter = self.converters.get_converter(value.location.type, self.direction)
+    return converter.convert(value, self)
 
 
 @dataclass
-class DeserializerEnvironment(_Environment):
-  deserializers: IDeserializerProvider
+class Value:
+  """
+  Container for a value that is passed to the #IConverter for conversion to or from Python.
+  """
 
-  def error(self, message: t.Union[str, Exception]) -> 'DeserializationError':
-    return DeserializationError(message, self.location)
-
-
-@dataclass
-class SerializerEnvironment(_Environment):
-  serializers: ISerializerProvider
-
-  def error(self, message: t.Union[str, Exception]) -> 'SerializationError':
-    return SerializationError(message, self.location)
-
-
-@dataclass
-class Context(t.Generic[_T_Environment]):
-  parent: t.Optional['Context[_T_Environment]']
-  env: _T_Environment
-  value: t.Any
+  current: t.Any
   location: Location
+  parent: t.Optional['Value']
 
 
 @dataclass
-class DeserializerNotFound(Exception):
+class ConverterNotFound(Exception):
   type: TypeHint
+  direction: Direction
 
 
 @dataclass
-class SerializerNotFound(Exception):
-  type: TypeHint
-
-
-@dataclass
-class DeserializationError(Exception):
-  message: t.Union[str, Exception]
-  location: Location
-
-
-@dataclass
-class SerializationError(Exception):
+class ConversionError(Exception):
   message: t.Union[str, Exception]
   location: Location

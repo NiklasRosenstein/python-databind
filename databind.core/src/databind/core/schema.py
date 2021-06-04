@@ -10,7 +10,7 @@ import abc
 import decimal
 import typing as t
 from dataclasses import dataclass, field
-from databind.core.annotations import get_annotation, alias
+from databind.core.annotations import get_annotation, alias, typeinfo, unionclass
 from databind.core.typehint import TypeHint
 
 # TODO(NiklasRosenstein): Implement more of the Field properties
@@ -105,11 +105,22 @@ class Schema:
   #: A dictionary for the #Field#s of the schema.
   fields: t.Dict[str, Field] = field(repr=False)
 
+  #: Annotations for the schema.
+  annotations: t.List[t.Any]
+
   #: The underlying Python type of the schema.
   python_type: t.Type
 
   #: An object that acts as a composer and decomposer for instances of the #python_type.
   composer: 'ISchemaComposer' = field(repr=False)
+
+  @property
+  def typeinfo(self) -> t.Optional[typeinfo]:
+    return get_annotation(self.annotations, typeinfo, None)
+
+  @property
+  def unionclass(self) -> t.Optional[unionclass]:
+    return get_annotation(self.annotations, unionclass, None)
 
 
 class ISchemaComposer(metaclass=abc.ABCMeta):

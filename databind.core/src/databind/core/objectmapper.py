@@ -1,14 +1,11 @@
 
-import abc
 import collections
 import typing as t
 from dataclasses import dataclass, field, Field as _Field
 from functools import reduce
 import nr.preconditions as preconditions
-from . import typehint
-from .api import Context, DeserializerEnvironment, IAnnotationsProvider, IDeserializer, IDeserializerProvider, ISerializer, \
-  ISerializerProvider, DeserializationError, DeserializerNotFound, SerializationError, SerializerEnvironment, \
-  SerializerNotFound, ITypeHintAdapter
+from .api import Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter, \
+  IConverterProvider, ITypeHintAdapter, Value
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
 from .settings import Settings
@@ -24,16 +21,13 @@ T = t.TypeVar('T')
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
-class IModule(IDeserializerProvider, ISerializerProvider, ITypeHintAdapter):
+class IModule(IConverterProvider, ITypeHintAdapter):
   """
   Combination of various interfaces, with default implementations acting as a no-op.
   """
 
-  def get_deserializer(self, type: TypeHint) -> IDeserializer:
-    raise DeserializerNotFound(type)
-
-  def get_serializer(self, type: TypeHint) -> ISerializer:
-    raise SerializerNotFound(type)
+  def get_converter(self, type: TypeHint, direction: 'Direction') -> IConverter:
+    raise ConverterNotFound(type, direction)
 
   def adapt_type_hint(self, type: TypeHint) -> TypeHint:
     return type
@@ -48,21 +42,23 @@ class SimpleModule(IModule):
 
   def __init__(self, name: str = None) -> None:
     self.__name = name
-    self.__deserializers: t.Dict[type, IDeserializer] = {}
-    self.__serializers: t.Dict[type, ISerializer] = {}
+    self.__converters_by_type: t.Dict[Direction, t.Dict[t.Type, IConverter]] = {
+      Direction.Deserialize: {}, Direction.Serialize: {}}
+    self.__converter_providers: t.List[IConverterProvider] = []
     self.__type_hint_adapters: t.List[ITypeHintAdapter] = []
-    self.__submodules: t.List[IModule] = []
 
   def __repr__(self):
     return f"<{type(self).__name__} {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
 
-  def add_deserializer(self, type_: t.Type, deserializer: IDeserializer) -> None:
-    preconditions.check_instance_of(type_, type)
-    self.__deserializers[type_] = deserializer
+  def add_converter_provider(self, provider: IConverterProvider) -> None:
+    preconditions.check_instance_of(provider, IConverterProvider)
+    self.__converter_providers.append(provider)
 
-  def add_serializer(self, type_: t.Type, serializer: ISerializer) -> None:
+  def add_converter_for_type(self, type_: t.Type, converter: IConverter, direction: Direction) -> None:
     preconditions.check_instance_of(type_, type)
-    self.__serializers[type_] = serializer
+    preconditions.check_instance_of(converter, IConverter)
+    preconditions.check_instance_of(direction, Direction)
+    self.__converters_by_type[direction][type] = converter
 
   def add_type_hint_adapter(self, adapter: ITypeHintAdapter) -> None:
     preconditions.check_instance_of(adapter, ITypeHintAdapter)
@@ -70,35 +66,23 @@ class SimpleModule(IModule):
 
   def add_module(self, module: IModule) -> None:
     preconditions.check_instance_of(module, IModule)
-    self.__submodules.append(module)
+    self.__converter_providers.append(module)
+    self.__type_hint_adapters.append(module)
 
   # IModule
-  def get_deserializer(self, type: TypeHint) -> IDeserializer:
-    if isinstance(type, Concrete) and type.type in self.__deserializers:
-      return self.__deserializers[type.type]
-    for module in reversed(self.__submodules):
+  def get_converter(self, type: TypeHint, direction: Direction) -> IConverter:
+    if isinstance(type, Concrete) and type.type in self.__converters_by_type[direction]:
+      return self.__converters_by_type[direction][type.type]
+    for module in reversed(self.__converter_providers):
       try:
-        return module.get_deserializer(type)
-      except DeserializerNotFound:
+        return module.get_converter(type, direction)
+      except ConverterNotFound:
         pass  # intentional
-    raise DeserializerNotFound(type)
-
-  # IModule
-  def get_serializer(self, type: TypeHint) -> ISerializer:
-    if isinstance(type, Concrete) and type.type in self.__serializers:
-      return self.__serializers[type.type]
-    for module in reversed(self.__submodules):
-      try:
-        return module.get_serializer(type)
-      except SerializerNotFound:
-        pass  # intentional
-    raise SerializerNotFound(type)
+    raise ConverterNotFound(type, direction)
 
   # IModule
   def adapt_type_hint(self, type_: TypeHint) -> TypeHint:
-    type_ = reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
-    type_ = reduce(lambda t, m: m.adapt_type_hint(t), self.__submodules, type_)
-    return type_
+    return reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
 
 
 class DefaultAnnotationsProvider(IAnnotationsProvider):
@@ -134,10 +118,10 @@ class DefaultAnnotationsProvider(IAnnotationsProvider):
     # Search for annotations of the field in the `_annotations` class.
     for curr_type in type.__mro__:
       if hasattr(curr_type, '_annotations'):
-        meta_cls: t.Type = curr_type._annotations
+        meta_cls: t.Type = curr_type._annotations  # type: ignore
         annotations = getattr(meta_cls, field_name, [])
         if isinstance(annotations, Annotation):
-          ann = annotations
+          ann = t.cast(T_Annotation, annotations)
         else:
           ann = get_annotation(annotations, annotation_cls, None)
         if ann is not None:
@@ -200,9 +184,31 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
   def __init__(self, *modules: IModule, name: str = None):
     SimpleModule.__init__(self, name)
     AnnotationsRegistry.__init__(self)
-    [self.add_module(m) for m in modules]
-    self.add_annotations_provider(DefaultAnnotationsProvider())
     self.settings = Settings()
+    for module in modules:
+      self.add_module(module)
+
+  @classmethod
+  def default(cls, *modules: IModule, name: str = None) -> 'ObjectMapper':
+    from .default.dataclass import DataclassModule
+    mapper = cls(DataclassModule(), *modules, name=name)
+    mapper.add_annotations_provider(DefaultAnnotationsProvider())
+    return mapper
+
+  def convert(self,
+    direction: Direction,
+    value: t.Any,
+    type_hint: t.Type[T],
+    filename: t.Optional[str] = None,
+    pos: t.Optional[Position] = None,
+    key: t.Union[str, int, None] = None,
+    parent: t.Optional[Value] = None
+  ) -> T:
+    preconditions.check_instance_of(direction, Direction)
+    th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
+    ctx = Context(self, self, direction)
+    loc = Location(th, filename, pos, parent.location if parent else None, key)
+    return ctx.convert(Value(value, loc, parent))
 
   def deserialize(self,
     value: t.Any,
@@ -210,16 +216,9 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
-    parent: t.Optional[Context[DeserializerEnvironment]] = None
+    parent: t.Optional[Value] = None
   ) -> T:
-    th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
-    ctx = Context(
-      parent,
-      DeserializerEnvironment(self, self),
-      value,
-      Location(th, filename, pos, parent.location if parent else None, key),
-    )
-    return self.get_deserializer(th).deserialize(ctx)
+    return self.convert(Direction.Deserialize, value, type_hint, filename, pos, key, parent)
 
   def serialize(self,
     value: t.Any,
@@ -227,13 +226,6 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
-    parent: t.Optional[Context[DeserializerEnvironment]] = None
+    parent: t.Optional[Value] = None
   ) -> t.Any:
-    th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
-    ctx = Context(
-      parent,
-      SerializerEnvironment(self, self),
-      value,
-      Location(th, filename, pos, parent.location if parent else None, key),
-    )
-    return self.get_serializer(th).serialize(ctx)
+    return self.convert(Direction.Serialize, value, type_hint, filename, pos, key, parent)
