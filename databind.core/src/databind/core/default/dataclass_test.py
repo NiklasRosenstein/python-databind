@@ -25,6 +25,7 @@ def test_dataclass_to_schema_conversion():
       'b': Field(Optional(Concrete(str)), []),
       'c': Field(Concrete(str), (alias('calias'),)),
     },
+    [],
     MyDataclass,
     schema.composer
   )

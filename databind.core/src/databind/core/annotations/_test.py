@@ -13,4 +13,8 @@ def test_get_annotation():
   class MyDataclass:
     pass
 
+  class MySubclass(MyDataclass):
+    pass
+
   assert get_annotation(MyDataclass, MyAnnotation, None) == MyAnnotation('Hello, World!')
+  assert get_annotation(MySubclass, MyAnnotation, None) == None

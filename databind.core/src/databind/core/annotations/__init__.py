@@ -88,7 +88,7 @@ def get_annotation(
 
 
 def get_type_annotations(source: t.Type) -> t.Dict[t.Type, t.Any]:
-  return getattr(source, Annotation.ANNOTATIONS_ATTRIBUTE_NAME, {})
+  return vars(source).get(Annotation.ANNOTATIONS_ATTRIBUTE_NAME, {})
 
 
 from .alias import alias
