@@ -53,12 +53,18 @@ class DatetimeModule(SimpleModule):
 
 class DatetimeJsonConverter(IConverter):
 
-  DEFAULT_DATEFMT = A.datefmt(Iso8601())
+  DEFAULT_DATE_FMT = A.datefmt('%Y-%m-%d')
+  DEFAULT_TIME_FMT = A.datefmt('%H:%M:%S(.%f)?%z')   # TODO(NiklasRosenstein): Add support for Iso8601 time formats
+  DEFAULT_DATETIME_FMT = A.datefmt(Iso8601())
 
   def convert(self, ctx: Context) -> t.Any:
     preconditions.check_instance_of(ctx.type, Concrete)
     type_ = t.cast(Concrete, ctx.type).type
-    datefmt = ctx.get_annotation(A.datefmt) or self.DEFAULT_DATEFMT
+    datefmt = ctx.get_annotation(A.datefmt) or (
+      self.DEFAULT_DATE_FMT if type_ == datetime.date else
+      self.DEFAULT_TIME_FMT if type_ == datetime.time else
+      self.DEFAULT_DATETIME_FMT if type_ == datetime.datetime else None)
+    assert datefmt is not None
 
     if ctx.direction == Direction.deserialize:
       if not isinstance(ctx.value, str):
