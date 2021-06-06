@@ -26,8 +26,7 @@ import typing as t
 import typing_extensions as te
 from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
 from dataclasses import dataclass
-from typing import _type_repr, _GenericAlias
-
+from typing import _type_repr, _GenericAlias  # type: ignore
 from nr import preconditions  # type: ignore
 
 if t.TYPE_CHECKING:
@@ -93,7 +92,7 @@ class Annotated(TypeHint):
   annotations: t.Tuple[t.Any, ...]
 
   def __init__(self, type: TypeHint, annotations: t.Sequence[t.Any]) -> None:
-    preconditions.check_instance_of(type, TypeHint)
+    preconditions.check_instance_of(type, TypeHint)  # type: ignore
     self.type = type
     self.annotations = tuple(annotations)
 
@@ -136,7 +135,7 @@ class Collection(TypeHint):
   item_type: TypeHint
 
   def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
-    return func(type(self)(self.item_type.visit(func)))
+    return func(type(self)(self.item_type.visit(func)))  # type: ignore
 
 
 @dataclass

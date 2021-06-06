@@ -16,7 +16,7 @@ class alias(Annotation):
   for that particular field.
   """
 
-  aliases: t.Tuple[str]
+  aliases: t.Tuple[str, ...]
 
   def __init__(self, alias: str, *additional_aliases: str) -> None:
     self.aliases = (alias,) + additional_aliases

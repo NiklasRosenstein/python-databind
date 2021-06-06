@@ -29,7 +29,7 @@ class Field:
   annotations: t.List[t.Any]
 
   @property
-  def aliases(self) -> t.List[str]:
+  def aliases(self) -> t.Sequence[str]:
     """
     The aliases for the field. Aliases are used to look up the value during deserialization in
     the mapping. If specified, the #name is never used during de/serialization except for

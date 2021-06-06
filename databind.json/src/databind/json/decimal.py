@@ -23,7 +23,7 @@ class DecimalJsonConverter(IConverter):
   def convert(self, ctx: Context) -> t.Any:
     preconditions.check_instance_of(ctx.type, Concrete)
     preconditions.check_argument(t.cast(Concrete, ctx.type).type is decimal.Decimal, 'must be Decimal')
-    context = Optional(ctx.get_annotation(ctx, A.precision))\
+    context = Optional(ctx.get_annotation(A.precision))\
       .map(lambda b: b.to_context()).or_else(None)
 
     if ctx.direction == Direction.deserialize:
