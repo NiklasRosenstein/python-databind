@@ -10,7 +10,7 @@ The date is parsed using the #nr.parsing.date module.
 import datetime
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, ConversionError, Direction, IConverter, Value
+from databind.core.api import Context, ConversionError, Direction, IConverter, Context
 from databind.core.objectmapper import SimpleModule
 from databind.core.typehint import Concrete
 from nr import preconditions
@@ -47,26 +47,26 @@ class DatetimeModule(SimpleModule):
     super().__init__()
     conv = DatetimeJsonConverter()
     for type_ in (datetime.date, datetime.datetime, datetime.time):
-      self.add_converter_for_type(type_, conv, Direction.Deserialize)
-      self.add_converter_for_type(type_, conv, Direction.Serialize)
+      self.add_converter_for_type(type_, conv, Direction.deserialize)
+      self.add_converter_for_type(type_, conv, Direction.serialize)
 
 
 class DatetimeJsonConverter(IConverter):
 
   DEFAULT_DATEFMT = A.datefmt(Iso8601())
 
-  def convert(self, value: Value, ctx: Context) -> t.Any:
-    preconditions.check_instance_of(value.type, Concrete)
-    type_ = t.cast(Concrete, value.type).type
-    datefmt = ctx.get_annotation(value, A.datefmt) or self.DEFAULT_DATEFMT
+  def convert(self, ctx: Context) -> t.Any:
+    preconditions.check_instance_of(ctx.type, Concrete)
+    type_ = t.cast(Concrete, ctx.type).type
+    datefmt = ctx.get_annotation(A.datefmt) or self.DEFAULT_DATEFMT
 
-    if ctx.direction == Direction.Deserialize:
-      if not isinstance(value.current, str):
-        raise ctx.type_error(value, expected='str')
-      dt = datefmt.parse(value.current)  # TODO(NiklasRosenstein): Rethrow as ConversionError
+    if ctx.direction == Direction.deserialize:
+      if not isinstance(ctx.value, str):
+        raise ctx.type_error(expected='str')
+      dt = datefmt.parse(ctx.value)  # TODO(NiklasRosenstein): Rethrow as ConversionError
       return trim_datetime(dt, type_)
 
     else:
-      if not isinstance(value.current, type_):
-        raise ctx.type_error(value, expected=type_)
-      return datefmt.format(expand_to_datetime(value.current))
+      if not isinstance(ctx.value, type_):
+        raise ctx.type_error(expected=type_)
+      return datefmt.format(expand_to_datetime(ctx.value))

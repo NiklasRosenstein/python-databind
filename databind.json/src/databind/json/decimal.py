@@ -2,7 +2,7 @@
 import decimal
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, Direction, IConverter, Value
+from databind.core.api import Context, Direction, IConverter, Context
 from databind.core.objectmapper import SimpleModule
 from databind.core.typehint import Concrete
 from nr import preconditions
@@ -14,25 +14,25 @@ class DecimalModule(SimpleModule):
   def __init__(self) -> None:
     super().__init__()
     conv = DecimalJsonConverter()
-    self.add_converter_for_type(decimal.Decimal, conv, Direction.Deserialize)
-    self.add_converter_for_type(decimal.Decimal, conv, Direction.Serialize)
+    self.add_converter_for_type(decimal.Decimal, conv, Direction.deserialize)
+    self.add_converter_for_type(decimal.Decimal, conv, Direction.serialize)
 
 
 class DecimalJsonConverter(IConverter):
 
-  def convert(self, value: Value, ctx: Context) -> t.Any:
-    preconditions.check_instance_of(value.type, Concrete)
-    preconditions.check_argument(t.cast(Concrete, value.type).type is decimal.Decimal, 'must be Decimal')
-    context = Optional(ctx.get_annotation(value, A.precision))\
+  def convert(self, ctx: Context) -> t.Any:
+    preconditions.check_instance_of(ctx.type, Concrete)
+    preconditions.check_argument(t.cast(Concrete, ctx.type).type is decimal.Decimal, 'must be Decimal')
+    context = Optional(ctx.get_annotation(ctx, A.precision))\
       .map(lambda b: b.to_context()).or_else(None)
 
-    if ctx.direction == Direction.Deserialize:
-      if not isinstance(value.current, str):
-        raise ctx.type_error(value, expected='str')
+    if ctx.direction == Direction.deserialize:
+      if not isinstance(ctx.value, str):
+        raise ctx.type_error(expected='str')
       # TODO(NiklasRosenstein): Allow int/float as source type if enabled per annotation.
-      return decimal.Decimal(value.current, context)
+      return decimal.Decimal(ctx.value, context)
 
     else:
-      if not isinstance(value.current, decimal.Decimal):
-        raise ctx.type_error(value, expected=decimal.Decimal)
-      return str(value.current)
+      if not isinstance(ctx.value, decimal.Decimal):
+        raise ctx.type_error(expected=decimal.Decimal)
+      return str(ctx.value)
