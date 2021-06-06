@@ -36,26 +36,24 @@ class Location:
   with type information that is used to render the string representation.
   """
 
+  #: The parent of the location.
+  parent: t.Optional['Location']
+
   #: The expected type of the value at this location.
   type: TypeHint
-
-  #: The filename of the input source. If not set, the parent location's filename is considered
-  #: this location's filename (although the value is not actively inherited when the #Location
-  #: object is created).
-  filename: t.Optional[str]
-
-  #: The line and column of the location (optional).
-  pos: t.Optional[Position] = None
-
-  #: The parent of the location.
-  parent: t.Optional['Location'] = None
 
   #: The key of the location. This is `None` if the location represents the root of the nested
   #: structure. Locations with a `None` key may still have a #parent in case of a location that
   #: represents a different source but was reached from another location.
   key: t.Union[str, int, None] = None
 
-  Position = Position
+  #: The filename of the input source. If not set, the parent location's filename is considered
+  #: this location's filename (although the value is not actively inherited when the #Location
+  #: object is created).
+  filename: t.Optional[str] = None
+
+  #: The line and column of the location (optional).
+  pos: t.Optional[Position] = None
 
   def __str__(self) -> str:
     """
@@ -82,3 +80,11 @@ class Location:
 
     parts.pop()  # Remove the last '->'
     return ''.join(parts)
+
+  def push(self,
+    type: TypeHint,
+    key: t.Union[str, int, None],
+    filename: t.Optional[str],
+    pos: t.Optional[Position]
+  ) -> 'Location':
+    return Location(self, type, key, filename, pos)

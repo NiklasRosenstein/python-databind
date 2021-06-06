@@ -10,6 +10,7 @@ of the following ways:
 """
 
 import typing as t
+import weakref
 
 T = t.TypeVar('T')
 T_Type = t.TypeVar('T_Type', bound=t.Type)
@@ -44,12 +45,17 @@ class Annotation:
 
   ANNOTATIONS_ATTRIBUTE_NAME = '__databind_annotations__'
 
+  owner: t.Optional['weakref.ref[t.Type]'] = None
+
   def __call__(self, cls: T_Type) -> T_Type:
     """
     Decorate a class with this annotation. Creates the `__databind_annotations__` attribute on the
     specified *cls* if it does not exist and registers the annotation *self* to it. The annotation
     can be retrieved again using the #get_annotation() method on *cls*.
     """
+
+    if self.owner is not None:
+      raise RuntimeError('annotation is already attached to a type')
 
     if not isinstance(cls, type):
       raise TypeError(f'@{type(self).__name__}(...) should be used to annotated types only')
@@ -59,6 +65,7 @@ class Annotation:
 
     annotations: t.Dict = getattr(cls, self.ANNOTATIONS_ATTRIBUTE_NAME)
     annotations[type(self)] = self
+    self.owner = weakref.ref(cls)
     return cls
 
 

@@ -6,7 +6,7 @@ from functools import reduce
 from databind.core.schema import Field
 import nr.preconditions as preconditions
 from .api import Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter, \
-  IConverterProvider, ITypeHintAdapter, Value
+  IConverterProvider, IObjectMapper, ITypeHintAdapter, Context
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
 from .settings import Settings
@@ -44,7 +44,7 @@ class SimpleModule(Module):
   def __init__(self, name: str = None) -> None:
     self.__name = name
     self.__converters_by_type: t.Dict[Direction, t.Dict[t.Type, IConverter]] = {
-      Direction.Deserialize: {}, Direction.Serialize: {}}
+      Direction.deserialize: {}, Direction.serialize: {}}
     self.__converter_providers: t.List[IConverterProvider] = []
     self.__type_hint_adapters: t.List[ITypeHintAdapter] = []
 
@@ -52,17 +52,17 @@ class SimpleModule(Module):
     return f"<{type(self).__name__} {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
 
   def add_converter_provider(self, provider: IConverterProvider) -> None:
-    preconditions.check_instance_of(provider, IConverterProvider)
+    preconditions.check_instance_of(provider, IConverterProvider)  # type: ignore
     self.__converter_providers.append(provider)
 
   def add_converter_for_type(self, type_: t.Type, converter: IConverter, direction: Direction) -> None:
     preconditions.check_instance_of(type_, type)
-    preconditions.check_instance_of(converter, IConverter)
+    preconditions.check_instance_of(converter, IConverter)  # type: ignore
     preconditions.check_instance_of(direction, Direction)
     self.__converters_by_type[direction][type_] = converter
 
   def add_type_hint_adapter(self, adapter: ITypeHintAdapter) -> None:
-    preconditions.check_instance_of(adapter, ITypeHintAdapter)
+    preconditions.check_instance_of(adapter, ITypeHintAdapter)  # type: ignore
     self.__type_hint_adapters.append(adapter)
 
   def add_module(self, module: Module) -> None:
@@ -191,7 +191,7 @@ class AnnotationsRegistry(IAnnotationsProvider):
     return None
 
 
-class ObjectMapper(SimpleModule, AnnotationsRegistry):
+class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
 
   def __init__(self, *modules: Module, name: str = None):
     SimpleModule.__init__(self, name)
@@ -212,17 +212,16 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     value: t.Any,
     type_hint: t.Type[T],
     filename: t.Optional[str] = None,
-    pos: t.Optional[Position] = None,
+    position: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
     annotations: t.Optional[t.List[t.Any]] = None,
-    parent: t.Optional[Value] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
     th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
-    ctx = Context(self, self, direction)
     field = Field(th, annotations or [])
-    loc = Location(th, filename, pos, parent.location if parent else None, key)
-    return ctx.convert(Value(value, loc, field, parent))
+    loc = Location(None, th, key, filename, position)
+    ctx = Context(None, self, direction, value, loc, field)
+    return ctx.convert()
 
   def deserialize(self,
     value: t.Any,
@@ -230,10 +229,9 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
-    annotations: t.Optional[t.List[t.Any]] = None,
-    parent: t.Optional[Value] = None
+    annotations: t.Optional[t.List[t.Any]] = None
   ) -> T:
-    return self.convert(Direction.Deserialize, value, type_hint, filename, pos, key, annotations, parent)
+    return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations)
 
   def serialize(self,
     value: t.Any,
@@ -241,7 +239,6 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
-    annotations: t.Optional[t.List[t.Any]] = None,
-    parent: t.Optional[Value] = None
+    annotations: t.Optional[t.List[t.Any]] = None
   ) -> t.Any:
-    return self.convert(Direction.Serialize, value, type_hint, filename, pos, key, annotations, parent)
+    return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations)
