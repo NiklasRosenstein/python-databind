@@ -29,9 +29,8 @@ else:
 
 requirements = [
   'dataclasses >=0.6.0,<1.0.0',
-  'nr.optional >=0.1.0,<1.0.0',
-  'nr.preconditions >=0.0.2,<1.0.0',
-  'nr.pylang.utils >=0.1.1,<1.0.0',
+  'nr.optional >=0.1.1,<1.0.0',
+  'nr.preconditions >=0.0.4,<1.0.0',
   'nr.stream >=0.1.1,<1.0.0',
 ]
 
