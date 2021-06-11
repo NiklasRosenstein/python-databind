@@ -25,12 +25,12 @@ class DecimalJsonConverter(IConverter):
     preconditions.check_argument(t.cast(Concrete, ctx.type).type is decimal.Decimal, 'must be Decimal')
     context = Optional(ctx.get_annotation(A.precision))\
       .map(lambda b: b.to_context()).or_else(None)
+    fieldinfo = ctx.get_annotation(A.fieldinfo) or A.fieldinfo()
 
     if ctx.direction == Direction.deserialize:
-      if not isinstance(ctx.value, str):
-        raise ctx.type_error(expected='str')
-      # TODO(NiklasRosenstein): Allow int/float as source type if enabled per annotation.
-      return decimal.Decimal(ctx.value, context)
+      if (not fieldinfo.strict and isinstance(ctx.value, (int, float))) or isinstance(ctx.value, str):
+        return decimal.Decimal(ctx.value, context)
+      raise ctx.type_error(expected='str')
 
     else:
       if not isinstance(ctx.value, decimal.Decimal):
