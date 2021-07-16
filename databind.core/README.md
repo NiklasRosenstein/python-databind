@@ -1,71 +1,33 @@
 # databind.core
 
-A `jackson-databind` inspired de-/serialization library for Python based on `@dataclass`es.
+`databind.core` provides a framework for data de-/serialization in Python.
 
-## Introduction
+## Quickstart
 
-The `databind.core` package does not provide a concrete de-/serializer, but additions and
-extensions on top of the built-in `dataclasses` module to describe serialization behaviour. The
-`@dataclass` decorator and `field()` method provided by this package can act as a drop-in
-replacement, while providing some additional features such as
+```py
+import databind.json
+import dataclasses
 
-* non-optional fields following optional fields
-* common class and field annotations
-* union types
+@dataclasses.dataclass
+class ServerConfig:
+  host: str
+  port: int = 8080
 
-To de-/serialize data, choose one of the following libraries:
+@dataclasses.dataclass
+class MainConfig:
+  server: ServerConfig
+
+payload = { 'server': { 'host': '127.0.0.1' } }
+config = databind.json.load(MainConfig, payload)
+assert config == MainConfig(ServerConfig('127.0.0.1'))
+```
+
+## See also
 
 * [databind.binary](https://pypi.org/projects/databind.binary)
 * [databind.json](https://pypi.org/projects/databind.json)
 * [databind.tagline](https://pypi.org/projects/databind.tagline)
 * [databind.yaml](https://pypi.org/projects/databind.yaml)
-
-> __Note__: Any of these de/-serializer implementations can work with the classes decorated by the
-> standard-library `@dataclasses.dataclass` decorator. Use `databind.core.dataclass` and
-> `databind.core.field` if you need to customize the de-/serialization behaviour.
-
-Use the [databind.mypy](https://pypi.org/projects/databind.yaml) for Mypy type-checking
-support when using the `databind.core` methods.
-
-## Example
-
-```py
-from dataclasses import dataclass
-from databind.core import unionclass
-
-@unionclass(subtypes = unionclass.Subtypes.DYNAMIC)
-class Person:
-  name: str
-
-@dataclass
-@unionclass.subtype(Person)
-class Student(Person):
-  visits_courses: set[str]
-
-@dataclass
-@unionclass.subtype(Person)
-class Teacher(Person):
-  teaches_courses: set[str]
-```
-
-Example using `databind.json` to deserialize a JSON payload from this datamodel:
-
-```py
-from databind.json import from_json
-student = from_json({
-  'type': 'student',
-  'student': {
-    'name': 'John Doe',
-    'visitsCourses': [
-      'Physics',
-      'Chemistry'
-    ]
-  }
-})
-assert isinstance(student, Student)
-assert student.name == 'John Doe'
-assert student.visits_courses == {'Physics', 'Chemistry'}
-```
 
 ---
 
