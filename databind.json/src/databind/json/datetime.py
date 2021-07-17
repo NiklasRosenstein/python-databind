@@ -1,7 +1,7 @@
 
 """
 Implements de/serialization of the #datetime types #datetime.date, #datetime.datetime and
-#datetime.time to/from strings. The date/time format can be specified using the #datefmt()
+#datetime.time to/from strings. The date/time format can be specified using the #A.datefmt()
 annotation.
 
 The date is parsed using the #nr.parsing.date module.

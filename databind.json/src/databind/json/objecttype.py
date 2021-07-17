@@ -1,6 +1,6 @@
 
 """
-Provides the #DatamodelModule that implements the de/serialization of JSON payloads for databind
+Provides the #ObjectTypeModule that implements the de/serialization of JSON payloads for databind
 schemas (see #databind.core.schema).
 """
 
