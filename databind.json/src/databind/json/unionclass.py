@@ -14,6 +14,9 @@ class UnionclassModule(Module):
       unionclass = A.get_annotation(type.annotations, A.unionclass, None)
       if unionclass:
         return UnionclassConverter()
+    elif isinstance(type, ObjectType):
+      if type.schema.unionclass is not None:
+        return UnionclassConverter()
     raise ConverterNotFound(type, direction)
 
 

@@ -8,15 +8,12 @@ import typing as t
 from databind.core.api import Context, ConverterNotFound, Direction, IConverter, Context
 from databind.core.objectmapper import Module
 from databind.core.types import ObjectType, BaseType
-from .unionclass import UnionclassConverter
 
 
 class ObjectTypeModule(Module):
 
   def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
     if isinstance(type, ObjectType):
-      if type.schema.unionclass is not None:
-        return UnionclassConverter()
       return ObjectTypeConverter()
     raise ConverterNotFound(type, direction)
 
