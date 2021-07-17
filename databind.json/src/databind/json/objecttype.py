@@ -13,17 +13,17 @@ from databind.core.types import ObjectType, BaseType, from_typing
 from nr import preconditions
 
 
-class DatamodelModule(Module):
+class ObjectTypeModule(Module):
 
   def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
     if isinstance(type, ObjectType):
       if type.schema.unionclass is not None:
         return UnionclassConverter()
-      return DatamodelConverter()
+      return ObjectTypeConverter()
     raise ConverterNotFound(type, direction)
 
 
-class DatamodelConverter(IConverter):
+class ObjectTypeConverter(IConverter):
 
   def convert(self, ctx: Context) -> t.Any:
     print('--> datamodel', ctx)
