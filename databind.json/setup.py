@@ -29,7 +29,6 @@ else:
 
 requirements = [
   'databind.core >=0.11.0,<1.0.0',
-  'nr.parsing.date >=0.3.0,<1.0.0',
 ]
 
 setuptools.setup(

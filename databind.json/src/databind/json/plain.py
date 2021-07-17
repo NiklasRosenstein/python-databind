@@ -4,7 +4,7 @@ import typing as t
 from databind.core import annotations as A
 from databind.core.api import Context, Direction, IConverter, Context
 from databind.core.objectmapper import SimpleModule
-from databind.core.typehint import Concrete
+from databind.core.types import ConcreteType
 from nr import preconditions
 
 
@@ -68,7 +68,7 @@ class PlainJsonConverter(IConverter):
 
   def convert(self, ctx: Context) -> t.Any:
     source_type = type(ctx.value)
-    target_type = preconditions.check_instance_of(ctx.location.type, Concrete).type
+    target_type = preconditions.check_instance_of(ctx.location.type, ConcreteType).type
     fieldinfo = ctx.get_annotation(A.fieldinfo) or A.fieldinfo()
     strict = ctx.direction == Direction.serialize or fieldinfo.strict
     func = (self._strict_adapters if strict else self._nonstrict_adapters)\

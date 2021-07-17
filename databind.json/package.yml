@@ -5,6 +5,5 @@ typed: true
 requirements:
 - python ^3.6
 - databind.core ^0.11.0
-- nr.parsing.date ^0.3.0
 test-driver:
   type: pytest

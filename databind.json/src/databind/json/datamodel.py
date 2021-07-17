@@ -9,14 +9,14 @@ from databind.core import annotations as A
 from databind.core.annotations.unionclass import Style, unionclass
 from databind.core.api import Context, ConversionError, ConverterNotFound, Direction, IConverter, Context
 from databind.core.objectmapper import Module
-from databind.core.typehint import Datamodel, TypeHint, from_typing
+from databind.core.types import ObjectType, BaseType, from_typing
 from nr import preconditions
 
 
 class DatamodelModule(Module):
 
-  def get_converter(self, type: TypeHint, direction: Direction) -> IConverter:
-    if isinstance(type, Datamodel):
+  def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
+    if isinstance(type, ObjectType):
       if type.schema.unionclass is not None:
         return UnionclassConverter()
       return DatamodelConverter()
@@ -33,7 +33,7 @@ class DatamodelConverter(IConverter):
 class UnionclassConverter(IConverter):
 
   def convert(self, ctx: Context) -> t.Any:
-    unionclass = preconditions.check_instance_of(ctx.type, Datamodel).schema.unionclass
+    unionclass = preconditions.check_instance_of(ctx.type, ObjectType).schema.unionclass
     unionclass = preconditions.check_not_none(unionclass).with_fallback(
       ctx.mapper.get_global_annotation(A.unionclass))
     style = preconditions.check_not_none(unionclass.style)
