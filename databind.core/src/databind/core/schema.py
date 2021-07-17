@@ -10,7 +10,7 @@ import abc
 import typing as t
 from dataclasses import dataclass, field
 from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
-from databind.core.typehint import TypeHint
+from databind.core.types import BaseType
 from nr.optional import Optional
 
 
@@ -21,7 +21,7 @@ class Field:
   """
 
   #: The type hint associated with this field.
-  type: TypeHint
+  type: BaseType
 
   #: A list of the annotations that are associated with the field. Some of the data from these
   #: annotations may be extracted into the other properties on the #Field instance already (such

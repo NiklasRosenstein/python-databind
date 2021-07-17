@@ -1,7 +1,7 @@
 
 import typing as t
 from dataclasses import dataclass
-from .typehint import TypeHint
+from .types import BaseType
 
 
 def _get_location_chain(location: 'Location') -> t.List['Location']:
@@ -40,7 +40,7 @@ class Location:
   parent: t.Optional['Location']
 
   #: The expected type of the value at this location.
-  type: TypeHint
+  type: BaseType
 
   #: The key of the location. This is `None` if the location represents the root of the nested
   #: structure. Locations with a `None` key may still have a #parent in case of a location that
@@ -82,7 +82,7 @@ class Location:
     return ''.join(parts)
 
   def push(self,
-    type: TypeHint,
+    type: BaseType,
     key: t.Union[str, int, None],
     filename: t.Optional[str],
     pos: t.Optional[Position]

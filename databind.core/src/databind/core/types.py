@@ -9,31 +9,33 @@ the reverse operation.
 """
 
 __all__ = [
-  'TypeHint',
-  'Concrete',
-  'Annotated',
-  'Union',
-  'Optional',
-  'Collection',
-  'List',
-  'Set',
-  'Map',
+  'BaseType',
+  'ConcreteType',
+  'AnnotatedType',
+  'UnionType',
+  'OptionalType',
+  'CollectionType',
+  'ListType',
+  'SetType',
+  'MapType',
   'from_typing',
 ]
 
 import abc
+import dataclasses
 import typing as t
 import typing_extensions as te
+
 from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
-from dataclasses import dataclass
 from typing import _type_repr, _GenericAlias  # type: ignore
-from nr import preconditions  # type: ignore
+
+from nr import preconditions
 
 if t.TYPE_CHECKING:
   from .schema import Schema
 
 
-class TypeHint(metaclass=abc.ABCMeta):
+class BaseType(metaclass=abc.ABCMeta):
   """ Base class for an API representation of #typing type hints. """
 
   def __init__(self) -> None:
@@ -47,28 +49,28 @@ class TypeHint(metaclass=abc.ABCMeta):
     """ Convert the type hint back to a #typing representation. """
 
   @abc.abstractmethod
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint': ...
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType': ...
 
-  def normalize(self) -> 'TypeHint':
+  def normalize(self) -> 'BaseType':
     """
     Bubbles up all annotations from nested #Annotated hints into a single #Annotated hint at
     the root if there exists at least one annotation in the tree.
     """
 
     annotations: t.List[t.Any] = []
-    def visitor(hint: TypeHint) -> TypeHint:
-      if isinstance(hint, Annotated):
+    def visitor(hint: BaseType) -> BaseType:
+      if isinstance(hint, AnnotatedType):
         annotations.extend(hint.annotations)
         return hint.type
       return hint
     new_hint = self.visit(visitor)
     if annotations:
-      return Annotated(new_hint, tuple(annotations))
+      return AnnotatedType(new_hint, tuple(annotations))
     return new_hint
 
 
-@dataclass
-class Concrete(TypeHint):
+@dataclasses.dataclass
+class ConcreteType(BaseType):
   """
   Represents a concrete type, that is an actual Python type, not a typing hint. Note that concrete
   types may be reinterpreted as a #Datamodel by the object mapper, but #from_typing() cannot do
@@ -80,104 +82,105 @@ class Concrete(TypeHint):
   def to_typing(self) -> t.Any:
     return self.type
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(self)
 
 
-@dataclass
-class Annotated(TypeHint):
+@dataclasses.dataclass
+class AnnotatedType(BaseType):
   """ Represents an annotated type. Nested annotations are usually flattened. """
 
-  type: TypeHint
+  type: BaseType
   annotations: t.Tuple[t.Any, ...]
 
-  def __init__(self, type: TypeHint, annotations: t.Sequence[t.Any]) -> None:
-    preconditions.check_instance_of(type, TypeHint)  # type: ignore
+  def __init__(self, type: BaseType, annotations: t.Sequence[t.Any]) -> None:
+    preconditions.check_instance_of(type, BaseType)  # type: ignore
     self.type = type
     self.annotations = tuple(annotations)
 
   def to_typing(self) -> t.Any:
     return te.Annotated[(self.type.to_typing(),) + self.annotations]  # type: ignore
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
-    return func(Annotated(self.type.visit(func), self.annotations))
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
+    return func(AnnotatedType(self.type.visit(func), self.annotations))
 
 
-@dataclass
-class Union(TypeHint):
+@dataclasses.dataclass
+class UnionType(BaseType):
   """ Represents a union of types. Unions never represent optionals, as is the case in typing. """
 
-  types: t.Tuple[TypeHint, ...]
+  types: t.Tuple[BaseType, ...]
 
   def to_typing(self) -> t.Any:
     return t.Union[self.types]
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
-    return func(Union(tuple(t.visit(func) for t in self.types)))
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
+    return func(UnionType(tuple(t.visit(func) for t in self.types)))
 
 
-@dataclass
-class Optional(TypeHint):
+@dataclasses.dataclass
+class OptionalType(BaseType):
   """ Represents an optional type. """
 
-  type: TypeHint
+  type: BaseType
 
   def to_typing(self) -> t.Any:
     return t.Optional[self.type]
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
-    return func(Optional(self.type.visit(func)))
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
+    return func(OptionalType(self.type.visit(func)))
 
 
-class Collection(TypeHint):
+@dataclasses.dataclass
+class CollectionType(BaseType):
   """ Represents a collection type. This is still abstract. """
 
-  item_type: TypeHint
+  item_type: BaseType
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(type(self)(self.item_type.visit(func)))  # type: ignore
 
 
-@dataclass
-class List(Collection):
+@dataclasses.dataclass
+class ListType(CollectionType):
   """ Represents a list type. """
 
-  item_type: TypeHint
+  item_type: BaseType
 
   def to_typing(self) -> t.Any:
     return t.List[self.item_type.to_typing()]  # type: ignore
 
 
-@dataclass
-class Set(Collection):
+@dataclasses.dataclass
+class SetType(CollectionType):
   """ Represents a set type. """
 
-  item_type: TypeHint
+  item_type: BaseType
 
   def to_typing(self) -> t.Any:
     return t.Set[self.item_type.to_typing()]  # type: ignore
 
 
-@dataclass
-class Map(TypeHint):
+@dataclasses.dataclass
+class MapType(BaseType):
   """
   Represents a mapping type. The *impl_hint* must be one of #typing.Map, #typing.MutableMap or
   #typing.Dict (defaults to #typing.Dict).
   """
 
-  key_type: TypeHint
-  value_type: TypeHint
+  key_type: BaseType
+  value_type: BaseType
   impl_hint: _GenericAlias = t.Dict
 
   def to_typing(self) -> t.Any:
     return self.impl_hint[self.key_type.to_typing(), self.value_type.to_typing()]
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
-    return func(Map(self.key_type.visit(func), self.value_type.visit(func)))
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
+    return func(MapType(self.key_type.visit(func), self.value_type.visit(func)))
 
 
-@dataclass
-class Datamodel(TypeHint):
+@dataclasses.dataclass
+class ObjectType(BaseType):
   """
   Represents a type hint for a datamodel (or #Schema). Instances of this type hint are usually
   constructed in a later stage after #from_typing() when a #Concrete type hint was encountered
@@ -189,7 +192,7 @@ class Datamodel(TypeHint):
   def to_typing(self) -> t.Any:
     return self.schema.python_type
 
-  def visit(self, func: t.Callable[['TypeHint'], 'TypeHint']) -> 'TypeHint':
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(self)
 
 
@@ -225,7 +228,7 @@ _ORIGIN_CONVERSION = {
 }
 
 
-def from_typing(type_hint: t.Any) -> TypeHint:
+def from_typing(type_hint: t.Any) -> BaseType:
   """
   Convert a #typing type hint to an API #TypeHint.
   """
@@ -234,29 +237,29 @@ def from_typing(type_hint: t.Any) -> TypeHint:
   if generic is not None:
     generic = _ORIGIN_CONVERSION.get(generic, generic)
     if generic == t.List:
-      return List(from_typing(args[0]))
+      return ListType(from_typing(args[0]))
     elif generic == t.Set:
-      return Set(from_typing(args[0]))
+      return SetType(from_typing(args[0]))
     elif generic in (t.Dict, t.Mapping, t.MutableMapping):
-      return Map(from_typing(args[0]), from_typing(args[1]), generic)
+      return MapType(from_typing(args[0]), from_typing(args[1]), generic)
     elif generic == t.Optional or (generic == t.Union and None in args and len(args) == 2):  # type: ignore
       if len(args) == 1:
-        return Optional(from_typing(args[0]))
+        return OptionalType(from_typing(args[0]))
       elif len(args) == 2:
-        return Optional(from_typing(next(x for x in args if x is not None)))
+        return OptionalType(from_typing(next(x for x in args if x is not None)))
       else:
         raise ValueError(f'unexpected args for {generic}: {args}')
     elif generic == t.Union:
       if len(args) == 1:
         return from_typing(args[0])
       elif type(None) in args:
-        return Optional(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
+        return OptionalType(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
       else:
-        return Union(tuple(from_typing(a) for a in args))
+        return UnionType(tuple(from_typing(a) for a in args))
     elif hasattr(te, 'Annotated') and generic == te.Annotated:  # type: ignore
-      return Annotated(from_typing(args[0]), args[1:])
+      return AnnotatedType(from_typing(args[0]), args[1:])
 
   if isinstance(type_hint, type):
-    return Concrete(type_hint)
+    return ConcreteType(type_hint)
 
   raise ValueError(f'unsupported type hint {type_hint!r}')

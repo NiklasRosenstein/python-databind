@@ -6,7 +6,7 @@ from databind.core.annotations.unionclass import unionclass
 from databind.core.api import Context
 from databind.core.location import Location
 from databind.core.objectmapper import ObjectMapper
-from databind.core.typehint import Concrete
+from databind.core.types import ConcreteType
 from databind.json import JsonModule
 
 @dataclass

@@ -10,7 +10,7 @@ from .api import Context, ConverterNotFound, Direction, IAnnotationsProvider, IC
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
 from .settings import Settings
-from .typehint import Concrete, TypeHint, from_typing
+from .types import ConcreteType, BaseType, from_typing
 
 __all__ = [
   'IModule',
@@ -27,10 +27,10 @@ class Module(IConverterProvider, ITypeHintAdapter):
   Combination of various interfaces, with default implementations acting as a no-op.
   """
 
-  def get_converter(self, type: TypeHint, direction: 'Direction') -> IConverter:
+  def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter:
     raise ConverterNotFound(type, direction)
 
-  def adapt_type_hint(self, type: TypeHint) -> TypeHint:
+  def adapt_type_hint(self, type: BaseType) -> BaseType:
     return type
 
 
@@ -71,8 +71,8 @@ class SimpleModule(Module):
     self.__type_hint_adapters.append(module)
 
   # IModule
-  def get_converter(self, type: TypeHint, direction: Direction) -> IConverter:
-    if isinstance(type, Concrete) and type.type in self.__converters_by_type[direction]:
+  def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
+    if isinstance(type, ConcreteType) and type.type in self.__converters_by_type[direction]:
       return self.__converters_by_type[direction][type.type]
     for module in reversed(self.__converter_providers):
       try:
@@ -82,7 +82,7 @@ class SimpleModule(Module):
     raise ConverterNotFound(type, direction)
 
   # IModule
-  def adapt_type_hint(self, type_: TypeHint) -> TypeHint:
+  def adapt_type_hint(self, type_: BaseType) -> BaseType:
     return reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
 
 

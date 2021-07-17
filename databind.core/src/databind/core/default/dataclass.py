@@ -10,7 +10,7 @@ from databind.core.annotations import get_type_annotations
 from databind.core.api import Context
 from databind.core.objectmapper import Module
 from databind.core.schema import Field, ISchemaComposer, Schema
-from databind.core.typehint import Annotated, Concrete, Datamodel, TypeHint, from_typing
+from databind.core.types import AnnotatedType, ConcreteType, ObjectType, BaseType, from_typing
 from nr import preconditions
 
 
@@ -25,7 +25,7 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
   annotations = t.get_type_hints(dataclass_type)
   for field in enumerate_fields(dataclass_type):
     field_type_hint = from_typing(annotations.get(field.name, t.Any)).normalize()
-    if isinstance(field_type_hint, Annotated):
+    if isinstance(field_type_hint, AnnotatedType):
       field_type_hint, field_annotations = field_type_hint.type, field_type_hint.annotations  # type: ignore  # see https://github.com/python/mypy/issues/9731
     else:
       field_annotations = []
@@ -42,9 +42,9 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
 class DataclassModule(Module):
 
   # IModule
-  def adapt_type_hint(self, type: TypeHint) -> TypeHint:
-    if isinstance(type, Concrete) and is_dataclass(type.type):
-      type = Datamodel(dataclass_to_schema(type.type))
+  def adapt_type_hint(self, type: BaseType) -> BaseType:
+    if isinstance(type, ConcreteType) and is_dataclass(type.type):
+      type = ObjectType(dataclass_to_schema(type.type))
     return type
 
 

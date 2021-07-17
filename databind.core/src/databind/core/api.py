@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from databind.core.schema import Field
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
-from .typehint import TypeHint
+from .types import BaseType
 
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
@@ -39,7 +39,7 @@ class IConverterProvider(metaclass=abc.ABCMeta):
   """
 
   @abc.abstractmethod
-  def get_converter(self, type: TypeHint, direction: 'Direction') -> IConverter: ...
+  def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter: ...
 
   Wrapper: t.Type['_ConverterProviderWrapper']
 
@@ -76,7 +76,7 @@ class ITypeHintAdapter(metaclass=abc.ABCMeta):
   """
 
   @abc.abstractmethod
-  def adapt_type_hint(self, type: TypeHint) -> TypeHint: ...
+  def adapt_type_hint(self, type: BaseType) -> BaseType: ...
 
 
 class IObjectMapper(IAnnotationsProvider, IConverterProvider, ITypeHintAdapter):
@@ -120,11 +120,11 @@ class Context:
     return f'Context(direction={self.direction.name}, value={_trunc(repr(self.value), 30)})'
 
   @property
-  def type(self) -> TypeHint:
+  def type(self) -> BaseType:
     return self.location.type
 
   def push(self,
-    type: TypeHint,
+    type: BaseType,
     value: t.Any,
     key: t.Union[str, int, None],
     field: t.Optional[Field] = None,
@@ -156,7 +156,7 @@ class Context:
 
 @dataclass
 class ConverterNotFound(Exception):
-  type: TypeHint
+  type: BaseType
   direction: Direction
 
 
@@ -171,10 +171,10 @@ class ConversionError(Exception):
 
 class _ConverterProviderWrapper(IConverterProvider):
 
-  def __init__(self, func: t.Callable[[TypeHint], IConverter]) -> None:
+  def __init__(self, func: t.Callable[[BaseType], IConverter]) -> None:
     self._func = func
 
-  def get_converter(self, type: TypeHint, direction: 'Direction') -> IConverter:
+  def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter:
     return self._func(type, direction)  # type: ignore
 
 
