@@ -5,7 +5,6 @@ schemas (see #databind.core.schema).
 """
 
 import typing as t
-from databind.core import annotations as A
 from databind.core.api import Context, ConverterNotFound, Direction, IConverter, Context
 from databind.core.objectmapper import Module
 from databind.core.types import ObjectType, BaseType

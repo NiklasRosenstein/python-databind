@@ -1,14 +1,31 @@
 
 import typing as t
-from databind.core.api import Context, ConversionError, Direction, IConverter
-from databind.core.types import ObjectType, from_typing
+from databind.core import annotations as A
+from databind.core.api import Context, ConversionError, ConverterNotFound, Direction, IConverter
+from databind.core.objectmapper import Module
+from databind.core.types import AnnotatedType, BaseType, ObjectType, from_typing
 from nr import preconditions
+
+
+class UnionclassModule(Module):
+
+  def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
+    if isinstance(type, AnnotatedType):
+      unionclass = A.get_annotation(type.annotations, A.unionclass, None)
+      if unionclass:
+        return UnionclassConverter()
+    raise ConverterNotFound(type, direction)
 
 
 class UnionclassConverter(IConverter):
 
   def convert(self, ctx: Context) -> t.Any:
-    unionclass = preconditions.check_instance_of(ctx.type, ObjectType).schema.unionclass
+    if isinstance(ctx.type, ObjectType):
+      unionclass = ctx.type.schema.unionclass
+    elif isinstance(ctx.type, AnnotatedType):
+      unionclass = A.get_annotation(ctx.type.annotations, A.unionclass, None)
+    else:
+      raise RuntimeError(f'expected ObjectType or AnnotatedType, got {ctx.type!r}')
     unionclass = preconditions.check_not_none(unionclass).with_fallback(
       ctx.mapper.get_global_annotation(A.unionclass))
     style = preconditions.check_not_none(unionclass.style)
