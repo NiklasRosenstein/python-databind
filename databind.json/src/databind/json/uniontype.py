@@ -3,36 +3,28 @@ import typing as t
 from databind.core import annotations as A
 from databind.core.api import Context, ConversionError, ConverterNotFound, Direction, IConverter
 from databind.core.objectmapper import Module
-from databind.core.types import AnnotatedType, BaseType, ObjectType, from_typing
+from databind.core.types import AnnotatedType, BaseType, ObjectType, UnionType, from_typing
 from nr import preconditions
 
 
-class UnionclassModule(Module):
+class UnionTypeModule(Module):
 
   def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
-    if isinstance(type, AnnotatedType):
-      unionclass = A.get_annotation(type.annotations, A.unionclass, None)
-      if unionclass:
-        return UnionclassConverter()
-    elif isinstance(type, ObjectType):
-      if type.schema.unionclass is not None:
-        return UnionclassConverter()
+    if isinstance(type, UnionType):
+        return UnionConverter()
     raise ConverterNotFound(type, direction)
 
 
-class UnionclassConverter(IConverter):
+class UnionConverter(IConverter):
+  """
+  Converter for schema's with th
+  """
 
   def convert(self, ctx: Context) -> t.Any:
-    if isinstance(ctx.type, ObjectType):
-      unionclass = ctx.type.schema.unionclass
-    elif isinstance(ctx.type, AnnotatedType):
-      unionclass = A.get_annotation(ctx.type.annotations, A.unionclass, None)
-    else:
-      raise RuntimeError(f'expected ObjectType or AnnotatedType, got {ctx.type!r}')
-    unionclass = preconditions.check_not_none(unionclass).with_fallback(
-      ctx.mapper.get_global_annotation(A.unionclass))
-    style = preconditions.check_not_none(unionclass.style)
-    discriminator_key = preconditions.check_not_none(unionclass.discriminator_key)
+    assert isinstance(ctx.type, UnionType)
+    fallback = ctx.mapper.get_global_annotation(A.unionclass) or A.unionclass()
+    style = ctx.type.style or fallback.style or UnionType.DEFAULT_STYLE
+    discriminator_key = ctx.type.discriminator_key or fallback.discriminator_key or UnionType.DEFAULT_DISCRIMINATOR_KEY
 
     is_deserialize = ctx.direction == Direction.deserialize
 
@@ -42,12 +34,14 @@ class UnionclassConverter(IConverter):
       if discriminator_key not in ctx.value:
         raise ConversionError(f'missing discriminator key {discriminator_key!r}', ctx.location)
       member_name = ctx.value[discriminator_key]
-      member_type = unionclass.subtypes.get_type_by_name(member_name)
+      member_type = ctx.type.subtypes.get_type_by_name(member_name)
+      assert isinstance(member_type, BaseType), f'"{type(ctx.type.subtypes).__name__}" returned member_type must '\
+          f'be BaseType, got "{type(member_type).__name__}"'
     else:
-      member_type = type(ctx.value)
-      member_name = unionclass.subtypes.get_type_name(member_type)
+      member_type = from_typing(type(ctx.value))
+      member_name = ctx.type.subtypes.get_type_name(member_type)
 
-    type_hint = ctx.mapper.adapt_type_hint(from_typing(member_type)).normalize()
+    type_hint = ctx.mapper.adapt_type_hint(member_type).normalize()
 
     if is_deserialize:
       if style == A.unionclass.Style.nested:
@@ -74,5 +68,4 @@ class UnionclassConverter(IConverter):
           raise RuntimeError(f'unionclass.Style.flat is not supported for non-object member types')
         result[discriminator_key] = member_name
 
-    print('@@@', repr(result))
     return result

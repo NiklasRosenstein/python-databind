@@ -7,7 +7,7 @@ from .datetime import DatetimeModule
 from .decimal import DecimalModule
 from .objecttype import ObjectTypeModule
 from .plain import PlainDatatypeModule
-from .unionclass import UnionclassModule
+from .uniontype import UnionTypeModule
 
 __all__ = [
   'JsonModule',
@@ -25,4 +25,4 @@ class JsonModule(SimpleModule):
     self.add_module(DecimalModule())
     self.add_module(PlainDatatypeModule())
     self.add_module(ObjectTypeModule())
-    self.add_module(UnionclassModule())
+    self.add_module(UnionTypeModule())

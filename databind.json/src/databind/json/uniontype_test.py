@@ -10,10 +10,10 @@ mapper = ObjectMapper.default(JsonModule())
 
 
 def test_unionclass_from_annotated():
-  MyUnion = te.Annotated[t.Union[int, str], unionclass(subtypes={
+  MyUnion = te.Annotated[t.Union[int, str], unionclass({
     'int': int,
     'str': str
-  })]
+  }, name='MyUnion')]
   assert mapper.deserialize({'type': 'int', 'int': 42}, MyUnion) == 42
   assert mapper.deserialize({'type': 'str', 'str': 'foobar'}, MyUnion) == 'foobar'
   assert mapper.serialize(42, MyUnion) == {'type': 'int', 'int': 42}
