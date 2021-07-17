@@ -43,23 +43,23 @@ class Field:
     return ann.aliases
 
   @property
-  def required(self) -> bool:
+  def required(self) -> t.Optional[bool]:
     """
     Marks the field as required during deserialization, even if the #type marks the field
     as nullable/optional.
     """
 
-    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.required)
+    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.required).get()
 
   @property
-  def flat(self) -> bool:
+  def flat(self) -> t.Optional[bool]:
     """
     Specifies if the fields of the value in this field are to be embedded flat into the
     parent structure. This is only respected for fields where the #type represents a
     dataclass or mapping.
     """
 
-    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.flat)
+    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.flat).get()
 
   @property
   def datefmt(self) -> t.Optional[datefmt]:

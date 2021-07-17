@@ -25,13 +25,14 @@ import abc
 import dataclasses
 import typing as t
 import typing_extensions as te
-
 from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
 from typing import _type_repr, _GenericAlias  # type: ignore
 
 from nr import preconditions
 
+
 if t.TYPE_CHECKING:
+  from databind.core.union import IUnionSubtypes, UnionStyle
   from .schema import Schema
 
 
@@ -106,8 +107,13 @@ class AnnotatedType(BaseType):
 
 
 @dataclasses.dataclass
-class UnionType(BaseType):
-  """ Represents a union of types. Unions never represent optionals, as is the case in typing. """
+class ImplicitUnionType(BaseType):
+  """
+  Represents an implicit union of types (i.e. accept as input and output values of multiple
+  types and use the first match. Implicit unions never represent optional values, as is the
+  case with #typing.Union (i.e. you can have `t.Union[int, str, None]` but it must be represented
+  as `OptionalType(ImplicitUnionType([int, str])))`).
+  """
 
   types: t.Tuple[BaseType, ...]
 
@@ -115,7 +121,7 @@ class UnionType(BaseType):
     return t.Union[self.types]
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(UnionType(tuple(t.visit(func) for t in self.types)))
+    return func(ImplicitUnionType(tuple(t.visit(func) for t in self.types)))
 
 
 @dataclasses.dataclass
@@ -136,6 +142,10 @@ class CollectionType(BaseType):
   """ Represents a collection type. This is still abstract. """
 
   item_type: BaseType
+
+  # https://github.com/python/mypy/issues/5374
+  def to_typing(self) -> t.Any:
+    raise NotImplementedError
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(type(self)(self.item_type.visit(func)))  # type: ignore
@@ -184,13 +194,31 @@ class ObjectType(BaseType):
   """
   Represents a type hint for a datamodel (or #Schema). Instances of this type hint are usually
   constructed in a later stage after #from_typing() when a #Concrete type hint was encountered
-  that can be interpreted as a #Datamodel.
+  that can be interpreted as an #ObjectType (see #databind.core.default.dataclass.DataclassModule).
   """
 
   schema: 'Schema'
 
   def to_typing(self) -> t.Any:
     return self.schema.python_type
+
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
+    return func(self)
+
+
+@dataclasses.dataclass
+class UnionType(BaseType):
+  """
+  Represents a union of multiple types that is de-/serialized with a discriminator value.
+  """
+
+  subtypes: 'IUnionSubtypes'
+  style: 'UnionStyle'
+  discriminator_key: str
+  backing_type: t.Any
+
+  def to_typing(self) -> t.Any:
+    return self.backing_type
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(self)
@@ -255,7 +283,7 @@ def from_typing(type_hint: t.Any) -> BaseType:
       elif type(None) in args:
         return OptionalType(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
       else:
-        return UnionType(tuple(from_typing(a) for a in args))
+        return ImplicitUnionType(tuple(from_typing(a) for a in args))
     elif hasattr(te, 'Annotated') and generic == te.Annotated:  # type: ignore
       return AnnotatedType(from_typing(args[0]), args[1:])
 

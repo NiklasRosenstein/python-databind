@@ -39,9 +39,8 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
   )
 
 
-class DataclassModule(Module):
+class DataclassAdapter(Module):
 
-  # IModule
   def adapt_type_hint(self, type: BaseType) -> BaseType:
     if isinstance(type, ConcreteType) and is_dataclass(type.type):
       type = ObjectType(dataclass_to_schema(type.type))

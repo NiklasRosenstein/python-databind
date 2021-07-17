@@ -3,10 +3,10 @@ import typing as t
 import typing_extensions as te
 from dataclasses import dataclass
 
+from databind.core.annotations import alias
 from databind.core.schema import Field, Schema
 from databind.core.types import ConcreteType, OptionalType
 from .dataclass import dataclass_to_schema
-from databind.core.annotations import alias
 
 
 def test_dataclass_to_schema_conversion():

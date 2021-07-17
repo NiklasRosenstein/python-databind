@@ -5,8 +5,8 @@ from dataclasses import dataclass, field, Field as _Field
 from functools import reduce
 from databind.core.schema import Field
 import nr.preconditions as preconditions
-from .api import Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter, \
-  IConverterProvider, IObjectMapper, ITypeHintAdapter, Context
+from .api import (Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter,
+  IConverterProvider, IObjectMapper, ITypeHintAdapter, Context)
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
 from .settings import Settings
@@ -83,6 +83,7 @@ class SimpleModule(Module):
 
   # IModule
   def adapt_type_hint(self, type_: BaseType) -> BaseType:
+    print('@adapt_type_hint', type_, self.__type_hint_adapters)
     return reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
 
 
@@ -202,8 +203,9 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
 
   @classmethod
   def default(cls, *modules: Module, name: str = None) -> 'ObjectMapper':
-    from .default.dataclass import DataclassModule
-    mapper = cls(DataclassModule(), *modules, name=name)
+    from .default.unionclass import UnionclassAdapter
+    from .default.dataclass import DataclassAdapter
+    mapper = cls(UnionclassAdapter(), DataclassAdapter(), *modules, name=name)
     mapper.add_annotations_provider(DefaultAnnotationsProvider())
     return mapper
 
