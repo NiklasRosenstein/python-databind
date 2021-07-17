@@ -44,37 +44,37 @@ class datefmt(Annotation):
 
   def __iter_formats(self, type_: t.Type[_internal_t]) -> t.Iterable[_internal_t]:
     for fmt in self.formats:
-      if isinstance(str):
+      if isinstance(fmt, str):
         yield type_.compile(fmt)
       elif type(fmt) == type_:
         yield fmt
       elif isinstance(fmt, format_set):
         yield from getattr(fmt, type_.__name__ + 's')
-      else:
-        raise RuntimeError(f'bad date format type: {type(fmt).__name__}')
+      #else:
+      #  raise RuntimeError(f'bad date format type: {type(fmt).__name__}')
 
   def parse(self, type_: t.Type[_date_t], value: str) -> _date_t:
     format_t, method_name = {
       datetime.date: (date_format, 'parse_date'),
       datetime.time: (time_format, 'parse_time'),
       datetime.datetime: (datetime_format, 'parse_datetime'),
-    }
+    }[type_]
     for fmt in self.__iter_formats(format_t):
       try:
         return getattr(fmt, method_name)(value)
       except ValueError:
         pass
-    raise _formulate_parse_error(list(self.__iter_formats(format_t)))
+    raise _formulate_parse_error(list(self.__iter_formats(format_t)), value)
 
   def format(self, dt: _date_t) -> str:
     format_t, method_name = {
       datetime.date: (date_format, 'format_date'),
       datetime.time: (time_format, 'format_time'),
       datetime.datetime: (datetime_format, 'format_datetime'),
-    }
+    }[type(dt)]
     for fmt in self.__iter_formats(format_t):
       try:
         return getattr(fmt, method_name)(dt)
       except ValueError:
         pass
-    raise _formulate_parse_error(list(self.__iter_formats(format_t)))
+    raise _formulate_parse_error(list(self.__iter_formats(format_t)), dt)
