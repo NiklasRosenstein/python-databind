@@ -117,7 +117,7 @@ class unionclass(Annotation):
 
     * #unionclass.Subtypes.Dynamic
     * #unionclass.Subtypes.Entrypoint()
-    * #unionclass.ISubtypes implemen
+    * #unionclass.ISubtypes implementation
     * A dictionary of type names mapping to type objects
     """
 
