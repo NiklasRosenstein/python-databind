@@ -10,7 +10,7 @@ mapper = ObjectMapper.default(JsonModule())
 
 
 def test_unionclass_from_annotated():
-  MyUnion = te.Annotated[object, unionclass(subtypes={
+  MyUnion = te.Annotated[t.Union[int, str], unionclass(subtypes={
     'int': int,
     'str': str
   })]
