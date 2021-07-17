@@ -41,10 +41,7 @@ class BaseType(metaclass=abc.ABCMeta):
 
   def __init__(self) -> None:
     raise TypeError('TypeHint cannot be constructed')
-
-  def __str__(self) -> str:
-    return f'>> {_type_repr(self.to_typing())} <<'
-
+  
   @abc.abstractmethod
   def to_typing(self) -> t.Any:
     """ Convert the type hint back to a #typing representation. """
@@ -118,7 +115,7 @@ class ImplicitUnionType(BaseType):
   types: t.Tuple[BaseType, ...]
 
   def to_typing(self) -> t.Any:
-    return t.Union[self.types]
+    return t.Union[tuple(x.to_typing() for x in self.types)]
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(ImplicitUnionType(tuple(t.visit(func) for t in self.types)))
@@ -212,9 +209,13 @@ class UnionType(BaseType):
   Represents a union of multiple types that is de-/serialized with a discriminator value.
   """
 
+  DEFAULT_STYLE: t.ClassVar['UnionStyle']
+  DEFAULT_DISCRIMINATOR_KEY = 'type'
+
   subtypes: 'IUnionSubtypes'
-  style: 'UnionStyle'
-  discriminator_key: str
+  style: t.Optional['UnionStyle']
+  discriminator_key: t.Optional[str]
+  name: t.Optional[str]
   backing_type: t.Any
 
   def to_typing(self) -> t.Any:
@@ -291,3 +292,7 @@ def from_typing(type_hint: t.Any) -> BaseType:
     return ConcreteType(type_hint)
 
   raise ValueError(f'unsupported type hint {type_hint!r}')
+
+
+from .union import UnionStyle
+UnionType.DEFAULT_STYLE = UnionStyle.nested

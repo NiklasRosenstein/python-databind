@@ -54,8 +54,6 @@ class unionclass(Annotation):
   ```
   """
 
-  DEFAULT_STYLE = UnionStyle.nested
-  DEFAULT_DISCRIMINATOR_KEY = 'type'
   Subtypes = _Subtypes
   Style = UnionStyle
 
@@ -63,12 +61,16 @@ class unionclass(Annotation):
   style: t.Optional[UnionStyle]
   discriminator_key: t.Optional[str]
   constructible: bool
+  name: t.Optional[str]
+  decorated_type: t.Optional[t.Type]
 
-  def __init__(self, *,
+  def __init__(self,
     subtypes: t.Union[IUnionSubtypes, t.Sequence[t.Type], t.Mapping[str, t.Type]] = None,
+    *,
     style: t.Optional[UnionStyle] = None,
     discriminator_key: t.Optional[str] = None,
     constructible: bool = False,
+    name: str = None,
   ) -> None:
 
     self.subtypes = DynamicSubtypes()
@@ -86,6 +88,8 @@ class unionclass(Annotation):
     self.style = style
     self.discriminator_key = discriminator_key
     self.constructible = constructible
+    self.name = name
+    self.decorated_type = None
 
   @staticmethod
   def subtype(extends: t.Type, name: str = None) -> t.Callable[[T_Type], T_Type]:
@@ -128,23 +132,10 @@ class unionclass(Annotation):
 
     raise TypeError(f'@unionclass {type(self).__name__} is not constructible')
 
-  def merge(self, other: t.Optional['unionclass']) -> 'unionclass':
-    return unionclass(
-      subtypes=self.subtypes,
-      constructible=self.constructible,
-      style=self.style or (other.style if other else None),
-      discriminator_key=self.discriminator_key or (other.discriminator_key if other else None))
-
-  def get_style(self) -> UnionStyle:
-    return self.style or self.DEFAULT_STYLE
-
-  def get_discriminator_key(self) -> str:
-    return self.discriminator_key or self.DEFAULT_DISCRIMINATOR_KEY
-
   # Annotation
 
   def __call__(self, cls: T_Type) -> T_Type:
     if not self.constructible:
       cls.__init__ = unionclass.no_construct
-    self.subtypes.owner = weakref.ref(cls)
+    self.decorated_type = None
     return super().__call__(cls)

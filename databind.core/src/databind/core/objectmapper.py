@@ -83,7 +83,6 @@ class SimpleModule(Module):
 
   # IModule
   def adapt_type_hint(self, type_: BaseType) -> BaseType:
-    print('@adapt_type_hint', type_, self.__type_hint_adapters)
     return reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
 
 

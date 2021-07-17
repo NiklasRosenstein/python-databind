@@ -1,4 +1,5 @@
 
+import weakref
 import databind.core.annotations as A
 from databind.core.objectmapper import Module
 from databind.core.types import AnnotatedType, BaseType, ConcreteType, ObjectType, UnionType
@@ -19,9 +20,16 @@ class UnionclassAdapter(Module):
     else:
       unionclass = None
     if unionclass:
-      return UnionType(
+      if unionclass.subtypes.owner:
+        result_type = unionclass.subtypes.owner()
+        if result_type:
+          return result_type
+      result_type = UnionType(
         unionclass.subtypes,
-        unionclass.get_style(),
-        unionclass.get_discriminator_key(),
+        unionclass.style,
+        unionclass.discriminator_key,
+        unionclass.name,
         type_.to_typing())
+      result_type.subtypes.owner = weakref.ref(result_type)
+      return result_type
     return type_
