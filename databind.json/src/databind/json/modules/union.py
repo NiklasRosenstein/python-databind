@@ -7,7 +7,7 @@ from databind.core.types import AnnotatedType, BaseType, ObjectType, UnionType, 
 from nr import preconditions
 
 
-class UnionTypeModule(Module):
+class UnionModule(Module):
 
   def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
     if isinstance(type, UnionType):

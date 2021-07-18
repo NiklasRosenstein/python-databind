@@ -10,7 +10,7 @@ from databind.core.objectmapper import Module
 from databind.core.types import ObjectType, BaseType
 
 
-class ObjectTypeModule(Module):
+class ObjectModule(Module):
 
   def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
     if isinstance(type, ObjectType):
