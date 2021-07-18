@@ -12,12 +12,14 @@ __all__ = [
   'BaseType',
   'ConcreteType',
   'AnnotatedType',
-  'UnionType',
+  'ImplicitUnionType',
   'OptionalType',
   'CollectionType',
   'ListType',
   'SetType',
   'MapType',
+  'ObjectType',
+  'UnionType',
   'from_typing',
 ]
 
@@ -41,7 +43,7 @@ class BaseType(metaclass=abc.ABCMeta):
 
   def __init__(self) -> None:
     raise TypeError('TypeHint cannot be constructed')
-  
+
   @abc.abstractmethod
   def to_typing(self) -> t.Any:
     """ Convert the type hint back to a #typing representation. """

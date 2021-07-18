@@ -19,8 +19,8 @@ def test_unionclass_adapter():
   def _check(type_: UnionType):
     assert isinstance(type_, UnionType)
     assert isinstance(type_.subtypes, DynamicSubtypes)
-    assert type_.style == unionclass.DEFAULT_STYLE
-    assert type_.discriminator_key == unionclass.DEFAULT_DISCRIMINATOR_KEY
+    assert type_.style == None
+    assert type_.discriminator_key == None
 
   type_ = UnionclassAdapter().adapt_type_hint(from_typing(MyUnionType))
   _check(type_)
