@@ -79,6 +79,9 @@ class ConcreteType(BaseType):
 
   type: t.Type
 
+  def __repr__(self) -> str:
+    return f'ConcreteType({self.type.__name__})'
+
   def to_typing(self) -> t.Any:
     return self.type
 
@@ -98,6 +101,9 @@ class AnnotatedType(BaseType):
     self.type = type
     self.annotations = tuple(annotations)
 
+  def __repr__(self) -> str:
+    return f'AnnotatedType({self.type!r}, annotations={self.annotations!r})'
+
   def to_typing(self) -> t.Any:
     return te.Annotated[(self.type.to_typing(),) + self.annotations]  # type: ignore
 
@@ -116,6 +122,9 @@ class ImplicitUnionType(BaseType):
 
   types: t.Tuple[BaseType, ...]
 
+  def __repr__(self) -> str:
+    return f'ImplicitUnionType({", ".join(map(repr, self.types))})'
+
   def to_typing(self) -> t.Any:
     return t.Union[tuple(x.to_typing() for x in self.types)]
 
@@ -128,6 +137,9 @@ class OptionalType(BaseType):
   """ Represents an optional type. """
 
   type: BaseType
+
+  def __repr__(self) -> str:
+    return f'OptionalType({self.type!r})'
 
   def to_typing(self) -> t.Any:
     return t.Optional[self.type]
@@ -142,6 +154,9 @@ class CollectionType(BaseType):
 
   item_type: BaseType
 
+  def __repr__(self) -> str:
+    return f'{type(self).__name__}({self.item_type!r})'
+
   # https://github.com/python/mypy/issues/5374
   def to_typing(self) -> t.Any:
     raise NotImplementedError
@@ -150,7 +165,7 @@ class CollectionType(BaseType):
     return func(type(self)(self.item_type.visit(func)))  # type: ignore
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(repr=False)
 class ListType(CollectionType):
   """ Represents a list type. """
 
@@ -160,7 +175,7 @@ class ListType(CollectionType):
     return t.List[self.item_type.to_typing()]  # type: ignore
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(repr=False)
 class SetType(CollectionType):
   """ Represents a set type. """
 
@@ -181,6 +196,9 @@ class MapType(BaseType):
   value_type: BaseType
   impl_hint: _GenericAlias = t.Dict
 
+  def __repr__(self) -> str:
+    return f'MapType({self.key_type!r}, {self.value_type!r})'
+
   def to_typing(self) -> t.Any:
     return self.impl_hint[self.key_type.to_typing(), self.value_type.to_typing()]
 
@@ -197,6 +215,9 @@ class ObjectType(BaseType):
   """
 
   schema: 'Schema'
+
+  def __repr__(self) -> str:
+    return f'ObjectType({self.schema.python_type.__name__})'
 
   def to_typing(self) -> t.Any:
     return self.schema.python_type
@@ -219,6 +240,13 @@ class UnionType(BaseType):
   discriminator_key: t.Optional[str]
   name: t.Optional[str]
   backing_type: t.Any
+
+  def __post_init__(self) -> None:
+    if not self.name and self.backing_type is None:
+      raise ValueError(f'UnionType() requires either name or backing_type')
+
+  def __repr__(self) -> str:
+    return f'ObjectType({self.name or self.backing_type.__name__})'
 
   def to_typing(self) -> t.Any:
     return self.backing_type
