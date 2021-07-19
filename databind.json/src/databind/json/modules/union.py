@@ -6,9 +6,6 @@ from databind.core.types import BaseType, UnionType, from_typing
 
 
 class UnionConverter(IConverter):
-  """
-  Converter for schema's with th
-  """
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, UnionType)
@@ -20,7 +17,7 @@ class UnionConverter(IConverter):
 
     if is_deserialize:
       if not isinstance(ctx.value, t.Mapping):
-        raise ctx.type_error(expected='Object')
+        raise ctx.type_error(expected=t.Mapping)
       if discriminator_key not in ctx.value:
         raise ConversionError(f'missing discriminator key {discriminator_key!r}', ctx.location)
       member_name = ctx.value[discriminator_key]
