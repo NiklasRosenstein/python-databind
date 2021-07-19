@@ -12,7 +12,7 @@ class UnionConverter(IConverter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, UnionType)
-    fallback = ctx.mapper.get_global_annotation(A.unionclass) or A.unionclass()
+    fallback = ctx.get_annotation(A.unionclass) or A.unionclass()
     style = ctx.type.style or fallback.style or UnionType.DEFAULT_STYLE
     discriminator_key = ctx.type.discriminator_key or fallback.discriminator_key or UnionType.DEFAULT_DISCRIMINATOR_KEY
 

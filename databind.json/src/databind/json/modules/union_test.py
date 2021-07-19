@@ -23,7 +23,8 @@ def test_unionclass_from_annotated():
   assert mapper.serialize('foobar', MyUnion) == {'type': 'str', 'str': 'foobar'}
 
 
-class test_unionclass_object_type():
+def test_unionclass_object_type():
+
   @unionclass(style = unionclass.Style.flat)
   class Person(abc.ABC):
     @abc.abstractmethod
