@@ -49,8 +49,7 @@ class DatetimeJsonConverter(IConverter):
 class DurationConverter(IConverter):
 
   def convert(self, ctx: Context) -> t.Any:
-    type_, annotations = AnnotatedType.unpack(ctx.type)
-    assert isinstance(type_, ConcreteType) and type_.type is duration, type_
+    assert isinstance(ctx.type, ConcreteType)
 
     if ctx.direction == Direction.serialize:
       if not isinstance(ctx.value, duration):
