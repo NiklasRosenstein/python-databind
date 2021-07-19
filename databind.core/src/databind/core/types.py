@@ -153,6 +153,7 @@ class CollectionType(BaseType):
   """ Represents a collection type. This is still abstract. """
 
   item_type: BaseType
+  python_type: t.Type[t.Collection]
 
   def __repr__(self) -> str:
     return f'{type(self).__name__}({self.item_type!r})'
@@ -170,6 +171,7 @@ class ListType(CollectionType):
   """ Represents a list type. """
 
   item_type: BaseType
+  python_type: t.Type[t.Collection] = list
 
   def to_typing(self) -> t.Any:
     return t.List[self.item_type.to_typing()]  # type: ignore
@@ -180,6 +182,7 @@ class SetType(CollectionType):
   """ Represents a set type. """
 
   item_type: BaseType
+  python_type: t.Type[t.Collection] = set
 
   def to_typing(self) -> t.Any:
     return t.Set[self.item_type.to_typing()]  # type: ignore

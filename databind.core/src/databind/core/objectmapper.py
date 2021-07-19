@@ -70,15 +70,18 @@ class SimpleModule(Module):
     self.__converter_providers.append(module)
     self.__type_hint_adapters.append(module)
 
-  def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
-    if isinstance(type, ConcreteType) and type.type in self.__converters_by_type[direction]:
-      return self.__converters_by_type[direction][type.type]
+  def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
+    preconditions.check_instance_of(type_, BaseType)
+    if isinstance(type_, ConcreteType) and type_.type in self.__converters_by_type[direction]:
+      return self.__converters_by_type[direction][type_.type]
+    elif type(type_) in self.__converters_by_type[direction]:
+      return self.__converters_by_type[type_.type]
     for module in reversed(self.__converter_providers):
       try:
-        return module.get_converter(type, direction)
+        return module.get_converter(type_, direction)
       except ConverterNotFound:
         pass  # intentional
-    raise ConverterNotFound(type, direction)
+    raise ConverterNotFound(type_, direction)
 
   def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
     return reduce(lambda t, a: a.adapt_type_hint(t, adapter), self.__type_hint_adapters, type_)
@@ -216,14 +219,17 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
   def convert(self,
     direction: Direction,
     value: t.Any,
-    type_hint: t.Type[T],
+    type_hint: t.Union[BaseType, t.Type[T]],
     filename: t.Optional[str] = None,
     position: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
     annotations: t.Optional[t.List[t.Any]] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
-    th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
+    if isinstance(type_hint, BaseType):
+      th = type_hint
+    else:
+      th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
     field = Field('$', th, annotations or [])
     loc = Location(None, th, key, filename, position)
     ctx = Context(None, self, direction, value, loc, field)
@@ -231,7 +237,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
 
   def deserialize(self,
     value: t.Any,
-    type_hint: t.Type[T],
+    type_hint: t.Union[BaseType, t.Type[T]],
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
@@ -241,7 +247,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
 
   def serialize(self,
     value: t.Any,
-    type_hint: t.Type[T],
+    type_hint: t.Union[BaseType, t.Type[T]],
     filename: t.Optional[str] = None,
     pos: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,

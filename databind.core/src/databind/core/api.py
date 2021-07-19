@@ -161,8 +161,8 @@ class Context:
     elif isinstance(expected, type):
       expected = expected.__name__
     return self.error(
-      f'expected {expected} to {self.direction.name.lower()} {self.type}, '
-      f'got {type(self.value).__name__}')
+      f'expected `{expected}` to {self.direction.name.lower()} `{self.type}`, '
+      f'got `{type(self.value).__name__}`')
 
 
 @dataclass
