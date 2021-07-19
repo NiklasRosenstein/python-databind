@@ -2,7 +2,10 @@
 import dataclasses
 import typing as t
 import typing_extensions as te
+from databind.core.annotations.enable_unknowns import enable_unknowns
+import pytest
 from databind.core import annotations as A
+from databind.core.api import ConversionError
 from databind.core.objectmapper import ObjectMapper
 from databind.json import JsonModule
 
@@ -46,3 +49,19 @@ def test_object_optional_field():
 
   assert mapper.serialize(Person('John', 22), Person) == {'name': 'John', 'age': 22}
   assert mapper.serialize(Person('John'), Person) == {'name': 'John'}
+
+
+def test_unknown_keys():
+
+  @dataclasses.dataclass
+  class Person:
+    name: str
+
+  with pytest.raises(ConversionError) as excinfo:
+    mapper.deserialize({'name': 'John', 'age': 22}, Person)
+  assert str(excinfo.value) == "[None] ($ ObjectType(Person)): unknown keys found while deserializing ObjectType(Person): {'age'}"
+
+  unknown_keys = []
+  unknowns = enable_unknowns(callback=lambda ctx, keys: unknown_keys.extend(keys))
+  mapper.deserialize({'name': 'John', 'age': 22}, Person, options=[unknowns])
+  assert unknown_keys == ['age']

@@ -62,13 +62,14 @@ def load(
   mapper: ObjectMapper = None,
   filename: str = None,
   annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
 ) -> T:
 
   if hasattr(data, 'read'):
     if not filename:
       filename = getattr(data, 'name', None)
     data = json.load(data)
-  return (mapper or ObjectMapper.default(JsonModule())).deserialize(data, type_, filename=filename, annotations=annotations)
+  return (mapper or new_mapper()).deserialize(data, type_, filename=filename, annotations=annotations, options=options)
 
 
 def loads(
@@ -77,8 +78,9 @@ def loads(
   mapper: ObjectMapper = None,
   filename: str = None,
   annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
 ) -> T:
-  return load(io.StringIO(data), type_, mapper, filename, annotations)
+  return load(io.StringIO(data), type_, mapper, filename, annotations, options)
 
 
 def dump(
@@ -86,10 +88,11 @@ def dump(
   type_: t.Type[T] = None,
   mapper: ObjectMapper = None,
   annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
   out: t.TextIO = None,
 ) -> JsonType:
 
-  data = (mapper or ObjectMapper.default(JsonModule())).serialize(value, type_ or type(value), annotations=annotations)
+  data = (mapper or new_mapper()).serialize(value, type_ or type(value), annotations=annotations, options=options)
   if out is not None:
     json.dump(data, out)
   return data
@@ -100,5 +103,6 @@ def dumps(
   type_: t.Type[T] = None,
   mapper: ObjectMapper = None,
   annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
 ) -> str:
-  return json.dumps(dump(value, type_, mapper, annotations))
+  return json.dumps(dump(value, type_, mapper, annotations, options))

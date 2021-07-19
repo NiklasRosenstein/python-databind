@@ -5,7 +5,8 @@ schemas (see #databind.core.schema).
 """
 
 import typing as t
-from databind.core.api import Context, Direction, IConverter, Context
+from databind.core import annotations as A
+from databind.core.api import Context, ConversionError, Direction, IConverter, Context
 from databind.core.types import ObjectType
 
 
@@ -14,6 +15,7 @@ class ObjectTypeConverter(IConverter):
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ObjectType)
     skip_default_values = True
+    enable_unknowns = ctx.get_option(A.enable_unknowns)
 
     if ctx.direction == Direction.serialize:
       if not isinstance(ctx.value, ctx.type.schema.python_type):
@@ -48,6 +50,8 @@ class ObjectTypeConverter(IConverter):
         raise ctx.type_error(expected=t.Mapping)
 
       groups: t.Dict[str, t.Dict[str, t.Any]] = {'$': {}}
+
+      # Collect keys into groups.
       used_keys: t.Set[str] = set()
       for field in ctx.type.schema.flat_fields():
         aliases = field.field.aliases or [field.field.name]
@@ -57,11 +61,20 @@ class ObjectTypeConverter(IConverter):
             groups.setdefault(field.group, {})[field.field.name] = \
               ctx.push(field.field.type, value, field.field.name, field.field).convert()
             used_keys.add(alias)
+            break
 
+      # Move captured groups into the root group ($).
       for group, values in groups.items():
         if group == '$': continue
         field = ctx.type.schema.fields[group]
         groups['$'][group] = ctx.push(field.type, values, group, field).convert()
+
+      if not enable_unknowns or (enable_unknowns and enable_unknowns.callback):
+        unused_keys = ctx.value.keys() - used_keys
+        if unused_keys and not enable_unknowns:
+          raise ConversionError(f'unknown keys found while deserializing {ctx.type}: {unused_keys}', ctx.location)
+        elif unused_keys and enable_unknowns and enable_unknowns.callback:
+          enable_unknowns.callback(ctx, unused_keys)
 
       # TODO (@NiklasRosenstein): Support flat MapType() field
 
