@@ -10,7 +10,7 @@ import abc
 import typing as t
 from dataclasses import dataclass, field
 from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
-from databind.core.types import BaseType
+from databind.core.types import BaseType, MapType, ObjectType
 from nr.optional import Optional
 
 
@@ -20,6 +20,9 @@ class Field:
   Describes a field in a datamodel (aka #Schema).
   """
 
+  #: The name of the field.
+  name: str
+
   #: The type hint associated with this field.
   type: BaseType
 
@@ -27,6 +30,11 @@ class Field:
   #: annotations may be extracted into the other properties on the #Field instance already (such
   #: as #aliases, #required and #flat). The annotations are carried into the field for extension.
   annotations: t.List[t.Any]
+
+  def __post_init__(self) -> None:
+    if self.flat and not isinstance(self.type, (ObjectType, MapType)):
+      raise RuntimeError('fieldinfo(flat=True) can only be enabled for ObjectType or MapType fields, '
+          f'{self.name!r} is of type {self.type!r}')
 
   @property
   def aliases(self) -> t.Sequence[str]:
@@ -49,17 +57,17 @@ class Field:
     as nullable/optional.
     """
 
-    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.required).get()
+    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.required).or_else(False)
 
   @property
   def flat(self) -> t.Optional[bool]:
     """
     Specifies if the fields of the value in this field are to be embedded flat into the
-    parent structure. This is only respected for fields where the #type represents a
-    dataclass or mapping.
+    parent structure. This is only respected for fields where the #type is #ObjectType or
+    #MapType.
     """
 
-    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.flat).get()
+    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.flat).or_else(False)
 
   @property
   def datefmt(self) -> t.Optional[datefmt]:
@@ -101,6 +109,9 @@ class Schema:
   #: An object that acts as a composer and decomposer for instances of the #python_type.
   composer: 'ISchemaComposer' = field(repr=False)
 
+  def __post_init__(self) -> None:
+    _check_no_colliding_flattened_fields(self)
+
   @property
   def typeinfo(self) -> t.Optional[typeinfo]:
     return get_annotation(self.annotations, typeinfo, None)
@@ -125,3 +136,30 @@ class ISchemaComposer(metaclass=abc.ABCMeta):
 
   @abc.abstractmethod
   def decompose(self, obj: t.Any) -> t.Dict[str, t.Any]: ...
+
+
+def _check_no_colliding_flattened_fields(schema: Schema) -> None:
+  """
+  Checks that there are no colliding fields in the *schema* and it's flattened fields.
+
+  Raises a #SchemaDefinitionError if the constraint is violated.
+  """
+
+  root = schema
+  stack = [('$', schema)]
+  fields = {}
+
+  while stack:
+    path, schema = stack.pop(0)
+    for field_name, field in schema.fields.items():
+      field_path = path + '.' + field_name
+      if field_name in fields:
+        raise SchemaDefinitionError(f'Flat field conflict in schema {root.name!r}: ({fields[field_name]}, {field_path})')
+      if not field.flat:
+        fields[field_name] = field_path
+      if field.flat and isinstance(field.type, ObjectType):
+        stack.append((field_path ,field.type.schema))
+
+
+class SchemaDefinitionError(Exception):
+  pass

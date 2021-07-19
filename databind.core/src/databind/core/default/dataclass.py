@@ -7,7 +7,7 @@ interpreted as a datamodel.
 import typing as t
 from dataclasses import is_dataclass, Field as _DataclassField
 from databind.core.annotations import get_type_annotations
-from databind.core.api import Context
+from databind.core.api import Context, ITypeHintAdapter
 from databind.core.objectmapper import Module
 from databind.core.schema import Field, ISchemaComposer, Schema
 from databind.core.types import AnnotatedType, ConcreteType, ObjectType, BaseType, from_typing
@@ -19,17 +19,19 @@ def enumerate_fields(dataclass_type: t.Type) -> t.Iterator[_DataclassField]:
   return iter(dataclass_type.__dataclass_fields__.values())
 
 
-def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAdapter] = None) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
+  adapter = adapter or ITypeHintAdapter.Noop()
   fields: t.Dict[str, Field] = {}
   annotations = t.get_type_hints(dataclass_type)
   for field in enumerate_fields(dataclass_type):
     field_type_hint = from_typing(annotations.get(field.name, t.Any)).normalize()
+    field_type_hint = adapter.adapt_type_hint(field_type_hint)
     if isinstance(field_type_hint, AnnotatedType):
       field_type_hint, field_annotations = field_type_hint.type, field_type_hint.annotations  # type: ignore  # see https://github.com/python/mypy/issues/9731
     else:
       field_annotations = []
-    fields[field.name] = Field(field_type_hint, field_annotations)
+    fields[field.name] = Field(field.name, field_type_hint, field_annotations)
   return Schema(
     dataclass_type.__name__,
     fields,
@@ -41,10 +43,10 @@ def dataclass_to_schema(dataclass_type: t.Type) -> Schema:
 
 class DataclassAdapter(Module):
 
-  def adapt_type_hint(self, type: BaseType) -> BaseType:
-    if isinstance(type, ConcreteType) and is_dataclass(type.type):
-      type = ObjectType(dataclass_to_schema(type.type))
-    return type
+  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
+    if isinstance(type_, ConcreteType) and is_dataclass(type_.type):
+      type_ = ObjectType(dataclass_to_schema(type_.type, adapter))
+    return type_
 
 
 class DataclassComposer(ISchemaComposer):

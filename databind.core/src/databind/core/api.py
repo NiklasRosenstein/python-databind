@@ -76,7 +76,18 @@ class ITypeHintAdapter(metaclass=abc.ABCMeta):
   """
 
   @abc.abstractmethod
-  def adapt_type_hint(self, type: BaseType) -> BaseType: ...
+  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional['ITypeHintAdapter'] = None) -> BaseType: ...
+
+  Noop: t.ClassVar[t.Type['ITypeHintAdapter']]
+
+
+class _NoopTypeHintAdapterAdapter(ITypeHintAdapter):
+
+  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
+    return type_
+
+
+ITypeHintAdapter.Noop = _NoopTypeHintAdapterAdapter
 
 
 class IObjectMapper(IAnnotationsProvider, IConverterProvider, ITypeHintAdapter):
@@ -132,7 +143,7 @@ class Context:
     position: t.Optional[Position] = None
   ) -> 'Context':
     location = self.location.push(type, key, filename, position)
-    return Context(self, self.mapper, self.direction, value, location, field or Field(type, []))
+    return Context(self, self.mapper, self.direction, value, location, field or Field(str(key or '$'), type, []))
 
   def convert(self) -> t.Any:
     return self.mapper.get_converter(self.location.type, self.direction).convert(self)

@@ -30,8 +30,8 @@ class Module(IConverterProvider, ITypeHintAdapter):
   def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter:
     raise ConverterNotFound(type, direction)
 
-  def adapt_type_hint(self, type: BaseType) -> BaseType:
-    return type
+  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
+    return type_
 
 
 class SimpleModule(Module):
@@ -70,7 +70,6 @@ class SimpleModule(Module):
     self.__converter_providers.append(module)
     self.__type_hint_adapters.append(module)
 
-  # IModule
   def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
     if isinstance(type, ConcreteType) and type.type in self.__converters_by_type[direction]:
       return self.__converters_by_type[direction][type.type]
@@ -81,9 +80,8 @@ class SimpleModule(Module):
         pass  # intentional
     raise ConverterNotFound(type, direction)
 
-  # IModule
-  def adapt_type_hint(self, type_: BaseType) -> BaseType:
-    return reduce(lambda t, a: a.adapt_type_hint(t), self.__type_hint_adapters, type_)
+  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
+    return reduce(lambda t, a: a.adapt_type_hint(t, adapter), self.__type_hint_adapters, type_)
 
 
 class DefaultAnnotationsProvider(IAnnotationsProvider):
@@ -200,6 +198,13 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     for module in modules:
       self.add_module(module)
 
+  # IModule
+  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
+    parent_method = super().adapt_type_hint
+    def visitor(current_type: BaseType) -> BaseType:
+      return parent_method(current_type, adapter or self)
+    return type_.visit(visitor)
+
   @classmethod
   def default(cls, *modules: Module, name: str = None) -> 'ObjectMapper':
     from .default.unionclass import UnionclassAdapter
@@ -219,7 +224,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
     th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
-    field = Field(th, annotations or [])
+    field = Field('$', th, annotations or [])
     loc = Location(None, th, key, filename, position)
     ctx = Context(None, self, direction, value, loc, field)
     return ctx.convert()
