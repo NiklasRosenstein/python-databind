@@ -4,6 +4,7 @@ import dataclasses
 import enum
 import importlib
 import pkg_resources
+import types
 import typing as t
 import weakref
 from nr.stream import Stream
@@ -107,8 +108,10 @@ class EntrypointSubtypes(IUnionSubtypes):
 
 class DynamicSubtypes(IUnionSubtypes):
 
+  _LazyType = t.Union['BaseType', t.Callable[[], t.Union[t.Type, 'BaseType']]]
+
   def __init__(self) -> None:
-    self._members: t.Dict[str, 'BaseType'] = {}
+    self._members: t.Dict[str, DynamicSubtypes._LazyType] = {}
 
   def __repr__(self) -> str:
     return f'DynamicSubtypes(members={self.get_type_names()})'
@@ -117,22 +120,31 @@ class DynamicSubtypes(IUnionSubtypes):
     if not isinstance(type_, BaseType):
       raise RuntimeError(f'expected BaseType, got {type(type_).__name__}')
     if isinstance(type_, ConcreteType):
-      for key, value in self._members.items():
+      for key in self._members:
+        value = self.get_type_by_name(key)
         if value == type_:
           return key
     raise UnionTypeError(type_, self)
 
   def get_type_by_name(self, name: str) -> 'BaseType':
     try:
-      return self._members[name]
+      member = self._members[name]
     except KeyError:
       raise UnionTypeError(name, self)
+    else:
+      # Resolve the callable once.
+      if isinstance(member, types.FunctionType):
+        member = member()
+        if not isinstance(member, BaseType):
+          member = from_typing(member)
+        self._members[name] = member
+      return member
 
   def get_type_names(self) -> t.List[str]:
     return list(self._members.keys())
 
-  def add_type(self, name: str, type_: t.Union['BaseType', t.Type, t.Any]) -> None:
-    if not isinstance(type_, BaseType):
+  def add_type(self, name: str, type_: t.Union[_LazyType, t.Any]) -> None:
+    if not isinstance(type_, BaseType) and not isinstance(type_, types.FunctionType):
       type_ = from_typing(type_)
     if name in self._members:
       raise RuntimeError(f'type {name!r} already registered')
