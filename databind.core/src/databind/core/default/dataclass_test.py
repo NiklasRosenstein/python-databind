@@ -22,8 +22,8 @@ def test_dataclass_to_schema_conversion():
     'MyDataclass',
     {
       'a': Field('a', ConcreteType(int), []),
-      'b': Field('b', OptionalType(ConcreteType(str)), []),
-      'c': Field('c', ConcreteType(str), (alias('calias'),)),
+      'b': Field('b', OptionalType(ConcreteType(str)), [], default=None),
+      'c': Field('c', ConcreteType(str), (alias('calias'),), default=42),
     },
     [],
     MyDataclass,
