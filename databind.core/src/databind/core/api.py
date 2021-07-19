@@ -10,6 +10,7 @@ from .annotations import Annotation, get_annotation
 from .location import Location, Position
 from .types import AnnotatedType, BaseType
 
+T = t.TypeVar('T', bound=Annotation)
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
@@ -112,6 +113,9 @@ class Context:
   #: The object mapper that is used to convert the value.
   mapper: IObjectMapper
 
+  #: A list of options for the conversion.
+  options: t.List[t.Any]
+
   #: The direction of the conversion.
   direction: Direction
 
@@ -152,7 +156,8 @@ class Context:
     position: t.Optional[Position] = None
   ) -> 'Context':
     location = self.location.push(type_, key, filename, position)
-    return Context(self, self.mapper, self.direction, value, location, field or Field(str(key or '$'), type_, []))
+    return Context(self, self.mapper, self.options, self.direction, value,
+      location, field or Field(str(key or '$'), type_, []))
 
   def convert(self) -> t.Any:
     return self.mapper.get_converter(self.location.type, self.direction).convert(self)
@@ -160,6 +165,9 @@ class Context:
   def get_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
     return get_annotation(self.field.annotations, annotation_cls, None) or \
       self.mapper.get_global_annotation(annotation_cls)
+
+  def get_option(self, option_cls: t.Type[T]) -> t.Optional[T]:
+    return get_annotation(self.options, option_cls, None)
 
   def error(self, message: str) -> 'ConversionError':
     return ConversionError(message, self.location)

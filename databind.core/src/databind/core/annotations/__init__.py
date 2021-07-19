@@ -13,6 +13,7 @@ import typing as t
 import weakref
 
 T = t.TypeVar('T')
+U = t.TypeVar('U')
 T_Type = t.TypeVar('T_Type', bound=t.Type)
 T_Annotation = t.TypeVar('T_Annotation', bound='Annotation')
 
@@ -70,10 +71,10 @@ class Annotation:
 
 
 def get_annotation(
-    source: t.Union[t.Type, t.Iterable[t.Any]],
-    annotation_cls: t.Type[T_Annotation],
-    default: T
-) -> t.Union[T_Annotation, T]:
+  source: t.Union[t.Type, t.Iterable[t.Any]],
+  annotation_cls: t.Type[T],
+  default: U,
+) -> t.Union[T, U]:
   """
   Get an instance of an annotation by the specified *annotation_cls* from the *source*, which must
   be either a type or a list of annotation objects. Returns the first annotation object where the
@@ -100,6 +101,7 @@ def get_type_annotations(source: t.Type) -> t.Dict[t.Type, t.Any]:
 
 from .alias import alias
 from .datefmt import datefmt
+from .enable_unknowns import enable_unknowns
 from .fieldinfo import fieldinfo
 from .precision import precision
 from .unionclass import unionclass
@@ -111,8 +113,9 @@ __all__ = [
   'get_type_annotation',
   'alias',
   'datefmt',
+  'enable_unknowns',
   'fieldinfo',
   'precision',
   'unionclass',
-  'typeinfo'
+  'typeinfo',
 ]

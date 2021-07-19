@@ -247,6 +247,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     position: t.Optional[Position] = None,
     key: t.Union[str, int, None] = None,
     annotations: t.Optional[t.List[t.Any]] = None,
+    options: t.Optional[t.List[t.Any]] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
     if isinstance(type_hint, BaseType):
@@ -255,7 +256,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
       th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
     field = Field('$', th, annotations or [])
     loc = Location(None, th, key, filename, position)
-    ctx = Context(None, self, direction, value, loc, field)
+    ctx = Context(None, self, options or [], direction, value, loc, field)
     return ctx.convert()
 
   def deserialize(self,
@@ -264,9 +265,10 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     filename: str = None,
     pos: Position = None,
     key: t.Union[str, int] = None,
-    annotations: t.List[t.Any] = None
+    annotations: t.List[t.Any] = None,
+    options: t.Optional[t.List[t.Any]] = None,
   ) -> T:
-    return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations)
+    return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations, options)
 
   def serialize(self,
     value: t.Any,
@@ -274,6 +276,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     filename: str = None,
     pos: Position = None,
     key: t.Union[str, int] = None,
-    annotations: t.List[t.Any] = None
+    annotations: t.List[t.Any] = None,
+    options: t.Optional[t.List[t.Any]] = None,
   ) -> t.Any:
-    return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations)
+    return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations, options)
