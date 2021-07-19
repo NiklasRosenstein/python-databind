@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
 from databind.core.types import BaseType, MapType, ObjectType
 from nr.optional import Optional
+from nr.pylang.utils import NotSet
 
 
 @dataclass
@@ -30,6 +31,12 @@ class Field:
   #: annotations may be extracted into the other properties on the #Field instance already (such
   #: as #aliases, #required and #flat). The annotations are carried into the field for extension.
   annotations: t.List[t.Any]
+
+  #: The default value for the field.
+  default: t.Union[NotSet, t.Any] = NotSet.Value
+
+  #: A factory for the default value of the field.
+  default_factory: t.Union[NotSet, t.Callable[[], t.Any]] = NotSet.Value
 
   def __post_init__(self) -> None:
     if self.flat and not isinstance(self.type, (ObjectType, MapType)):
@@ -84,6 +91,11 @@ class Field:
     """
 
     return get_annotation(self.annotations, precision, None)
+
+  def get_default(self) -> t.Union[NotSet, t.Any]:
+    if self.default_factory is not NotSet.Value:
+      return self.default_factory()
+    return self.default
 
 
 @dataclass

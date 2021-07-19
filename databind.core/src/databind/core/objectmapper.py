@@ -75,7 +75,7 @@ class SimpleModule(Module):
     if isinstance(type_, ConcreteType) and type_.type in self.__converters_by_type[direction]:
       return self.__converters_by_type[direction][type_.type]
     elif type(type_) in self.__converters_by_type[direction]:
-      return self.__converters_by_type[type_.type]
+      return self.__converters_by_type[direction][type(type_)]
     for module in reversed(self.__converter_providers):
       try:
         return module.get_converter(type_, direction)
