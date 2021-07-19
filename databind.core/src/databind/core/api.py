@@ -1,5 +1,6 @@
 
 import abc
+import copy
 import enum
 import typing as t
 from dataclasses import dataclass, field
@@ -7,7 +8,7 @@ from dataclasses import dataclass, field
 from databind.core.schema import Field
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
-from .types import BaseType
+from .types import AnnotatedType, BaseType
 
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
@@ -126,6 +127,14 @@ class Context:
   #: may be different from the #Location.type if the de/serialization is executed on a field
   #: representing a complex type (e.g., a list or map).
   field: Field
+
+  def __post_init__(self) -> None:
+    # Unpack annotations from an annotated type into the field data for convenience.
+    # This means we won't have to deal with AnnotatedType in converters.
+    self.location.type, annotations = AnnotatedType.unpack(self.location.type)
+    if annotations:
+      self.field = copy.copy(self.field)
+      self.field.annotations += annotations
 
   def __str__(self) -> str:
     return f'Context(direction={self.direction.name}, value={_trunc(repr(self.value), 30)})'

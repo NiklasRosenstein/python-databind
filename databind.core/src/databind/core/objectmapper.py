@@ -233,8 +233,8 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
 
   @classmethod
   def default(cls, *modules: Module, name: str = None) -> 'ObjectMapper':
-    from .default.unionclass import UnionclassAdapter
     from .default.dataclass import DataclassAdapter
+    from .default.unionclass import UnionclassAdapter
     mapper = cls(UnionclassAdapter(), DataclassAdapter(), *modules, name=name)
     mapper.add_annotations_provider(DefaultAnnotationsProvider())
     return mapper

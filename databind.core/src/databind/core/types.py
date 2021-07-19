@@ -91,7 +91,7 @@ class ConcreteType(BaseType):
 
 @dataclasses.dataclass
 class AnnotatedType(BaseType):
-  """ Represents an annotated type. Nested annotations are usually flattened. """
+  """ Represents an annotated type. Nested annotations are flattened with #normalize(). """
 
   type: BaseType
   annotations: t.Tuple[t.Any, ...]
@@ -114,7 +114,7 @@ class AnnotatedType(BaseType):
   def unpack(type_: 'AnnotatedType') -> t.Tuple[BaseType, t.Tuple[t.Any, ...]]:
     if isinstance(type_, AnnotatedType):
       return type_.type, type_.annotations
-    return type_
+    return type_, []
 
 
 @dataclasses.dataclass
