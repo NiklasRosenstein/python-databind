@@ -87,7 +87,7 @@ class SimpleModule(Module):
         pass  # intentional
     raise ConverterNotFound(type_, direction)
 
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
+  def adapt_type_hint(self, type_: BaseType, adapter: ITypeHintAdapter = None) -> BaseType:
     return reduce(lambda t, a: a.adapt_type_hint(t, adapter), self.__type_hint_adapters, type_)
 
 
@@ -261,19 +261,19 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
   def deserialize(self,
     value: t.Any,
     type_hint: t.Union[BaseType, t.Type[T]],
-    filename: t.Optional[str] = None,
-    pos: t.Optional[Position] = None,
-    key: t.Union[str, int, None] = None,
-    annotations: t.Optional[t.List[t.Any]] = None
+    filename: str = None,
+    pos: Position = None,
+    key: t.Union[str, int] = None,
+    annotations: t.List[t.Any] = None
   ) -> T:
     return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations)
 
   def serialize(self,
     value: t.Any,
     type_hint: t.Union[BaseType, t.Type[T]],
-    filename: t.Optional[str] = None,
-    pos: t.Optional[Position] = None,
-    key: t.Union[str, int, None] = None,
-    annotations: t.Optional[t.List[t.Any]] = None
+    filename: str = None,
+    pos: Position = None,
+    key: t.Union[str, int] = None,
+    annotations: t.List[t.Any] = None
   ) -> t.Any:
     return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations)
