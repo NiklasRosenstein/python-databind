@@ -27,8 +27,8 @@ class Module(IConverterProvider, ITypeHintAdapter):
   Combination of various interfaces, with default implementations acting as a no-op.
   """
 
-  def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter:
-    raise ConverterNotFound(type, direction)
+  def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter:
+    raise ConverterNotFound(type_, direction)
 
   def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
     return type_

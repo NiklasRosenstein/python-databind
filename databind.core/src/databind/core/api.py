@@ -40,7 +40,7 @@ class IConverterProvider(metaclass=abc.ABCMeta):
   """
 
   @abc.abstractmethod
-  def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter: ...
+  def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter: ...
 
   Wrapper: t.Type['_ConverterProviderWrapper']
 
@@ -144,15 +144,15 @@ class Context:
     return self.location.type
 
   def push(self,
-    type: BaseType,
+    type_: BaseType,
     value: t.Any,
     key: t.Union[str, int, None],
     field: t.Optional[Field] = None,
     filename: t.Optional[str] = None,
     position: t.Optional[Position] = None
   ) -> 'Context':
-    location = self.location.push(type, key, filename, position)
-    return Context(self, self.mapper, self.direction, value, location, field or Field(str(key or '$'), type, []))
+    location = self.location.push(type_, key, filename, position)
+    return Context(self, self.mapper, self.direction, value, location, field or Field(str(key or '$'), type_, []))
 
   def convert(self) -> t.Any:
     return self.mapper.get_converter(self.location.type, self.direction).convert(self)
@@ -176,7 +176,7 @@ class Context:
 
 @dataclass
 class ConverterNotFound(Exception):
-  type: BaseType
+  type_: BaseType
   direction: Direction
 
 
@@ -194,8 +194,8 @@ class _ConverterProviderWrapper(IConverterProvider):
   def __init__(self, func: t.Callable[[BaseType], IConverter]) -> None:
     self._func = func
 
-  def get_converter(self, type: BaseType, direction: 'Direction') -> IConverter:
-    return self._func(type, direction)  # type: ignore
+  def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter:
+    return self._func(type_, direction)  # type: ignore
 
 
 IConverterProvider.Wrapper = _ConverterProviderWrapper

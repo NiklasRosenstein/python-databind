@@ -96,9 +96,9 @@ class AnnotatedType(BaseType):
   type: BaseType
   annotations: t.Tuple[t.Any, ...]
 
-  def __init__(self, type: BaseType, annotations: t.Sequence[t.Any]) -> None:
-    preconditions.check_instance_of(type, BaseType)  # type: ignore
-    self.type = type
+  def __init__(self, type_: BaseType, annotations: t.Sequence[t.Any]) -> None:
+    preconditions.check_instance_of(type_, BaseType)  # type: ignore
+    self.type = type_
     self.annotations = tuple(annotations)
 
   def __repr__(self) -> str:

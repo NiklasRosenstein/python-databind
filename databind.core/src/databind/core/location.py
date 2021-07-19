@@ -82,9 +82,9 @@ class Location:
     return ''.join(parts)
 
   def push(self,
-    type: BaseType,
+    type_: BaseType,
     key: t.Union[str, int, None],
     filename: t.Optional[str],
     pos: t.Optional[Position]
   ) -> 'Location':
-    return Location(self, type, key, filename, pos)
+    return Location(self, type_, key, filename, pos)
