@@ -20,10 +20,10 @@ class UnionTypeError(Exception):
   def __str__(self) -> str:
     typ = self.type.__name__ if isinstance(self.type, type) else str(self.type)
     owner = self.subtypes.owner() if self.subtypes.owner else None
-    if not owner or owner.name or not owner.backing_type:
+    if not owner or owner.name or not owner.python_type:
       return f'type `{typ}` is not a member of union `{owner.name}`'
     else:
-      owner_name = owner.backing_type.__name__ if isinstance(owner.backing_type, type) else str(owner.backing_type)
+      owner_name = owner.python_type.__name__ if isinstance(owner.python_type, type) else str(owner.python_type)
       return f'type `{typ}` is not a member of @unionclass `{owner_name}`'
 
 

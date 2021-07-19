@@ -242,17 +242,17 @@ class UnionType(BaseType):
   style: t.Optional['UnionStyle']
   discriminator_key: t.Optional[str]
   name: t.Optional[str]
-  backing_type: t.Any
+  python_type: t.Any
 
   def __post_init__(self) -> None:
-    if not self.name and self.backing_type is None:
+    if not self.name and self.python_type is None:
       raise ValueError(f'UnionType() requires either name or backing_type')
 
   def __repr__(self) -> str:
-    return f'ObjectType({self.name or self.backing_type.__name__})'
+    return f'UnionType({self.name or self.python_type.__name__})'
 
   def to_typing(self) -> t.Any:
-    return self.backing_type
+    return self.python_type
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(self)
