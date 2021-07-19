@@ -11,9 +11,9 @@ import datetime
 import typing as t
 from databind.core import annotations as A
 from databind.core.api import Context, Direction, IConverter, Context
-from databind.core.types import ConcreteType
+from databind.core.types import AnnotatedType, ConcreteType
 from nr import preconditions
-from nr.parsing.date import ISO_8601
+from nr.parsing.date import ISO_8601, duration
 
 T_DateTypes = t.TypeVar('T_DateTypes', bound=t.Union[datetime.date, datetime.time, datetime.datetime])
 
@@ -44,3 +44,20 @@ class DatetimeJsonConverter(IConverter):
       if not isinstance(ctx.value, type_):
         raise ctx.type_error(expected=type_)
       return datefmt.format(ctx.value)
+
+
+class DurationConverter(IConverter):
+
+  def convert(self, ctx: Context) -> t.Any:
+    type_, annotations = AnnotatedType.unpack(ctx.type)
+    assert isinstance(type_, ConcreteType) and type_.type is duration, type_
+
+    if ctx.direction == Direction.serialize:
+      if not isinstance(ctx.value, duration):
+        raise ctx.type_error(expected=duration)
+      return str(ctx.value)
+
+    elif ctx.direction == Direction.deserialize:
+      if not isinstance(ctx.value, str):
+        raise ctx.type_error(expected=str)
+      return duration.parse(ctx.value)   # TODO (@NiklasRosenstein): Reraise as ConversionError?

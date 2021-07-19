@@ -4,12 +4,13 @@ __version__ = '0.12.0'
 
 import datetime
 import decimal
+from nr.parsing.date import duration
 from databind.core.api import Direction, IConverter
 from databind.core.objectmapper import SimpleModule
 from databind.core.types import BaseType, CollectionType, MapType, ObjectType, OptionalType, UnionType
 from .modules.optional import OptionalConverter
 from .modules.collection import CollectionConverter
-from .modules.datetime import DatetimeJsonConverter
+from .modules.datetime import DatetimeJsonConverter, DurationConverter
 from .modules.decimal import DecimalJsonConverter
 from .modules.map import MapConverter
 from .modules.object import ObjectTypeConverter
@@ -29,27 +30,17 @@ class JsonModule(SimpleModule):
   def __init__(self, name: str = None) -> None:
     super().__init__(name)
 
-    conv = PlainJsonConverter()
-    for type_ in (bool, float, int, str):
-      self.add_converter_for_type(type_, conv, Direction.deserialize)
-      self.add_converter_for_type(type_, conv, Direction.serialize)
-
-    conv = DecimalJsonConverter()
-    self.add_converter_for_type(decimal.Decimal, conv, Direction.deserialize)
-    self.add_converter_for_type(decimal.Decimal, conv, Direction.serialize)
-
-    conv = DatetimeJsonConverter()
-    for type_ in (datetime.date, datetime.datetime, datetime.time):
-      self.add_converter_for_type(type_, conv, Direction.deserialize)
-      self.add_converter_for_type(type_, conv, Direction.serialize)
-
-    conv = OptionalConverter()
-    self.add_converter_for_type(OptionalType, conv, Direction.deserialize)
-    self.add_converter_for_type(OptionalType, conv, Direction.serialize)
-
-    conv = MapConverter()
-    self.add_converter_for_type(MapType, conv, Direction.deserialize)
-    self.add_converter_for_type(MapType, conv, Direction.serialize)
+    self.add_converter_for_type(bool, PlainJsonConverter())
+    self.add_converter_for_type(float, PlainJsonConverter())
+    self.add_converter_for_type(int, PlainJsonConverter())
+    self.add_converter_for_type(str, PlainJsonConverter())
+    self.add_converter_for_type(decimal.Decimal, DecimalJsonConverter())
+    self.add_converter_for_type(datetime.date, DatetimeJsonConverter())
+    self.add_converter_for_type(datetime.time, DatetimeJsonConverter())
+    self.add_converter_for_type(datetime.datetime, DatetimeJsonConverter())
+    self.add_converter_for_type(duration, DurationConverter())
+    self.add_converter_for_type(OptionalType, OptionalConverter())
+    self.add_converter_for_type(MapType, MapConverter())
 
   def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
     if isinstance(type_, CollectionType):
@@ -57,5 +48,5 @@ class JsonModule(SimpleModule):
     elif isinstance(type_, ObjectType):
       return ObjectTypeConverter()
     elif isinstance(type_, UnionType):
-        return UnionConverter()
+      return UnionConverter()
     return super().get_converter(type_, direction)
