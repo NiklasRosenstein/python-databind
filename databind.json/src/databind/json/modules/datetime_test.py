@@ -1,5 +1,7 @@
 
+import typing_extensions as te
 from datetime import date, datetime, time, timezone
+from databind.core.annotations.datefmt import datefmt
 from databind.core.objectmapper import ObjectMapper
 from databind.json import JsonModule
 from nr.parsing.date.duration import duration
@@ -14,6 +16,7 @@ def test_datetime():
   assert mapper.serialize(date(2021, 3, 28), date) == '2021-03-28'
   assert mapper.serialize(time(21, 1, 54, tzinfo=timezone.utc), time) == '21:01:54.0Z'
   assert mapper.serialize(datetime(2021, 3, 28, 21, 1, 54, 0, timezone.utc), datetime) == '2021-03-28T21:01:54.0Z'
+  assert mapper.serialize(datetime(2021, 3, 28, 21, 1, 54, 0, timezone.utc), te.Annotated[datetime, datefmt('%Y-%m-%d')]) == '2021-03-28'
 
 
 def test_duration():
