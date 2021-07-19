@@ -5,9 +5,8 @@ __version__ = '0.12.0'
 import datetime
 import decimal
 from nr.parsing.date import duration
-from databind.core.api import Direction, IConverter
 from databind.core.objectmapper import SimpleModule
-from databind.core.types import BaseType, CollectionType, MapType, ObjectType, OptionalType, UnionType
+from databind.core.types import ListType, MapType, ObjectType, OptionalType, SetType, UnionType
 from .modules.optional import OptionalConverter
 from .modules.collection import CollectionConverter
 from .modules.datetime import DatetimeJsonConverter, DurationConverter
@@ -30,6 +29,8 @@ class JsonModule(SimpleModule):
   def __init__(self, name: str = None) -> None:
     super().__init__(name)
 
+    self.add_converter_for_type(ObjectType, ObjectTypeConverter())
+    self.add_converter_for_type(UnionType, UnionConverter())
     self.add_converter_for_type(bool, PlainJsonConverter())
     self.add_converter_for_type(float, PlainJsonConverter())
     self.add_converter_for_type(int, PlainJsonConverter())
@@ -41,12 +42,5 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(duration, DurationConverter())
     self.add_converter_for_type(OptionalType, OptionalConverter())
     self.add_converter_for_type(MapType, MapConverter())
-
-  def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
-    if isinstance(type_, CollectionType):
-      return CollectionConverter()
-    elif isinstance(type_, ObjectType):
-      return ObjectTypeConverter()
-    elif isinstance(type_, UnionType):
-      return UnionConverter()
-    return super().get_converter(type_, direction)
+    self.add_converter_for_type(ListType, CollectionConverter())
+    self.add_converter_for_type(SetType, CollectionConverter())
