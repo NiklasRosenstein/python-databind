@@ -16,7 +16,7 @@ def test_object_deserializer():
     name: str
     age: int = 22
 
-  assert mapper.serialize(Person('John'), Person) == {'name': 'John', 'age': 22}
+  assert mapper.serialize(Person('John'), Person) == {'name': 'John'}
   assert mapper.deserialize({'name': 'John', 'age': 40}, Person) == Person('John', 40)
   assert mapper.deserialize({'name': 'John'}, Person) == Person('John', 22)
 
@@ -25,7 +25,7 @@ def test_object_deserializer():
     a: str
     b: Person
 
-  assert mapper.serialize(Nested('foo', Person('John')), Nested) == {'a': 'foo', 'b': {'name': 'John', 'age': 22}}
+  assert mapper.serialize(Nested('foo', Person('John')), Nested) == {'a': 'foo', 'b': {'name': 'John'}}
   assert mapper.deserialize({'a': 'foo', 'b': {'name': 'John', 'age': 22}}, Nested) == Nested('foo', Person('John'))
 
   @dataclasses.dataclass
@@ -33,5 +33,16 @@ def test_object_deserializer():
     a: str
     b: te.Annotated[Person, A.fieldinfo(flat=True)]
 
-  assert mapper.serialize(Flat('foo', Person('John')), Flat) == {'a': 'foo', 'name': 'John', 'age': 22}
+  assert mapper.serialize(Flat('foo', Person('John')), Flat) == {'a': 'foo', 'name': 'John'}
   assert mapper.deserialize({'a': 'foo', 'name': 'John', 'age': 22}, Flat) == Flat('foo', Person('John'))
+
+
+def test_object_optional_field():
+
+  @dataclasses.dataclass
+  class Person:
+    name: str
+    age: t.Optional[int] = None
+
+  assert mapper.serialize(Person('John', 22), Person) == {'name': 'John', 'age': 22}
+  assert mapper.serialize(Person('John'), Person) == {'name': 'John'}

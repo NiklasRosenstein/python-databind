@@ -6,7 +6,8 @@ import datetime
 import decimal
 from databind.core.api import Direction, IConverter
 from databind.core.objectmapper import SimpleModule
-from databind.core.types import BaseType, CollectionType, ObjectType, UnionType
+from databind.core.types import BaseType, CollectionType, ObjectType, OptionalType, UnionType
+from .modules.optional import OptionalConverter
 from .modules.collection import CollectionConverter
 from .modules.datetime import DatetimeJsonConverter
 from .modules.decimal import DecimalJsonConverter
@@ -40,6 +41,10 @@ class JsonModule(SimpleModule):
     for type_ in (datetime.date, datetime.datetime, datetime.time):
       self.add_converter_for_type(type_, conv, Direction.deserialize)
       self.add_converter_for_type(type_, conv, Direction.serialize)
+
+    conv = OptionalConverter()
+    self.add_converter_for_type(OptionalType, conv, Direction.deserialize)
+    self.add_converter_for_type(OptionalType, conv, Direction.serialize)
 
   def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
     if isinstance(type_, CollectionType):
