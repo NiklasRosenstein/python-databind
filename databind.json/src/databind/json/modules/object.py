@@ -5,22 +5,11 @@ schemas (see #databind.core.schema).
 """
 
 import typing as t
-from databind.core.api import Context, ConverterNotFound, Direction, IConverter, Context
-from databind.core.objectmapper import Module
-from databind.core.schema import Field, Schema
-from databind.core.types import ObjectType, BaseType
-
-
-class ObjectModule(Module):
-
-  def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
-    if isinstance(type, ObjectType):
-      return ObjectTypeConverter()
-    raise ConverterNotFound(type, direction)
+from databind.core.api import Context, Direction, IConverter, Context
+from databind.core.types import ObjectType
 
 
 class ObjectTypeConverter(IConverter):
-
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ObjectType)

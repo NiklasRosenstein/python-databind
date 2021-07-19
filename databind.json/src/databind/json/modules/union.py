@@ -1,18 +1,8 @@
 
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, ConversionError, ConverterNotFound, Direction, IConverter
-from databind.core.objectmapper import Module
-from databind.core.types import AnnotatedType, BaseType, ObjectType, UnionType, from_typing
-from nr import preconditions
-
-
-class UnionModule(Module):
-
-  def get_converter(self, type: BaseType, direction: Direction) -> IConverter:
-    if isinstance(type, UnionType):
-        return UnionConverter()
-    raise ConverterNotFound(type, direction)
+from databind.core.api import Context, ConversionError, Direction, IConverter
+from databind.core.types import BaseType, UnionType, from_typing
 
 
 class UnionConverter(IConverter):

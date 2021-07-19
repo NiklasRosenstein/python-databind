@@ -10,23 +10,12 @@ The date is parsed using the #nr.parsing.date module.
 import datetime
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, ConversionError, Direction, IConverter, Context
-from databind.core.objectmapper import SimpleModule
+from databind.core.api import Context, Direction, IConverter, Context
 from databind.core.types import ConcreteType
 from nr import preconditions
 from nr.parsing.date import ISO_8601
 
 T_DateTypes = t.TypeVar('T_DateTypes', bound=t.Union[datetime.date, datetime.time, datetime.datetime])
-
-
-class DatetimeModule(SimpleModule):
-
-  def __init__(self) -> None:
-    super().__init__()
-    conv = DatetimeJsonConverter()
-    for type_ in (datetime.date, datetime.datetime, datetime.time):
-      self.add_converter_for_type(type_, conv, Direction.deserialize)
-      self.add_converter_for_type(type_, conv, Direction.serialize)
 
 
 class DatetimeJsonConverter(IConverter):

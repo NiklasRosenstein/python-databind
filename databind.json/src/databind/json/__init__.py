@@ -2,13 +2,17 @@
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
 __version__ = '0.12.0'
 
+import datetime
+import decimal
+from databind.core.api import Direction, IConverter
 from databind.core.objectmapper import SimpleModule
-from .modules.collection import CollectionModule
-from .modules.datetime import DatetimeModule
-from .modules.decimal import DecimalModule
-from .modules.object import ObjectModule
-from .modules.plain import PlainDatatypeModule
-from .modules.union import UnionModule
+from databind.core.types import BaseType, CollectionType, ObjectType, UnionType
+from .modules.collection import CollectionConverter
+from .modules.datetime import DatetimeJsonConverter
+from .modules.decimal import DecimalJsonConverter
+from .modules.object import ObjectTypeConverter
+from .modules.plain import PlainJsonConverter
+from .modules.union import UnionConverter
 
 __all__ = [
   'JsonModule',
@@ -22,9 +26,26 @@ class JsonModule(SimpleModule):
 
   def __init__(self, name: str = None) -> None:
     super().__init__(name)
-    self.add_module(DatetimeModule())
-    self.add_module(DecimalModule())
-    self.add_module(PlainDatatypeModule())
-    self.add_module(CollectionModule())
-    self.add_module(ObjectModule())
-    self.add_module(UnionModule())
+
+    conv = PlainJsonConverter()
+    for type_ in (bool, float, int, str):
+      self.add_converter_for_type(type_, conv, Direction.deserialize)
+      self.add_converter_for_type(type_, conv, Direction.serialize)
+
+    conv = DecimalJsonConverter()
+    self.add_converter_for_type(decimal.Decimal, conv, Direction.deserialize)
+    self.add_converter_for_type(decimal.Decimal, conv, Direction.serialize)
+
+    conv = DatetimeJsonConverter()
+    for type_ in (datetime.date, datetime.datetime, datetime.time):
+      self.add_converter_for_type(type_, conv, Direction.deserialize)
+      self.add_converter_for_type(type_, conv, Direction.serialize)
+
+  def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
+    if isinstance(type_, CollectionType):
+      return CollectionConverter()
+    elif isinstance(type_, ObjectType):
+      return ObjectTypeConverter()
+    elif isinstance(type_, UnionType):
+        return UnionConverter()
+    return super().get_converter(type_, direction)

@@ -1,16 +1,7 @@
 
 import typing as t
-from databind.core.api import Context, ConverterNotFound, Direction, IConverter
-from databind.core.objectmapper import Module
-from databind.core.types import BaseType, CollectionType
-
-
-class CollectionModule(Module):
-
-  def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
-    if isinstance(type_, CollectionType):
-      return CollectionConverter()
-    raise ConverterNotFound(type_, direction)
+from databind.core.api import Context, Direction, IConverter
+from databind.core.types import CollectionType
 
 
 class CollectionConverter(IConverter):
