@@ -248,14 +248,14 @@ class UnionType(BaseType):
   style: t.Optional['UnionStyle']
   discriminator_key: t.Optional[str]
   name: t.Optional[str]
-  python_type: t.Any
+  python_type: t.Any  # Can be a Python type or an actual type hint
 
   def __post_init__(self) -> None:
     if not self.name and self.python_type is None:
       raise ValueError(f'UnionType() requires either name or backing_type')
 
   def __repr__(self) -> str:
-    return f'UnionType({self.name or self.python_type.__name__})'
+    return f'UnionType({self.name or _type_repr(self.python_type)})'
 
   def to_typing(self) -> t.Any:
     return self.python_type

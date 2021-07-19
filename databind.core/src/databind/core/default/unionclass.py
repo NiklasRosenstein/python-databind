@@ -31,7 +31,7 @@ class UnionclassAdapter(Module):
         unionclass.style,
         unionclass.discriminator_key,
         unionclass.name,
-        type_.to_typing())
+        AnnotatedType.unpack(type_)[0].to_typing())
       result_type.subtypes.owner = weakref.ref(result_type)
       return result_type
     return type_
