@@ -110,6 +110,12 @@ class AnnotatedType(BaseType):
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(AnnotatedType(self.type.visit(func), self.annotations))
 
+  @staticmethod
+  def unpack(type_: 'AnnotatedType') -> t.Tuple[BaseType, t.Tuple[t.Any, ...]]:
+    if isinstance(type_, AnnotatedType):
+      return type_.type, type_.annotations
+    return type_
+
 
 @dataclasses.dataclass
 class ImplicitUnionType(BaseType):

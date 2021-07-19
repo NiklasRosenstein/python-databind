@@ -55,11 +55,15 @@ class SimpleModule(Module):
     preconditions.check_instance_of(provider, IConverterProvider)  # type: ignore
     self.__converter_providers.append(provider)
 
-  def add_converter_for_type(self, type_: t.Type, converter: IConverter, direction: Direction) -> None:
+  def add_converter_for_type(self, type_: t.Type, converter: IConverter, direction: Direction = None) -> None:
     preconditions.check_instance_of(type_, type)
     preconditions.check_instance_of(converter, IConverter)  # type: ignore
-    preconditions.check_instance_of(direction, Direction)
-    self.__converters_by_type[direction][type_] = converter
+    if direction is not None:
+      preconditions.check_instance_of(direction, Direction)
+      self.__converters_by_type[direction][type_] = converter
+    else:
+      self.__converters_by_type[Direction.deserialize][type_] = converter
+      self.__converters_by_type[Direction.serialize][type_] = converter
 
   def add_type_hint_adapter(self, adapter: ITypeHintAdapter) -> None:
     preconditions.check_instance_of(adapter, ITypeHintAdapter)  # type: ignore
