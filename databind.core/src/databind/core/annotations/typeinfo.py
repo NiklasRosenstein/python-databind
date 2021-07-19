@@ -11,9 +11,10 @@ class typeinfo(Annotation):
   Annotation for classes to override information about the type.
   """
 
-  name: str
+  name: t.Optional[str]
 
   @staticmethod
   def get_name(type: t.Type) -> str:
     info = get_annotation(type, typeinfo, None)
-    return info.name if info else type.__name__
+    return (info.name if info else None) or type.__name__
+

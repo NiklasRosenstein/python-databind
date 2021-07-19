@@ -120,6 +120,29 @@ class Schema:
   def unionclass(self) -> t.Optional[unionclass]:
     return get_annotation(self.annotations, unionclass, None)
 
+  class _FlatField(t.NamedTuple):
+    group: str
+    path: str
+    field: Field
+    name = property(lambda s: s.field.name)
+
+  def flat_fields(self) -> t.Iterator[_FlatField]:
+    """
+    Returns a list of the flattened fields of the schema and the group that they belong to.
+    Fields that belong to the root schema (ie. `self`) are grouped under the key `$`.
+    """
+
+    stack = [('$', self)]
+    while stack:
+      path, schema = stack.pop(0)
+      for field_name, field in schema.fields.items():
+        field_path = path + '.' + field_name
+        if not field.flat:
+          group = path.split('.')[:2]
+          yield Schema._FlatField(group[-1], field_path, field)
+        if field.flat and isinstance(field.type, ObjectType):
+          stack.append((field_path, field.type.schema))
+
 
 class ISchemaComposer(metaclass=abc.ABCMeta):
   """
@@ -145,20 +168,11 @@ def _check_no_colliding_flattened_fields(schema: Schema) -> None:
   Raises a #SchemaDefinitionError if the constraint is violated.
   """
 
-  root = schema
-  stack = [('$', schema)]
   fields = {}
-
-  while stack:
-    path, schema = stack.pop(0)
-    for field_name, field in schema.fields.items():
-      field_path = path + '.' + field_name
-      if field_name in fields:
-        raise SchemaDefinitionError(f'Flat field conflict in schema {root.name!r}: ({fields[field_name]}, {field_path})')
-      if not field.flat:
-        fields[field_name] = field_path
-      if field.flat and isinstance(field.type, ObjectType):
-        stack.append((field_path ,field.type.schema))
+  for field in schema.flat_fields():
+    if field.name in fields:
+      raise SchemaDefinitionError(f'Flat field conflict in schema {schema.name!r}: ({fields[field.name]}, {field.path})')
+    fields[field.name] = field.path
 
 
 class SchemaDefinitionError(Exception):
