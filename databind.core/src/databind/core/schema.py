@@ -39,6 +39,7 @@ class Field:
   default_factory: t.Union[NotSet, t.Callable[[], t.Any]] = NotSet.Value
 
   def __post_init__(self) -> None:
+    assert isinstance(self.annotations, list)
     if self.flat and not isinstance(self.type, (ObjectType, MapType)):
       raise RuntimeError('fieldinfo(flat=True) can only be enabled for ObjectType or MapType fields, '
           f'{self.name!r} is of type {self.type!r}')

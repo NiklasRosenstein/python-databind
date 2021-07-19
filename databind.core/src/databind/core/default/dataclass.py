@@ -7,6 +7,7 @@ interpreted as a datamodel.
 import typing as t
 from dataclasses import is_dataclass, Field as _DataclassField, MISSING as _MISSING
 from databind.core.annotations import get_type_annotations
+from databind.core.annotations.alias import alias
 from databind.core.api import Context, ITypeHintAdapter
 from databind.core.objectmapper import Module
 from databind.core.schema import Field, ISchemaComposer, Schema
@@ -25,6 +26,7 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
   adapter = adapter or ITypeHintAdapter.Noop()
   fields: t.Dict[str, Field] = {}
   annotations = t.get_type_hints(dataclass_type)
+
   for field in enumerate_fields(dataclass_type):
     field_type_hint = from_typing(annotations.get(field.name, t.Any)).normalize()
     field_type_hint = adapter.adapt_type_hint(field_type_hint)
@@ -32,9 +34,19 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
       field_type_hint, field_annotations = field_type_hint.type, field_type_hint.annotations  # type: ignore  # see https://github.com/python/mypy/issues/9731
     else:
       field_annotations = []
-    fields[field.name] = Field(field.name, field_type_hint, field_annotations,
+
+    # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.
+    if not any(isinstance(x, alias) for x in field_annotations):
+      if 'alias' in field.metadata:
+        aliases = field.metadata['alias']
+        if isinstance(aliases, str):
+          aliases = [aliases]
+        field_annotations.append(alias(*aliases))
+
+    fields[field.name] = Field(field.name, field_type_hint, list(field_annotations),
       NotSet.Value if field.default == _MISSING else field.default,
       NotSet.Value if field.default_factory == _MISSING else field.default_factory)
+
   return Schema(
     dataclass_type.__name__,
     fields,
