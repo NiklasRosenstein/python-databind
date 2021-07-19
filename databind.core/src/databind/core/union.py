@@ -2,14 +2,17 @@
 import abc
 import dataclasses
 import enum
+import importlib
 import pkg_resources
 import typing as t
 import weakref
+from nr.stream import Stream
 
 if t.TYPE_CHECKING:
   from databind.core.types import UnionType
 
 from nr.pylang.utils.funcdef import except_format
+
 
 @dataclasses.dataclass
 class UnionTypeError(Exception):
@@ -35,7 +38,7 @@ class IUnionSubtypes(abc.ABC):
   owner: t.Optional['weakref.ref[UnionType]'] = None
 
   @abc.abstractmethod
-  def get_type_name(self, type: 'BaseType') -> str:
+  def get_type_name(self, type_: 'BaseType') -> str:
     """
     Given a type that is a member of the union subtypes, return the name of the type
     that is used as a discriminator when serializing a value of the type. Raises a
@@ -134,6 +137,83 @@ class DynamicSubtypes(IUnionSubtypes):
     if name in self._members:
       raise RuntimeError(f'type {name!r} already registered')
     self._members[name] = type_
+
+
+class ChainSubtypes(IUnionSubtypes):
+
+  def __init__(self, *subtypes: IUnionSubtypes) -> None:
+    self._subtypes = subtypes
+
+  def __repr__(self) -> str:
+    return f'ChainSubtypes({", ".join(map(repr, self._subtypes))})'
+
+  def get_type_name(self, type_: 'BaseType') -> str:
+    for subtypes in self._subtypes:
+      try:
+        return subtypes.get_type_name(type_)
+      except UnionTypeError:
+        pass
+    raise UnionTypeError(type_, self)
+
+  def get_type_by_name(self, name: str) -> 'BaseType':
+    for subtypes in self._subtypes:
+      try:
+        return subtypes.get_type_by_name(name)
+      except UnionTypeError:
+        pass
+    raise UnionTypeError(name, self)
+
+  def get_type_names(self) -> t.List[str]:
+    def _gen() -> t.Iterator[str]:
+      for subtypes in self._subtypes:
+        try:
+          yield from subtypes.get_type_names()
+        except NotImplementedError:
+          pass
+    return Stream(_gen()).concat().distinct().collect()
+
+
+class ImportSubtypes(IUnionSubtypes):
+
+  def __repr__(self) -> str:
+    return 'ImportSubtypes()'
+
+  def get_type_name(self, type_: 'BaseType') -> str:
+    type_name = f'{type_.__module__}.{type_.__qualname__}'
+    if '<' in type_.__qualname__:
+      raise ValueError(f'non-global type {type_name} is not addressible')
+    return type_name
+
+  def get_type_by_name(self, name: str) -> 'BaseType':
+    parts = name.split('.')
+    offset = 1
+    module_name = parts[0]
+    module = importlib.import_module(module_name)
+
+    # Import as many modules as we can.
+    for offset, part in enumerate(parts[offset:], offset):
+      sub_module_name = module_name + '.' + part
+      try:
+        module = importlib.import_module(sub_module_name)
+        module_name = sub_module_name
+      except ImportError as exc:
+        if sub_module_name not in str(exc):
+          raise
+        #offset -= 1
+        break
+
+    # Read the class.
+    target = module
+    for offset, part in enumerate(parts[offset:], offset):
+      target = getattr(target, part)
+
+    if not isinstance(target, type):
+      raise ValueError(f'{name!r} does not point to a type (got {type(target).__name__} instead)')
+
+    return from_typing(target)
+
+  def get_type_names(self) -> t.List[str]:
+    raise NotImplementedError
 
 
 class UnionStyle(enum.Enum):

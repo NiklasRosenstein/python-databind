@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import nr.preconditions as preconditions
 
-from databind.core.union import DynamicSubtypes, EntrypointSubtypes, IUnionSubtypes, UnionStyle
+from databind.core.union import ChainSubtypes, DynamicSubtypes, EntrypointSubtypes, IUnionSubtypes, ImportSubtypes, UnionStyle
 from . import Annotation, get_annotation
 from .typeinfo import typeinfo
 
@@ -16,6 +16,8 @@ T_Type = t.TypeVar('T_Type', bound=t.Type)
 class _Subtypes:
   dynamic: t.Final = DynamicSubtypes
   entrypoint: t.Final = EntrypointSubtypes
+  chain: t.Final = ChainSubtypes
+  import_: t.Final = ImportSubtypes
 
 
 @dataclass
