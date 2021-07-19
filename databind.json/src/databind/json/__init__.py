@@ -4,8 +4,11 @@ __version__ = '0.12.0'
 
 import datetime
 import decimal
+import io
+import json
+import typing as t
 from nr.parsing.date import duration
-from databind.core.objectmapper import SimpleModule
+from databind.core.objectmapper import ObjectMapper, SimpleModule
 from databind.core.types import ListType, MapType, ObjectType, OptionalType, SetType, UnionType
 from .modules.optional import OptionalConverter
 from .modules.collection import CollectionConverter
@@ -19,6 +22,9 @@ from .modules.union import UnionConverter
 __all__ = [
   'JsonModule',
 ]
+
+T = t.TypeVar('T')
+JsonType = t.Union[t.Mapping, t.Collection, str, int, float, bool, None]
 
 
 class JsonModule(SimpleModule):
@@ -44,3 +50,51 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(MapType, MapConverter())
     self.add_converter_for_type(ListType, CollectionConverter())
     self.add_converter_for_type(SetType, CollectionConverter())
+
+
+def load(
+  data: t.Union[JsonType, t.TextIO],
+  type_: t.Type[T],
+  mapper: ObjectMapper = None,
+  filename: str = None,
+  annotations: t.List[t.Any] = None,
+) -> T:
+
+  if hasattr(data, 'read'):
+    if not filename:
+      filename = getattr(data, 'name', None)
+    data = json.load(data)
+  return (mapper or ObjectMapper.default(JsonModule())).deserialize(data, type_, filename=filename, annotations=annotations)
+
+
+def loads(
+  data: str,
+  type_: t.Type[T],
+  mapper: ObjectMapper = None,
+  filename: str = None,
+  annotations: t.List[t.Any] = None,
+) -> T:
+  return load(io.StringIO(data), type_, mapper, filename, annotations)
+
+
+def dump(
+  value: T,
+  type_: t.Type[T] = None,
+  mapper: ObjectMapper = None,
+  annotations: t.List[t.Any] = None,
+  out: t.TextIO = None,
+) -> JsonType:
+
+  data = (mapper or ObjectMapper.default(JsonModule())).serialize(value, type_ or type(value), annotations=annotations)
+  if out is not None:
+    json.dump(data, out)
+  return data
+
+
+def dumps(
+  value: T,
+  type_: t.Type[T] = None,
+  mapper: ObjectMapper = None,
+  annotations: t.List[t.Any] = None,
+) -> str:
+  return json.dumps(dump(value, type_, mapper, annotations))
