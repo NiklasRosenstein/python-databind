@@ -52,6 +52,10 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(SetType, CollectionConverter())
 
 
+def new_mapper() -> ObjectMapper:
+  return ObjectMapper.default(JsonModule(), name=__name__)
+
+
 def load(
   data: t.Union[JsonType, t.TextIO],
   type_: t.Type[T],
