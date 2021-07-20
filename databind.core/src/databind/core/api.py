@@ -74,7 +74,7 @@ class IAnnotationsProvider(metaclass=abc.ABCMeta):
 class ITypeHintAdapter(metaclass=abc.ABCMeta):
   """
   The #ITypeAdapter has a chance to alter a #TypeHint before it is used to look up an #IConverter
-  via an #IConverterProvider.
+  via an #IConverterProvider. The operation must be idempotent.
   """
 
   @abc.abstractmethod

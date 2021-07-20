@@ -30,7 +30,7 @@ class Field:
   #: A list of the annotations that are associated with the field. Some of the data from these
   #: annotations may be extracted into the other properties on the #Field instance already (such
   #: as #aliases, #required and #flat). The annotations are carried into the field for extension.
-  annotations: t.List[t.Any]
+  annotations: t.List[t.Any] = field(default_factory=list)
 
   #: The default value for the field.
   default: t.Union[NotSet, t.Any] = NotSet.Value

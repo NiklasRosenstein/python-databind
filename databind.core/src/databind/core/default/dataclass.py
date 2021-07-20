@@ -5,7 +5,7 @@ interpreted as a datamodel.
 """
 
 import typing as t
-from dataclasses import is_dataclass, Field as _DataclassField, MISSING as _MISSING
+from dataclasses import dataclass, is_dataclass, Field as _DataclassField, MISSING as _MISSING
 from databind.core.annotations import get_type_annotations
 from databind.core.annotations.alias import alias
 from databind.core.api import Context, ITypeHintAdapter
@@ -52,7 +52,7 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
     fields,
     list(get_type_annotations(dataclass_type).values()),
     dataclass_type,
-    DataclassComposer(dataclass_type)
+    DataclassComposer(dataclass_type),
   )
 
 
@@ -64,10 +64,9 @@ class DataclassAdapter(Module):
     return type_
 
 
+@dataclass
 class DataclassComposer(ISchemaComposer):
-
-  def __init__(self, dataclass_type: t.Type) -> None:
-    self.dataclass_type = dataclass_type
+  dataclass_type: t.Type
 
   def compose(self, data: t.Dict[str, t.Any]) -> t.Any:
     return self.dataclass_type(**data)
