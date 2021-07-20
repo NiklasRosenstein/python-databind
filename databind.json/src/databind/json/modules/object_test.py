@@ -50,6 +50,13 @@ def test_object_optional_field():
   assert mapper.serialize(Person('John', 22), Person) == {'name': 'John', 'age': 22}
   assert mapper.serialize(Person('John'), Person) == {'name': 'John'}
 
+  @dataclasses.dataclass
+  class SomePerson:
+    person: t.Optional[Person]
+
+  assert mapper.serialize(SomePerson(Person('John')), SomePerson) == {'person': {'name': 'John'}}
+  assert mapper.deserialize({'person': {'name': 'John'}}, SomePerson) == SomePerson(Person('John'))
+
 
 def test_unknown_keys():
 
