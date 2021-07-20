@@ -33,7 +33,7 @@ class UnionConverter(IConverter):
     if is_deserialize:
       if style == A.unionclass.Style.nested:
         if member_name not in ctx.value:
-          raise ConversionError(f'missing value key {member_name!r}', ctx.location)
+          raise ConversionError(f'missing union value key {member_name!r}', ctx.location)
         child_context = ctx.push(type_hint, ctx.value[member_name], member_name, ctx.field)
       elif style == A.unionclass.Style.flat:
         child_context = ctx.push(type_hint, dict(ctx.value), None, ctx.field)
