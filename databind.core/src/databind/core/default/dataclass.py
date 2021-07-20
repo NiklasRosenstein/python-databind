@@ -58,9 +58,19 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
 
 class DataclassAdapter(Module):
 
+  def __init__(self) -> None:
+    self._cache: t.Dict[t.Type, ObjectType] = {}
+
+  depth = 0
   def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
     if isinstance(type_, ConcreteType) and is_dataclass(type_.type):
-      type_ = ObjectType(dataclass_to_schema(type_.type, adapter))
+      # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
+      if type_.type in self._cache:
+        return self._cache[type_.type]
+      new_type = ObjectType(Schema(type_.type.__name__, {}, [], type_.type, None))
+      self._cache[type_.type] = new_type
+      new_type.schema = dataclass_to_schema(type_.type, adapter)
+      return new_type
     return type_
 
 
