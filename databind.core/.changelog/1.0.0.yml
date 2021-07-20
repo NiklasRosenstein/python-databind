@@ -1,0 +1,6 @@
+release_date: '2021-07-20'
+changes:
+- type: break
+  component: general
+  description: Full rewrite
+  fixes: []

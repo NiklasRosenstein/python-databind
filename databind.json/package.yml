@@ -1,9 +1,9 @@
 name: databind.json
-version: 0.12.0
+version: 1.0.0
 description: Bind object-oriented data models to JSON data.
 typed: true
 requirements:
 - python ^3.6
-- databind.core ^0.11.0
+- databind.core ^1.0.0
 test-driver:
   type: pytest

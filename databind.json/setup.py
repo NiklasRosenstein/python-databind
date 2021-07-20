@@ -28,12 +28,12 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=0.11.0,<1.0.0',
+  'databind.core >=1.0.0,<2.0.0',
 ]
 
 setuptools.setup(
   name = 'databind.json',
-  version = '0.12.0',
+  version = '1.0.0',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Bind object-oriented data models to JSON data.',
