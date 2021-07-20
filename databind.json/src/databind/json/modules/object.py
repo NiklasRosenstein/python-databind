@@ -57,7 +57,7 @@ class ObjectTypeConverter(IConverter):
         aliases = field.field.aliases or [field.field.name]
         for alias in aliases:
           if alias in ctx.value:
-            value = ctx.value[field.field.name]
+            value = ctx.value[alias]
             groups.setdefault(field.group, {})[field.field.name] = \
               ctx.push(field.field.type, value, field.field.name, field.field).convert()
             used_keys.add(alias)
@@ -78,6 +78,9 @@ class ObjectTypeConverter(IConverter):
 
       # TODO (@NiklasRosenstein): Support flat MapType() field
 
-      return ctx.type.schema.composer.compose(groups['$'])
+      try:
+        return ctx.type.schema.composer.compose(groups['$'])
+      except TypeError as exc:
+        raise ctx.error(str(exc))
 
     assert False
