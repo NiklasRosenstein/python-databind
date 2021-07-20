@@ -245,14 +245,14 @@ class UnionType(BaseType):
   DEFAULT_DISCRIMINATOR_KEY = 'type'
 
   subtypes: 'IUnionSubtypes'
-  style: t.Optional['UnionStyle']
-  discriminator_key: t.Optional[str]
-  name: t.Optional[str]
-  python_type: t.Any  # Can be a Python type or an actual type hint
+  style: t.Optional['UnionStyle'] = None
+  discriminator_key: t.Optional[str] = None
+  name: t.Optional[str] = None
+  python_type: t.Optional[t.Any] = None  # Can be a Python type or an actual type hint
 
   def __post_init__(self) -> None:
     if not self.name and self.python_type is None:
-      raise ValueError(f'UnionType() requires either name or backing_type')
+      raise ValueError(f'UnionType() requires either name or python_type')
 
   def __repr__(self) -> str:
     return f'UnionType({self.name or _type_repr(self.python_type)})'
