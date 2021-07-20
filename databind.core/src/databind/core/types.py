@@ -304,27 +304,27 @@ def from_typing(type_hint: t.Any) -> BaseType:
   generic, args = _unpack_type_hint(type_hint)
   if generic is not None:
     generic = _ORIGIN_CONVERSION.get(generic, generic)
-    if generic == t.List:
+    if generic == t.List and len(args) == 1:
       return ListType(from_typing(args[0]))
-    elif generic == t.Set:
+    elif generic == t.Set and len(args) == 1:
       return SetType(from_typing(args[0]))
-    elif generic in (t.Dict, t.Mapping, t.MutableMapping):
+    elif generic in (t.Dict, t.Mapping, t.MutableMapping) and len(args) == 2:
       return MapType(from_typing(args[0]), from_typing(args[1]), generic)
-    elif generic == t.Optional or (generic == t.Union and None in args and len(args) == 2):  # type: ignore
+    elif (generic == t.Optional and len(args) == 1) or (generic == t.Union and None in args and len(args) == 2):  # type: ignore
       if len(args) == 1:
         return OptionalType(from_typing(args[0]))
       elif len(args) == 2:
         return OptionalType(from_typing(next(x for x in args if x is not None)))
       else:
         raise ValueError(f'unexpected args for {generic}: {args}')
-    elif generic == t.Union:
+    elif generic == t.Union and len(args) > 0:
       if len(args) == 1:
         return from_typing(args[0])
       elif type(None) in args:
         return OptionalType(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
       else:
         return ImplicitUnionType(tuple(from_typing(a) for a in args))
-    elif hasattr(te, 'Annotated') and generic == te.Annotated:  # type: ignore
+    elif hasattr(te, 'Annotated') and generic == te.Annotated and len(args) >= 2:  # type: ignore
       return AnnotatedType(from_typing(args[0]), args[1:])
 
   if isinstance(type_hint, type):
