@@ -28,10 +28,10 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
   annotations = t.get_type_hints(dataclass_type)
 
   for field in enumerate_fields(dataclass_type):
-    field_type_hint = from_typing(annotations.get(field.name, t.Any)).normalize()
+    field_type_hint = from_typing(annotations.get(field.name, t.Any))
     field_type_hint = adapter.adapt_type_hint(field_type_hint)
     if isinstance(field_type_hint, AnnotatedType):
-      field_type_hint, field_annotations = field_type_hint.type, field_type_hint.annotations  # type: ignore  # see https://github.com/python/mypy/issues/9731
+      field_type_hint, field_annotations = field_type_hint.type, list(field_type_hint.annotations)  # type: ignore  # see https://github.com/python/mypy/issues/9731
     else:
       field_annotations = []
 
@@ -43,7 +43,7 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
           aliases = [aliases]
         field_annotations.append(alias(*aliases))
 
-    fields[field.name] = Field(field.name, field_type_hint, list(field_annotations),
+    fields[field.name] = Field(field.name, field_type_hint, field_annotations,
       NotSet.Value if field.default == _MISSING else field.default,
       NotSet.Value if field.default_factory == _MISSING else field.default_factory)
 
