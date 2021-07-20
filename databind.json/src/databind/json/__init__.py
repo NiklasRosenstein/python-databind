@@ -7,6 +7,7 @@ import decimal
 import io
 import json
 import typing as t
+from databind.json.modules.enum import EnumConverter
 from nr.parsing.date import duration
 from databind.core.objectmapper import ObjectMapper, SimpleModule
 from databind.core.types import ListType, MapType, ObjectType, OptionalType, SetType, UnionType
@@ -50,6 +51,7 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(MapType, MapConverter())
     self.add_converter_for_type(ListType, CollectionConverter())
     self.add_converter_for_type(SetType, CollectionConverter())
+    self.add_converter_provider(EnumConverter())
 
 
 def new_mapper() -> ObjectMapper:
