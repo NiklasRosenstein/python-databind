@@ -106,12 +106,14 @@ class EntrypointSubtypes(IUnionSubtypes):
     return list(self._entrypoints.keys())
 
 
+@dataclasses.dataclass
 class DynamicSubtypes(IUnionSubtypes):
 
   _LazyType = t.Union['BaseType', t.Callable[[], t.Union[t.Type, 'BaseType']]]
+  _members: t.Dict[str, _LazyType]
 
-  def __init__(self) -> None:
-    self._members: t.Dict[str, DynamicSubtypes._LazyType] = {}
+  def __init__(self, members: t.Dict[str, t.Union[_LazyType, t.Type]] = None) -> None:
+    self._members = {k: from_typing(v) if isinstance(v, type) else v for k, v in (members or {}).items()}
 
   def __repr__(self) -> str:
     return f'DynamicSubtypes(members={self.get_type_names()})'
