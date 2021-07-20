@@ -7,6 +7,7 @@ import decimal
 import io
 import json
 import typing as t
+from databind.json.modules.any import AnyConverter
 from databind.json.modules.enum import EnumConverter
 from nr.parsing.date import duration
 from databind.core.objectmapper import ObjectMapper, SimpleModule
@@ -36,6 +37,7 @@ class JsonModule(SimpleModule):
   def __init__(self, name: str = None) -> None:
     super().__init__(name)
 
+    self.add_converter_for_type(object, AnyConverter())
     self.add_converter_for_type(ObjectType, ObjectTypeConverter())
     self.add_converter_for_type(UnionType, UnionConverter())
     self.add_converter_for_type(bool, PlainJsonConverter())
