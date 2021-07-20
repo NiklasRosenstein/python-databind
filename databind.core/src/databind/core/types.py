@@ -266,7 +266,8 @@ class UnionType(BaseType):
 
 def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   """
-  Unpacks a type hint into it's origin type and parameters.
+  Unpacks a type hint into it's origin type and parameters. Returns #None if the
+  *hint* does not represent a type or type hint in any way.
   """
 
   if hasattr(te, '_AnnotatedAlias') and isinstance(hint, te._AnnotatedAlias):  # type: ignore
@@ -287,6 +288,39 @@ def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   return None, []
 
 
+def find_generic_bases(type_: t.Type, generic_type: t.Optional[t.Any] = None) -> t.Optional[t.Any]:
+  """
+  Finds all bases of "generic aliases" in the given *type_* and returns them as a list. If
+  *generic_type* is given, only bases of that given origin type are returned.
+
+  Example:
+
+  ```
+  class MyList(t.List[int]):
+    ...
+  assert find_orig_bases(MyList) == [t.List[int]]
+  ```
+  """
+
+  bases = getattr(type_, '__orig_bases__', [])
+
+  generic_choices: t.Tuple[t.Any, ...] = (generic_type,) if generic_type else ()
+  if generic_type and generic_type.__origin__:
+    generic_choices += (generic_type.__origin__,)
+
+  result: t.List[t.Any] = []
+  for base in bases:
+    origin = getattr(base, '__origin__', None)
+    if (not generic_type and origin) or \
+       (base == generic_type or origin in generic_choices):
+      result.append(base)
+
+  for base in bases:
+    result += find_generic_bases(base, generic_type)
+
+  return result
+
+
 _ORIGIN_CONVERSION = {
   list: t.List,
   set: t.Set,
@@ -302,14 +336,35 @@ def from_typing(type_hint: t.Any) -> BaseType:
   """
 
   generic, args = _unpack_type_hint(type_hint)
+
+  if 'AnotherList' in str(type_hint):
+    pass#import pdb; pdb.set_trace()
+
+  # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
+  # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
+  # to it in "python_type" so we know what we need to construct during deserialization.
+  # NOTE (@NiklasRosenstein): We only support a single generic base.
+  python_type: t.Optional[t.Type] = None
+  generic_bases = find_generic_bases(generic)
+  if len(generic_bases) == 1:
+    python_type = generic
+    generic, generic_args = _unpack_type_hint(generic_bases[0])
+
+    # We'll need to replace the type variables in generic_args with the arguments from
+    # the real type annotation.
+    it = iter(args)
+    args = [next(it) if isinstance(a, t.TypeVar) else a for a in generic_args]
+
   if generic is not None:
     generic = _ORIGIN_CONVERSION.get(generic, generic)
-    if generic == t.List and len(args) == 1:
-      return ListType(from_typing(args[0]))
+    if generic == t.Any:
+      return ConcreteType(object)
+    elif generic == t.List and len(args) == 1:
+      return ListType(from_typing(args[0]), python_type or list)
     elif generic == t.Set and len(args) == 1:
-      return SetType(from_typing(args[0]))
+      return SetType(from_typing(args[0]), python_type or set)
     elif generic in (t.Dict, t.Mapping, t.MutableMapping) and len(args) == 2:
-      return MapType(from_typing(args[0]), from_typing(args[1]), generic)
+      return MapType(from_typing(args[0]), from_typing(args[1]), python_type or generic)
     elif (generic == t.Optional and len(args) == 1) or (generic == t.Union and None in args and len(args) == 2):  # type: ignore
       if len(args) == 1:
         return OptionalType(from_typing(args[0]))
