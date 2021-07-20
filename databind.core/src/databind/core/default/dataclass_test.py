@@ -22,6 +22,7 @@ def test_dataclass_to_schema_conversion():
     b: t.Optional[str] = field(default=None, metadata={'alias': 'balias'})
     c: te.Annotated[str, alias('calias')] = 42
     d: t.Optional[P] = None
+    e: str = field(default='foobar', init=False)
 
   #schema = dataclass_to_schema(MyDataclass)
   type_ = ObjectMapper.default().adapt_type_hint(from_typing(MyDataclass))

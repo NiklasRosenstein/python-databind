@@ -28,6 +28,11 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
   annotations = t.get_type_hints(dataclass_type)
 
   for field in enumerate_fields(dataclass_type):
+    if not field.init:
+      # If we cannot initialize the field in the constructor, we should also
+      # exclude it from the definition of the type for de-/serializing.
+      continue
+
     field_type_hint = from_typing(annotations.get(field.name, t.Any))
     field_type_hint = adapter.adapt_type_hint(field_type_hint)
     if isinstance(field_type_hint, AnnotatedType):
