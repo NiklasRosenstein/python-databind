@@ -9,9 +9,10 @@ import json
 import typing as t
 from databind.json.modules.any import AnyConverter
 from databind.json.modules.enum import EnumConverter
+from databind.json.modules.implicitunion import ImplicitUnionConverter
 from nr.parsing.date import duration
 from databind.core.objectmapper import ObjectMapper, SimpleModule
-from databind.core.types import ListType, MapType, ObjectType, OptionalType, SetType, UnionType
+from databind.core.types import ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
 from .modules.optional import OptionalConverter
 from .modules.collection import CollectionConverter
 from .modules.datetime import DatetimeJsonConverter, DurationConverter
@@ -53,6 +54,7 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(MapType, MapConverter())
     self.add_converter_for_type(ListType, CollectionConverter())
     self.add_converter_for_type(SetType, CollectionConverter())
+    self.add_converter_for_type(ImplicitUnionType, ImplicitUnionConverter())
     self.add_converter_provider(EnumConverter())
 
 
