@@ -20,9 +20,12 @@ class Settings:
   an instance of it registered in the settings will override that slot.
   """
 
-  def __init__(self) -> None:
+  def __init__(self, *values: _SettingsValue, parent: 'Settings' = None) -> None:
+    self._parent = parent
     self._enums: t.Dict[t.Type[enum.Enum], t.Set[enum.Enum]] = {}
     self._objects: t.Dict[t.Type, t.Any] = {}
+    for val in values:
+      self.set(val)
 
   def __iter__(self) -> t.Iterable[_SettingsValue]:
     for _enum_type, values in self._enums.items():
@@ -40,7 +43,10 @@ class Settings:
     preconditions.check_instance_of(of, (type, enum.Enum))
     if isinstance(of, enum.Enum):
       return of if of in self._enums.get(type(of), set()) else None
-    return self._objects.get(of)
+    result = self._objects.get(of)
+    if result is None and self._parent is not None:
+      result = self._parent.get(of)
+    return result
 
   def unset(self, of: t.Union[_T_Enum, t.Type[_T]]) -> None:
     preconditions.check_instance_of(of, (type, enum.Enum))
@@ -57,4 +63,3 @@ class Settings:
       if isinstance(value, type):
         raise TypeError(f'cannot set type object as setting')
       self._objects[type(value)] = value
-

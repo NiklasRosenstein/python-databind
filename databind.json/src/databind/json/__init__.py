@@ -75,7 +75,7 @@ def load(
     if not filename:
       filename = getattr(data, 'name', None)
     data = json.load(data)
-  return (mapper or new_mapper()).deserialize(data, type_, filename=filename, annotations=annotations, options=options)
+  return (mapper or new_mapper()).deserialize(data, type_, filename=filename, annotations=annotations, settings=options)
 
 
 def loads(
@@ -98,7 +98,7 @@ def dump(
   out: t.TextIO = None,
 ) -> JsonType:
 
-  data = (mapper or new_mapper()).serialize(value, type_ or type(value), annotations=annotations, options=options)
+  data = (mapper or new_mapper()).serialize(value, type_ or type(value), annotations=annotations, settings=options)
   if out is not None:
     json.dump(data, out)
   return data

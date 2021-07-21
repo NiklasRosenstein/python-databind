@@ -70,5 +70,5 @@ def test_unknown_keys():
 
   unknown_keys = []
   unknowns = enable_unknowns(callback=lambda ctx, keys: unknown_keys.extend(keys))
-  mapper.deserialize({'name': 'John', 'age': 22}, Person, options=[unknowns])
+  mapper.deserialize({'name': 'John', 'age': 22}, Person, settings=[unknowns])
   assert unknown_keys == ['age']

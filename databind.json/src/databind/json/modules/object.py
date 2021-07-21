@@ -15,7 +15,7 @@ class ObjectTypeConverter(IConverter):
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ObjectType)
     skip_default_values = True
-    enable_unknowns = ctx.get_option(A.enable_unknowns)
+    enable_unknowns = ctx.settings.get(A.enable_unknowns)
 
     if ctx.direction == Direction.serialize:
       if not isinstance(ctx.value, ctx.type.schema.python_type):
