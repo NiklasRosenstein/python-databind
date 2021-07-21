@@ -1,7 +1,6 @@
 
-import enum
 import typing as t
-import weakref
+import typing_extensions as te
 from dataclasses import dataclass
 
 import nr.preconditions as preconditions
@@ -14,10 +13,10 @@ T_Type = t.TypeVar('T_Type', bound=t.Type)
 
 
 class _Subtypes:
-  dynamic: t.Final = DynamicSubtypes
-  entrypoint: t.Final = EntrypointSubtypes
-  chain: t.Final = ChainSubtypes
-  import_: t.Final = ImportSubtypes
+  dynamic: te.Final = DynamicSubtypes
+  entrypoint: te.Final = EntrypointSubtypes
+  chain: te.Final = ChainSubtypes
+  import_: te.Final = ImportSubtypes
 
 
 @dataclass
