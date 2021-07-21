@@ -4,6 +4,7 @@ The #DataclassModule provides the type adaptation for classes decorated with `@d
 interpreted as a datamodel.
 """
 
+import sys
 import typing as t
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
@@ -17,11 +18,18 @@ from nr import preconditions
 from nr.pylang.utils.singletons import NotSet
 
 
+def _get_type_hints(type_: t.Any) -> t.Any:
+  if sys.version_info >= (3, 9):
+    return t.get_type_hints(type_, include_extras=True)
+  else:
+    return t.get_type_hints(type_)
+
+
 def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAdapter] = None) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
   adapter = adapter or ITypeHintAdapter.Noop()
   fields: t.Dict[str, Field] = {}
-  annotations = t.get_type_hints(dataclass_type)
+  annotations = _get_type_hints(dataclass_type)
 
   for field in _get_fields(dataclass_type):
     if not field.init:
