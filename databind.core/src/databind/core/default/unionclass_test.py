@@ -4,10 +4,10 @@ import typing as t
 import typing_extensions as te
 
 from databind.core.annotations.unionclass import unionclass
-from databind.core.default.dataclass import DataclassAdapter
 from databind.core.objectmapper import ObjectMapper
 from databind.core.types import ListType, UnionType, from_typing
 from databind.core.union import DynamicSubtypes
+from .dataclasses import DataclassAdapter
 from .unionclass import UnionclassAdapter
 
 

@@ -7,7 +7,7 @@ from databind.core.annotations import alias
 from databind.core.objectmapper import ObjectMapper
 from databind.core.schema import Field, Schema
 from databind.core.types import ConcreteType, ListType, ObjectType, OptionalType, from_typing
-from .dataclass import dataclass_to_schema
+from .dataclasses import dataclass_to_schema
 
 
 def test_dataclass_to_schema_conversion():

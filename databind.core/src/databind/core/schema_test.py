@@ -3,7 +3,6 @@ import dataclasses
 import typing_extensions as te
 import pytest
 from databind.core.annotations import fieldinfo
-from databind.core.default.dataclass import DataclassAdapter
 from databind.core.objectmapper import ObjectMapper
 from databind.core.schema import SchemaDefinitionError
 from databind.core.types import ObjectType, from_typing
