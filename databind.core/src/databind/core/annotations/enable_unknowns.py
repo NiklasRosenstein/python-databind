@@ -2,6 +2,8 @@
 import dataclasses
 import typing as t
 
+from databind.core.location import Location
+
 if t.TYPE_CHECKING:
   from databind.core.api import Context
 
@@ -14,5 +16,32 @@ class enable_unknowns:
   #ObjectType's, as well as optionally receiving callbacks as unknown fields are encountered.
   """
 
-  # A callback to be invoked when a set of unknown keys are encountered.
+  #: A callback to be invoked when a set of unknown keys are encountered.
   callback: t.Optional[t.Callable[['Context', t.Set[str]], None]] = None
+
+
+class collect_unknowns:
+  """
+  Collect unknown keys into this object.
+  """
+
+  class Entry(t.NamedTuple):
+    location: Location
+    keys: t.Set[str]
+
+  entries: t.List[Entry]
+
+  def __init__(self) -> None:
+    self.entries = []
+
+  def __bool__(self) -> bool:
+    return bool(self.entries)
+
+  def __iter__(self) -> t.Iterator[Entry]:
+    return iter(self.entries)
+
+  def callback(self, ctx: 'Context', keys: t.Set[str]) -> None:
+    self.entries.append(collect_unknowns.Entry(ctx.location, keys))
+
+  def __call__(self) -> enable_unknowns:
+    return enable_unknowns(self.callback)

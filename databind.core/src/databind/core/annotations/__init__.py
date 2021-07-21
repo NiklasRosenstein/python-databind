@@ -101,7 +101,7 @@ def get_type_annotations(source: t.Type) -> t.Dict[t.Type, t.Any]:
 
 from .alias import alias
 from .datefmt import datefmt
-from .enable_unknowns import enable_unknowns
+from .enable_unknowns import enable_unknowns, collect_unknowns
 from .fieldinfo import fieldinfo
 from .precision import precision
 from .unionclass import unionclass
@@ -111,5 +111,5 @@ __all__ = [
   'Annotation',
   'get_annotation',
   'get_type_annotation',
-  'alias', 'datefmt', 'enable_unknowns', 'fieldinfo', 'precision', 'unionclass', 'typeinfo',
+  'alias', 'datefmt', 'enable_unknowns', 'collect_unknowns', 'fieldinfo', 'precision', 'unionclass', 'typeinfo',
 ]

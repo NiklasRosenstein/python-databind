@@ -264,6 +264,24 @@ class UnionType(BaseType):
     return func(self)
 
 
+class UnknownType(BaseType):
+  """
+  Can be used to represent an unknown type.
+  """
+
+  def __init__(self) -> None:
+    pass
+
+  def __repr__(self) -> str:
+    return 'UnknownType()'
+
+  def to_typing(self) -> t.Any:
+    raise NotImplementedError('UnknownType cannot be converted to typing')
+
+  def visit(self) -> None:
+    raise NotImplementedError('UnknownType cannot be visited')
+
+
 def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   """
   Unpacks a type hint into it's origin type and parameters. Returns #None if the
