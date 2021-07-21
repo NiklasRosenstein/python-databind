@@ -408,15 +408,10 @@ def from_typing(type_hint: t.Any) -> BaseType:
   # to it in "python_type" so we know what we need to construct during deserialization.
   # NOTE (@NiklasRosenstein): We only support a single generic base.
   python_type: t.Optional[t.Type] = None
-  generic_bases = find_generic_bases(generic)
+  generic_bases = find_generic_bases(type_hint)
   if len(generic_bases) == 1:
     python_type = generic
-    generic, generic_args = _unpack_type_hint(generic_bases[0])
-
-    # We'll need to replace the type variables in generic_args with the arguments from
-    # the real type annotation.
-    it = iter(args)
-    args = [next(it) if isinstance(a, t.TypeVar) else a for a in generic_args]
+    generic, args = _unpack_type_hint(generic_bases[0])
 
   if generic is not None:
     generic = _ORIGIN_CONVERSION.get(generic, generic)
