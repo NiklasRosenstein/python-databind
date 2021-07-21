@@ -1,0 +1,6 @@
+release_date: null
+changes:
+- type: breaking_change
+  component: general
+  description: minimum Python version is now 3.7
+  fixes: []
