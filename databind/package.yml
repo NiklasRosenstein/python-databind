@@ -1,7 +1,9 @@
 name: databind
-version: 0.3.1
-description: Databind is a library inspired by Jackson-databind to describe and bind
-  data models for object-oriented programming.
+description: |
+  Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package
+  will install the full suite of databind packages (excl. mypy). Compatible with Python 3.6 and newer.
 readme: ../README.md
 requirements:
 - python ^3.6
+- databind.core ^1.0.0
+- databind.json ^1.0.0

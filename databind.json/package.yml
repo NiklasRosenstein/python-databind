@@ -1,9 +1,13 @@
 name: databind.json
-version: 1.0.0
-description: Bind object-oriented data models to JSON data.
+description: |
+  De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.6 and newer.
 typed: true
 requirements:
-- python ^3.6
 - databind.core ^1.0.0
+- python ^3.6
+- dataclasses ^0.6
+- typing_extensions ^3.10.0
+- nr.parsing.date ^1.0.1
+- nr.preconditions ^0.0.4
 test-driver:
   type: pytest
