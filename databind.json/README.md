@@ -5,31 +5,22 @@ the `databind.core` framework.
 
 ## Quickstart
 
-```python
-from typing import Optional
-from databind.core import datamodel
-from databind.json import from_json
+```py
+import databind.json
+import dataclasses
 
-@datamodel
-class Geolocation:
-  latitude: float
-  longitude: float
-  altitude: Optional[float] = None
+@dataclasses.dataclass
+class ServerConfig:
+  host: str
+  port: int = 8080
 
-@datamodel
-class ResolvedLocation:
-  query: str
-  location: Geolocation
+@dataclasses.dataclass
+class MainConfig:
+  server: ServerConfig
 
-london = from_json(ResolvedLocation, {
-  "query": "London",
-  "location": {
-    "latitude": 51.507351,
-    "longitude": -0.127758,
-  },
-})
-
-assert london == ResolvedLocation("London", Geolocation(51.507351, -0.127758))
+payload = { 'server': { 'host': '127.0.0.1' } }
+config = databind.json.load(MainConfig, payload)
+assert config == MainConfig(ServerConfig('127.0.0.1'))
 ```
 
 ---

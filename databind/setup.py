@@ -38,7 +38,7 @@ setuptools.setup(
   version = '1.0.0',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
-  description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package will install the full suite of databind packages (excl. mypy). Compatible with Python 3.6 and newer.',
+  description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package will install the full suite of databind packages. Compatible with Python 3.6 and newer.',
   long_description = long_description,
   long_description_content_type = 'text/markdown',
   url = 'https://github.com/NiklasRosenstein/python-databind',

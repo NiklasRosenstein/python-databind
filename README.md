@@ -1,19 +1,15 @@
 # databind
 
-Databind is a library inspired by Jackson-databind to describe and bind data models for
-object-oriented programming.
-
-The `databind` package is purely an alias to allocate the name for it's related packages:
-
-__Core__
+Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package
+will install the full suite of databind packages. Compatible with Python 3.6 and newer.
 
 * [databind.core](https://pypi.org/project/databind.core/) &ndash; Provides the `@datamodel` and `@uniontype` decorators
-* [databind.mypy](https://pypi.org/project/databind.mypy/) &ndash; A Mypy plugin for `databind.core`
-
-__Serialization/Deserialization__
-
-* [databind.binary](https://pypi.org/project/databind.binary/)
 * [databind.json](https://pypi.org/project/databind.json/)
+
+__Not yet migrated to 1.x__
+
+* [databind.mypy](https://pypi.org/project/databind.mypy/) &ndash; A Mypy plugin for `databind.core`
+* [databind.binary](https://pypi.org/project/databind.binary/)
 * [databind.tagline](https://pypi.org/project/databind.tagline/)
 * [databind.yaml](https://pypi.org/project/databind.yaml/)
 
