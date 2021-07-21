@@ -72,3 +72,20 @@ def test_unknown_keys():
   unknowns = enable_unknowns(callback=lambda ctx, keys: unknown_keys.extend(keys))
   mapper.deserialize({'name': 'John', 'age': 22}, Person, settings=[unknowns])
   assert unknown_keys == ['age']
+
+
+def test_deserialize_dataclass_field_as():
+
+  @dataclasses.dataclass
+  class One:
+    pass
+
+  class Two(One):
+    pass
+
+  @dataclasses.dataclass
+  class Three:
+    one: te.Annotated[One, A.typeinfo(deserialize_as=Two)]
+
+  assert mapper.deserialize({'one': {}}, Three) == Three(Two())
+  assert mapper.serialize(Three(Two()), Three) == {'one': {}}

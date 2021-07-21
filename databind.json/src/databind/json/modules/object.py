@@ -16,6 +16,7 @@ class ObjectTypeConverter(IConverter):
     assert isinstance(ctx.type, ObjectType)
     skip_default_values = True
     enable_unknowns = ctx.settings.get(A.enable_unknowns)
+    typeinfo = ctx.get_annotation(A.typeinfo)
 
     if ctx.direction == Direction.serialize:
       if not isinstance(ctx.value, ctx.type.schema.python_type):
@@ -79,7 +80,7 @@ class ObjectTypeConverter(IConverter):
       # TODO (@NiklasRosenstein): Support flat MapType() field
 
       try:
-        return ctx.type.schema.python_type(**groups['$'])
+        return ((typeinfo.deserialize_as if typeinfo else None) or ctx.type.schema.python_type)(**groups['$'])
       except TypeError as exc:
         raise ctx.error(str(exc))
 

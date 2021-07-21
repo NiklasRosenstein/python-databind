@@ -11,7 +11,9 @@ class typeinfo(Annotation):
   Annotation for classes to override information about the type.
   """
 
-  name: t.Optional[str]
+  name: t.Optional[str] = None
+
+  deserialize_as: t.Optional[t.Type] = None
 
   @staticmethod
   def get_name(type: t.Type) -> str:
