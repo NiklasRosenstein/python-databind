@@ -12,6 +12,7 @@ V = t.TypeVar('V')
 def test_unpack_type_hint():
   assert _unpack_type_hint(t.List) == (list, [])
   assert _unpack_type_hint(t.List[int]) == (list, [int])
+  assert _unpack_type_hint(t.Dict) == (dict, [])
   assert _unpack_type_hint(t.Dict[int, str]) == (dict, [int, str])
 
   class MyList(t.List[int]): pass

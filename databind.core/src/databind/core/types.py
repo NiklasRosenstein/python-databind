@@ -298,7 +298,10 @@ def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
     return hint.__origin__, []
 
   if isinstance(hint, t._GenericAlias) or (sys.version_info >= (3, 9) and isinstance(hint, t.GenericAlias)):  # type: ignore
-    return hint.__origin__, list(hint.__args__)
+    if sys.version_info >= (3, 9) or hint.__args__ != hint.__parameters__:
+      return hint.__origin__, list(hint.__args__)
+    else:
+      return hint.__origin__, []
 
   if isinstance(hint, type):
     return hint, []
