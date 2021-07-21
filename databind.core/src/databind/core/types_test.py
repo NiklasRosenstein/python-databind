@@ -32,21 +32,22 @@ def test_find_generic_bases():
   assert find_generic_bases(t.List[int]) == []
 
   class MyList(t.List[int]): pass
-  bases = find_generic_bases(MyList)
-  assert bases == [t.List[int]]
+  assert find_generic_bases(MyList) == [t.List[int]]
 
   class MyList(t.List[T]): pass
-  bases = find_generic_bases(MyList)
-  assert bases == [t.List[T]]
-  bases = find_generic_bases(MyList[int])
-  assert bases == [t.List[int]]
+  assert find_generic_bases(MyList) == [t.List[T]]
+  assert find_generic_bases(MyList[int]) == [t.List[int]]
 
   class Foo(t.Generic[T]): pass
   class MyMulti(t.List[T], Foo[T]): pass
-  bases = find_generic_bases(MyMulti)
-  assert bases == [t.List[T], Foo[T], t.Generic[T]]
-  bases = find_generic_bases(MyMulti[int])
-  assert bases == [t.List[int], Foo[int], t.Generic[T]]
+  assert find_generic_bases(MyMulti) == [t.List[T], Foo[T], t.Generic[T]]
+  assert find_generic_bases(MyMulti[int]) == [t.List[int], Foo[int], t.Generic[T]]
+
+  class MyMore(t.List[int], t.Mapping[int, str]):
+    pass
+  assert find_generic_bases(MyMore) == [t.List[int], t.Mapping[int, str]]
+  assert find_generic_bases(MyMore, t.List) == [t.List[int]]
+  assert find_generic_bases(MyMore, t.Mapping) == [t.Mapping[int, str]]
 
 
 def test_find_generic_bases_generic_subclass():
@@ -85,20 +86,6 @@ def test_from_typing():
   assert from_typing(t.Optional[str]) == OptionalType(ConcreteType(str))
   assert from_typing(te.Annotated[t.Dict[te.Annotated[int, 42], te.Annotated[str, 'foo']], 'bar']).normalize() == \
     AnnotatedType(MapType(ConcreteType(int), ConcreteType(str)), [42, 'foo', 'bar'])
-
-
-def test_find_generic_bases():
-  class MyList(t.List[int]):
-    pass
-  assert find_generic_bases(MyList) == [t.List[int]]
-  class MyGenericList(t.List[T]):
-    pass
-  assert find_generic_bases(MyGenericList) == [t.List[T]]
-  class MyMore(t.List[int], t.Mapping[int, str]):
-    pass
-  assert find_generic_bases(MyMore) == [t.List[int], t.Mapping[int, str]]
-  assert find_generic_bases(MyMore, t.List) == [t.List[int]]
-  assert find_generic_bases(MyMore, t.Mapping) == [t.Mapping[int, str]]
 
 
 def test_custom_generic_subclass():
