@@ -7,24 +7,24 @@ import decimal
 import io
 import json
 import typing as t
-from databind.json.modules.any import AnyConverter
-from databind.json.modules.enum import EnumConverter
-from databind.json.modules.implicitunion import ImplicitUnionConverter
+
 from nr.parsing.date import duration
+
 from databind.core.objectmapper import ObjectMapper, SimpleModule
 from databind.core.types import ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
-from .modules.optional import OptionalConverter
+from .modules.any import AnyConverter
 from .modules.collection import CollectionConverter
 from .modules.datetime import DatetimeJsonConverter, DurationConverter
 from .modules.decimal import DecimalJsonConverter
+from .modules.enum import EnumConverter
+from .modules.implicitunion import ImplicitUnionConverter
 from .modules.map import MapConverter
 from .modules.object import ObjectTypeConverter
+from .modules.optional import OptionalConverter
 from .modules.plain import PlainJsonConverter
 from .modules.union import UnionConverter
 
-__all__ = [
-  'JsonModule',
-]
+__all__ = ['JsonModule']
 
 T = t.TypeVar('T')
 JsonType = t.Union[t.Mapping, t.Collection, str, int, float, bool, None]
