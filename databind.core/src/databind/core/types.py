@@ -25,6 +25,7 @@ __all__ = [
 
 import abc
 import dataclasses
+import sys
 import typing as t
 import typing_extensions as te
 from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
@@ -296,7 +297,7 @@ def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   if hasattr(t, '_SpecialGenericAlias') and isinstance(hint, t._SpecialGenericAlias):  # type: ignore
     return hint.__origin__, []
 
-  if isinstance(hint, t._GenericAlias):  # type: ignore
+  if isinstance(hint, t._GenericAlias) or (sys.version_info >= (3, 9) and isinstance(hint, t.GenericAlias)):  # type: ignore
     return hint.__origin__, list(hint.__args__)
 
   if isinstance(hint, type):
