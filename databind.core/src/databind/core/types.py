@@ -154,7 +154,6 @@ class OptionalType(BaseType):
     return func(OptionalType(self.type.visit(func)))
 
 
-@dataclasses.dataclass
 class CollectionType(BaseType):
   """ Represents a collection type. This is still abstract. """
 
@@ -162,14 +161,17 @@ class CollectionType(BaseType):
   python_type: t.Type[t.Collection]
 
   def __repr__(self) -> str:
-    return f'{type(self).__name__}({self.item_type!r})'
+    result = f'{type(self).__name__}({self.item_type!r}'
+    if self.python_type != type(self).python_type:
+      result += ', python_type=' + self.python_type.__name__
+    return result + ')'
 
   # https://github.com/python/mypy/issues/5374
   def to_typing(self) -> t.Any:
     raise NotImplementedError
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(type(self)(self.item_type.visit(func)))  # type: ignore
+    return func(type(self)(self.item_type.visit(func), self.python_type))  # type: ignore
 
 
 @dataclasses.dataclass(repr=False)
@@ -212,7 +214,7 @@ class MapType(BaseType):
     return self.impl_hint[self.key_type.to_typing(), self.value_type.to_typing()]
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(MapType(self.key_type.visit(func), self.value_type.visit(func)))
+    return func(MapType(self.key_type.visit(func), self.value_type.visit(func), self.impl_hint))
 
 
 @dataclasses.dataclass
@@ -354,9 +356,6 @@ def from_typing(type_hint: t.Any) -> BaseType:
   """
 
   generic, args = _unpack_type_hint(type_hint)
-
-  if 'AnotherList' in str(type_hint):
-    pass#import pdb; pdb.set_trace()
 
   # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
   # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
