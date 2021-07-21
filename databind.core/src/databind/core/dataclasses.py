@@ -15,8 +15,6 @@ import enum
 import dataclasses
 import typing as t
 from dataclasses import Field, FrozenInstanceError, InitVar, MISSING, fields, asdict, astuple, make_dataclass, replace, is_dataclass
-from nr import preconditions
-from nr.pylang.utils import NotSet
 
 __all__ = [
   'ANNOTATIONS_METADATA_KEY',
@@ -94,7 +92,8 @@ def _process_class(cls, **kwargs):
   # After setting #Field.default for non-default fields, the default will be propagated
   # on the class level, so we delete that again from the class.
   for key in no_default_fields:
-    if getattr(cls, key, None) is _UninitializedType:
+    if key in no_default_fields:
+      cls.__dataclass_fields__[key].default = MISSING
       delattr(cls, key)
 
   return cls
