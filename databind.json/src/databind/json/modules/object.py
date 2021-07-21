@@ -79,7 +79,7 @@ class ObjectTypeConverter(IConverter):
       # TODO (@NiklasRosenstein): Support flat MapType() field
 
       try:
-        return ctx.type.schema.composer.compose(groups['$'])
+        return ctx.type.schema.python_type(**groups['$'])
       except TypeError as exc:
         raise ctx.error(str(exc))
 

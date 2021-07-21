@@ -10,7 +10,7 @@ from databind.core.annotations import get_type_annotations
 from databind.core.annotations.alias import alias
 from databind.core.api import Context, ITypeHintAdapter
 from databind.core.objectmapper import Module
-from databind.core.schema import Field, ISchemaComposer, Schema
+from databind.core.schema import Field, Schema
 from databind.core.types import AnnotatedType, ConcreteType, ObjectType, BaseType, from_typing
 from nr import preconditions
 from nr.pylang.utils.singletons import NotSet
@@ -57,7 +57,6 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
     fields,
     list(get_type_annotations(dataclass_type).values()),
     dataclass_type,
-    DataclassComposer(dataclass_type),
   )
 
 
@@ -72,19 +71,8 @@ class DataclassAdapter(Module):
       # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
       if type_.type in self._cache:
         return self._cache[type_.type]
-      new_type = ObjectType(Schema(type_.type.__name__, {}, [], type_.type, None))
+      new_type = ObjectType(Schema(type_.type.__name__, {}, [], type_.type))
       self._cache[type_.type] = new_type
       new_type.schema = dataclass_to_schema(type_.type, adapter)
       return new_type
     return type_
-
-
-@dataclass
-class DataclassComposer(ISchemaComposer):
-  dataclass_type: t.Type
-
-  def compose(self, data: t.Dict[str, t.Any]) -> t.Any:
-    return self.dataclass_type(**data)
-
-  def decompose(self, obj: t.Any) -> t.Dict[str, t.Any]:
-    return {f.name: getattr(obj, f.name) for f in enumerate_fields(obj)}

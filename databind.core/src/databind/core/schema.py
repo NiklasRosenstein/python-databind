@@ -119,9 +119,6 @@ class Schema:
   #: The underlying Python type of the schema.
   python_type: t.Type
 
-  #: An object that acts as a composer and decomposer for instances of the #python_type.
-  composer: 'ISchemaComposer' = field(repr=False)
-
   def __post_init__(self) -> None:
     _check_no_colliding_flattened_fields(self)
 
@@ -155,23 +152,6 @@ class Schema:
           yield Schema._FlatField(group[-1], field_path, field)
         if field.flat and isinstance(field.type, ObjectType):
           stack.append((field_path, field.type.schema))
-
-
-class ISchemaComposer(metaclass=abc.ABCMeta):
-  """
-  This class acts as the interface to construct and decompose Python objects from/to dictionaries.
-  The values in the dictionaries are still normal Python values and not in a pre-deserialized or
-  post-serialized state.
-
-  The implementation does not need to handle recursive composition/decomposition. This is handled
-  by the object mapper.
-  """
-
-  @abc.abstractmethod
-  def compose(self, data: t.Dict[str, t.Any]) -> t.Any: ...
-
-  @abc.abstractmethod
-  def decompose(self, obj: t.Any) -> t.Dict[str, t.Any]: ...
 
 
 def _check_no_colliding_flattened_fields(schema: Schema) -> None:
