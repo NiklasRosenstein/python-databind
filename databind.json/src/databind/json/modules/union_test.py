@@ -64,6 +64,5 @@ class A:
 class C: pass
 
 def test_dynamic_subtypes():
-  print(new_mapper().adapt_type_hint(from_typing(A)).schema.fields)
   assert new_mapper().deserialize({'other': {'type': 'b', 'b': {}}}, A) == A(B())
   assert new_mapper().deserialize({'other': {'type': 'c', 'c': {}}}, A) == A(C())
