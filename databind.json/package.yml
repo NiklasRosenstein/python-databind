@@ -1,4 +1,5 @@
 name: databind.json
+version: 1.0.0
 description: |
   De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.6 and newer.
 typed: true
