@@ -111,11 +111,5 @@ __all__ = [
   'Annotation',
   'get_annotation',
   'get_type_annotation',
-  'alias',
-  'datefmt',
-  'enable_unknowns',
-  'fieldinfo',
-  'precision',
-  'unionclass',
-  'typeinfo',
+  'alias', 'datefmt', 'enable_unknowns', 'fieldinfo', 'precision', 'unionclass', 'typeinfo',
 ]
