@@ -15,6 +15,7 @@ import enum
 import dataclasses
 import typing as t
 from dataclasses import Field, FrozenInstanceError, InitVar, MISSING, fields, asdict, astuple, make_dataclass, replace, is_dataclass
+from nr.pylang.utils import NotSet
 
 __all__ = [
   'ANNOTATIONS_METADATA_KEY',
@@ -39,12 +40,6 @@ __all__ = [
 ANNOTATIONS_METADATA_KEY = 'databind.core.annotations'
 
 
-class _UninitializedType(enum.Enum):
-  Value = 0
-
-_Uninitialized = _UninitializedType.Value
-
-
 def _field_has_default(field: Field) -> bool:
   return any(x != MISSING for x in (field.default, field.default_factory))  # type: ignore
 
@@ -60,7 +55,7 @@ def _process_class(cls, **kwargs):
     cls.__annotations__ = annotations
 
   # Make sure each annotated field actually has a #Field. For fields without
-  # defaults, we will set #Field.default to #_Uninitialized so we can later
+  # defaults, we will set #Field.default to #NotSet.Value so we can later
   # check if the field was set in __post_init__().
   for key in annotations.keys():
     if not hasattr(cls, key):
@@ -72,7 +67,7 @@ def _process_class(cls, **kwargs):
         continue
     if not _field_has_default(f):
       # This prevents a SyntaxError if non-default arguments follow default arguments.
-      f.default = _Uninitialized
+      f.default = NotSet.Value
       no_default_fields.append(key)
 
   # Override the `__post_init__` method that is called by the dataclass `__init__`.
@@ -80,7 +75,7 @@ def _process_class(cls, **kwargs):
   def __post_init__(self):
     # Ensure that no field has a "uninitialized" value.
     for key in self.__dataclass_fields__.keys():
-      if getattr(self, key) == _Uninitialized:
+      if getattr(self, key) == NotSet.Value:
         raise TypeError(f'missing required argument {key!r}')
     if orig_postinit:
       orig_postinit(self)
@@ -93,7 +88,6 @@ def _process_class(cls, **kwargs):
   # on the class level, so we delete that again from the class.
   for key in no_default_fields:
     if key in no_default_fields:
-      cls.__dataclass_fields__[key].default = MISSING
       delattr(cls, key)
 
   return cls
