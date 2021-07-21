@@ -1,68 +1,34 @@
 # databind.core
 
-Databind is a library inspired by Jackson-databind to describe and bind data models for
-object-oriented programming. The `databind.core` package provides the abstractions to
-generalize the (de-) serialization process such that it can be implemented for arbitrary
-data formats.
+`databind.core` provides a jackson-databind inspired framework for data de-/serialization in Python. Unless you
+are looking to implement support for de-/serializing new data formats, the `databind.core` package alone might
+not be what you are looking for (unless you want to use `databind.core.dataclasses` as a drop-in replacement to
+the standard library `dataclasses` module, for that check out the section at the bottom).
 
-Databind requires Python 3.6+ because of it's dependency on class-member type hints and
-the `dataclasses` module (for which there exists a backport from Python 3.7 to 3.6 on
-PyPI).
+### Known implementations
 
-## Quickstart
+* [databind.json](https://pypi.org/projects/databind.json)
 
-```python
-from databind.core import datamodel, field
-from typing import Optional
+### Dataclass extension
 
-@datamodel
-class Person:
-  """ Class that represents a person's details. """
-  name: str
-  age: Optional[int] = field(default=None)
-  address: Optional[str] = field(default=None)
-```
+The standard library `dataclasses` module does not allow to define non-default arguments after default arguments.
+You can use `databind.core.dataclasses` as a drop-in replacement to get this feature. It behaves exactly like the
+standard library, only that non-default arguments may follow default arguments. Such arguments can be passed to
+the constructor as positional or keyword arguments.
 
-Then you'll need to pick a serialization library. Below is an example for `databind.json`:
+```py
+from databind.core import dataclasses
 
-```python
-from databind import json
+@dataclasses.dataclass
+class A:
+  value1: int = 42
 
-person = json.from_str(Person, '{"name": "John Wick", "age": 55}')
+@dataclasses.dataclass
+class B(A):
+  value2: str
 
-assert isinstance(person, Person)
-assert person.name == 'John Wick'
-
-print(json.to_str(person))
-```
-
-Databind also makes it easy to define configurable plugin systems:
-
-```python
-import abc
-from databind.core import datamodel, interface, implementation
-from databind.json import from_json, to_json
-
-@interface
-class Authenticator(metaclass=abc.ABCMeta):
-
-  @abc.abstractmethod
-  def start_oauth2_session(self) -> 'OAuth2Session':
-    ...
-
-@datamodel
-@implementation('github')
-class GithubAuthenticator(Authenticator):
-  client_id: str
-  client_secret: str
-
-  # ...
-
-github = GithubAuthenticator('id', 'secret')
-payload = {'type': 'github', 'client_id': 'id', 'client_secret': 'secret'}
-
-assert to_json(github, Authenticator) == payload
-assert from_json(Authenticator, payload) == github
+print(B(0, 'Hello, World!'))
+print(B(value2='Answer to the universe'))
 ```
 
 ---

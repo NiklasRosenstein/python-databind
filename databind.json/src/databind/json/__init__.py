@@ -1,95 +1,114 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '0.12.0'
+__version__ = '1.0.0'
 
+import datetime
+import decimal
+import io
 import json
-from typing import Optional, TextIO, Type, TypeVar, Union
-from databind.core import Context, FieldMetadata, Registry
-from ._converters import register_json_converters
+import typing as t
 
-__all__ = [
-  'register_json_converters',
-  'registry',
-  'from_json',
-  'from_str',
-  'from_stream',
-  'to_json',
-  'to_str',
-  'to_stream',
-  'cast',
-]
+from nr.parsing.date import duration
 
-T = TypeVar('T')
-R = TypeVar('R')
-JsonType = Union[dict, list, str, int, float]
+from databind.core.objectmapper import ObjectMapper, SimpleModule
+from databind.core.types import ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
+from .modules.any import AnyConverter
+from .modules.collection import CollectionConverter
+from .modules.datetime import DatetimeJsonConverter, DurationConverter
+from .modules.decimal import DecimalJsonConverter
+from .modules.enum import EnumConverter
+from .modules.implicitunion import ImplicitUnionConverter
+from .modules.map import MapConverter
+from .modules.object import ObjectTypeConverter
+from .modules.optional import OptionalConverter
+from .modules.plain import PlainJsonConverter
+from .modules.union import UnionConverter
 
-registry = Registry(None)
-register_json_converters(registry)
+__all__ = ['JsonModule']
 
-
-def _registry(reg: Registry = None) -> Registry:
-  return reg or registry
+T = t.TypeVar('T')
+JsonType = t.Union[t.Mapping, t.Collection, str, int, float, bool, None]
 
 
-def from_json(
-  type_: Type[T],
-  value: JsonType,
-  field_metadata: FieldMetadata = None,
-  registry: Registry = None,
+class JsonModule(SimpleModule):
+  """
+  A composite of all modules for JSON de/serialization.
+  """
+
+  def __init__(self, name: str = None) -> None:
+    super().__init__(name)
+
+    self.add_converter_for_type(object, AnyConverter())
+    self.add_converter_for_type(ObjectType, ObjectTypeConverter())
+    self.add_converter_for_type(UnionType, UnionConverter())
+    self.add_converter_for_type(bool, PlainJsonConverter())
+    self.add_converter_for_type(float, PlainJsonConverter())
+    self.add_converter_for_type(int, PlainJsonConverter())
+    self.add_converter_for_type(str, PlainJsonConverter())
+    self.add_converter_for_type(decimal.Decimal, DecimalJsonConverter())
+    self.add_converter_for_type(datetime.date, DatetimeJsonConverter())
+    self.add_converter_for_type(datetime.time, DatetimeJsonConverter())
+    self.add_converter_for_type(datetime.datetime, DatetimeJsonConverter())
+    self.add_converter_for_type(duration, DurationConverter())
+    self.add_converter_for_type(OptionalType, OptionalConverter())
+    self.add_converter_for_type(MapType, MapConverter())
+    self.add_converter_for_type(ListType, CollectionConverter())
+    self.add_converter_for_type(SetType, CollectionConverter())
+    self.add_converter_for_type(ImplicitUnionType, ImplicitUnionConverter())
+    self.add_converter_provider(EnumConverter())
+
+
+def new_mapper() -> ObjectMapper:
+  return ObjectMapper.default(JsonModule(), name=__name__)
+
+
+def load(
+  data: t.Union[JsonType, t.TextIO],
+  type_: t.Type[T],
+  mapper: ObjectMapper = None,
+  filename: str = None,
+  annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
 ) -> T:
-  return _registry(registry).make_context(type_ or type(value), value, field_metadata).to_python()
+
+  if hasattr(data, 'read'):
+    if not filename:
+      filename = getattr(data, 'name', None)
+    data = json.load(data)
+  return (mapper or new_mapper()).deserialize(data, type_, filename=filename, annotations=annotations, settings=options)
 
 
-def to_json(
+def loads(
+  data: str,
+  type_: t.Type[T],
+  mapper: ObjectMapper = None,
+  filename: str = None,
+  annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
+) -> T:
+  return load(io.StringIO(data), type_, mapper, filename, annotations, options)
+
+
+def dump(
   value: T,
-  type_: Type[T]=None,
-  field_metadata: FieldMetadata = None,
-  registry: Registry = None,
+  type_: t.Type[T] = None,
+  mapper: ObjectMapper = None,
+  annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
+  out: t.TextIO = None,
 ) -> JsonType:
-  return _registry(registry).make_context(type_ or type(value), value, field_metadata).from_python()
+
+  data = (mapper or new_mapper()).serialize(value, type_ or type(value), annotations=annotations, settings=options)
+  if out is not None:
+    json.dump(data, out)
+  return data
 
 
-def from_str(
-  type_: Type[T],
-  value: str,
-  field_metadata: FieldMetadata = None,
-  registry: Registry = None,
-) -> T:
-  return from_json(type_, json.loads(value), field_metadata, registry)
-
-
-def from_stream(
-  type_: Type[T],
-  stream: TextIO,
-  field_metadata: FieldMetadata = None,
-  registry: Registry = None,
-) -> T:
-  return from_json(type_, json.load(stream), field_metadata, registry)
-
-
-def to_str(
+def dumps(
   value: T,
-  type_: Type[T]=None,
-  field_metadata: FieldMetadata = None,
-  registry: Registry=None,
+  type_: t.Type[T] = None,
+  mapper: ObjectMapper = None,
+  annotations: t.List[t.Any] = None,
+  options: t.List[t.Any] = None,
 ) -> str:
-  return json.dumps(to_json(value, type_, field_metadata, registry))
-
-
-def to_stream(
-  stream: TextIO,
-  value: T,
-  type_: Type[T]=None,
-  field_metadata: FieldMetadata = None,
-  registry: Registry=None,
-) -> None:
-  json.dump(to_json(value, type_, field_metadata, registry), stream)
-
-
-def cast(
-  target_type: Type[R],
-  value: T,
-  type_: Optional[Type[T]] = None,
-  registry: Registry = None,
-) -> R:
-  return from_json(target_type, to_json(value, type_, registry=registry), registry=registry)
+  return json.dumps(dump(value, type_, mapper, annotations, options))

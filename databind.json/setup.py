@@ -28,16 +28,19 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=0.11.0,<1.0.0',
-  'nr.parsing.date >=0.3.0,<1.0.0',
+  'databind.core >=1.0.0,<2.0.0',
+  'dataclasses >=0.6.0,<1.0.0',
+  'typing_extensions >=3.10.0,<4.0.0',
+  'nr.parsing.date >=1.0.1,<2.0.0',
+  'nr.preconditions >=0.0.4,<1.0.0',
 ]
 
 setuptools.setup(
   name = 'databind.json',
-  version = '0.12.0',
+  version = '1.0.0',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
-  description = 'Bind object-oriented data models to JSON data.',
+  description = 'De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.6 and newer.',
   long_description = long_description,
   long_description_content_type = 'text/markdown',
   url = 'https://github.com/NiklasRosenstein/python-databind',

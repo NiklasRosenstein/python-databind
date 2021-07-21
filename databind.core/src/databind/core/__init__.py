@@ -1,49 +1,17 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '0.11.0'
+__version__ = '1.0.0'
 
-from ._annotations import Annotation, get_annotation
-from ._converter import ConversionError, ConversionTypeError, ConversionValueError, Context, Converter, UnknownTypeError, Registry
-from ._datamodel import datamodel, enumerate_fields, FieldMetadata, field, implementation, interface, is_datamodel, is_uniontype, ModelMetadata, uniontype, TypeHint, UnionMetadata,
-from ._locator import Locator
-from ._union import UnionResolver, UnionTypeError
-from .utils import type_repr
+from .api import IConverter, IConverterProvider, IAnnotationsProvider, ITypeHintAdapter, Context, ConverterNotFound, ConversionError
+from .annotations import Annotation, get_annotation, alias, datefmt, enable_unknowns, fieldinfo, precision, typeinfo, unionclass
+from .location import Location, Position
+from .objectmapper import Module, SimpleModule, ObjectMapper
 
 __all__ = [
-  # _annotations
-  'Annotation',
-  'get_annotation',
-
-  # _converter
-  'ConversionError',
-  'ConversionTypeError',
-  'ConversionValueError',
-  'Context',
-  'Converter',
-  'UnknownTypeError',
-  'Registry',
-
-  # _datamodel
-  'datamodel',
-  'enumerate_fields',
-  'FieldMetadata',
-  'field',
-  'implementation',
-  'interface',
-  'is_datamodel',
-  'is_uniontype',
-  'ModelMetadata',
-  'uniontype',
-  'TypeHint',
-  'UnionMetadata',
-
-  # _locator
-  'Locator',
-
-  # _union
-  'UnionResolver',
-  'UnionTypeError',
-
-  # utils
-  'type_repr',
+  'IConverter', 'ConverterNotFound',
+  'IConverterProvider', 'Context', 'ConversionError',
+  'IAnnotationsProvider', 'ITypeHintAdapter',
+  'Annotation', 'get_annotation', 'alias', 'datefmt', 'enable_unknowns', 'fieldinfo', 'precision', 'typeinfo', 'unionclass',
+  'Location', 'Position',
+  'Module', 'SimpleModule', 'ObjectMapper',
 ]
