@@ -2,6 +2,7 @@
 import typing as t
 import typing_extensions as te
 from dataclasses import dataclass, field
+from databind.core.dataclasses import dataclass as ddataclass, field as dfield
 
 from databind.core.annotations import alias
 from databind.core.objectmapper import ObjectMapper
@@ -39,6 +40,7 @@ def test_dataclass_to_schema_conversion():
     MyDataclass,
   )
 
+
 def test_dataclass_field_with_custom_generic_subclass():
 
   T = t.TypeVar('T')
@@ -58,3 +60,21 @@ def test_dataclass_field_with_custom_generic_subclass():
     },
     [],
     Data)
+
+
+def test_databind_dataclass_field_annotations():
+
+  @ddataclass
+  class MyClass:
+    f: int = dfield(annotations=['foobar'])
+
+  type_ = ObjectMapper.default().adapt_type_hint(from_typing(MyClass))
+  assert isinstance(type_, ObjectType)
+  assert type_.schema == Schema(
+    'MyClass',
+    {
+      'f': Field('f', ConcreteType(int), ['foobar']),
+    },
+    [],
+    MyClass
+  )

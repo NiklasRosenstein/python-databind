@@ -6,6 +6,7 @@ interpreted as a datamodel.
 
 import typing as t
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
+from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from databind.core.annotations import get_type_annotations
 from databind.core.annotations.alias import alias
 from databind.core.api import Context, ITypeHintAdapter
@@ -34,6 +35,7 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
       field_type_hint, field_annotations = field_type_hint.type, list(field_type_hint.annotations)  # type: ignore  # see https://github.com/python/mypy/issues/9731
     else:
       field_annotations = []
+    field_annotations += field.metadata.get(ANNOTATIONS_METADATA_KEY, [])
 
     # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.
     if not any(isinstance(x, alias) for x in field_annotations):
