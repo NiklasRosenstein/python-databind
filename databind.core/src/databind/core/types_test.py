@@ -54,8 +54,17 @@ def test_find_generic_bases_generic_subclass():
   T = t.TypeVar('T')
   class AnotherList(t.List[T]):
     pass
-  #assert find_generic_bases(AnotherList) == [t.List[T]]
+  assert find_generic_bases(AnotherList) == [t.List[T]]
   assert find_generic_bases(AnotherList[int]) == [t.List[int]]
+
+  class AnotherSubclass(AnotherList[T]):
+    pass
+  assert find_generic_bases(AnotherSubclass) == [AnotherList[T], t.List[T]]
+  assert find_generic_bases(AnotherSubclass[int]) == [AnotherList[int], t.List[int]]
+
+  class MyList(AnotherList[int]):
+    pass
+  assert find_generic_bases(MyList) == [AnotherList[int], t.List[int]]
 
 
 def test_find_generic_bases_docstring_example():
