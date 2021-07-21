@@ -1,33 +1,35 @@
 # databind.core
 
-`databind.core` provides a framework for data de-/serialization in Python.
+`databind.core` provides a jackson-databind inspired framework for data de-/serialization in Python. Unless you
+are looking to implement support for de-/serializing new data formats, the `databind.core` package alone might
+not be what you are looking for (unless you want to use `databind.core.dataclasses` as a drop-in replacement to
+the standard library `dataclasses` module, for that check out the section at the bottom).
 
-## Quickstart
+### Known implementations
+
+* [databind.json](https://pypi.org/projects/databind.json)
+
+### Dataclass extension
+
+The standard library `dataclasses` module does not allow to define non-default arguments after default arguments.
+You can use `databind.core.dataclasses` as a drop-in replacement to get this feature. It behaves exactly like the
+standard library, only that non-default arguments may follow default arguments. Such arguments can be passed to
+the constructor as positional or keyword arguments.
 
 ```py
-import databind.json
-import dataclasses
+from databind.core import dataclasses
 
 @dataclasses.dataclass
-class ServerConfig:
-  host: str
-  port: int = 8080
+class A:
+  value1: int = 42
 
 @dataclasses.dataclass
-class MainConfig:
-  server: ServerConfig
+class B(A):
+  value2: str
 
-payload = { 'server': { 'host': '127.0.0.1' } }
-config = databind.json.load(MainConfig, payload)
-assert config == MainConfig(ServerConfig('127.0.0.1'))
+print(B(0, 'Hello, World!'))
+print(B(value2='Answer to the universe'))
 ```
-
-## See also
-
-* [databind.binary](https://pypi.org/projects/databind.binary)
-* [databind.json](https://pypi.org/projects/databind.json)
-* [databind.tagline](https://pypi.org/projects/databind.tagline)
-* [databind.yaml](https://pypi.org/projects/databind.yaml)
 
 ---
 

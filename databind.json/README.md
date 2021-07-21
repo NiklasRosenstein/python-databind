@@ -1,8 +1,7 @@
 # databind.json
 
-Databind is a library inspired by Jackson-databind to describe and bind data models for
-object-oriented programming. The `databind.json` package provides converters for JSON data
-types, data models and union types to serialize and deserialize JSON payloads.
+The `databind.json` package implements the de-/serialization to or from JSON payloads using
+the `databind.core` framework.
 
 ## Quickstart
 
