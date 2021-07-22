@@ -25,7 +25,7 @@ jobs:
         python -m pip install -q --upgrade pip pytest mypy
         python -m venv .shutenv
         .shutenv/bin/pip install shut==0.14.1
-        pip install -e databind.core -e databind.json
+        .shutenv/bin/shut mono install
     - name: Run tests
       run: |
         .shutenv/bin/shut mono test --isolate
