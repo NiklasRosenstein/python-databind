@@ -30,7 +30,7 @@ jobs:
       run: |
         .shutenv/bin/shut mono test --isolate
     - name: Static type checks with Mypy
-      rune: |
+      run: |
         mypy databind/src --check-untyped-defs --exclude '.*_test'
         mypy databind.core/src --check-untyped-defs --exclude '.*_test'
         mypy databind.json/src --check-untyped-defs --exclude '.*_test'
