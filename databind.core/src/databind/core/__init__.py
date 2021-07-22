@@ -1,6 +1,6 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 from .api import IConverter, IConverterProvider, IAnnotationsProvider, ITypeHintAdapter, Context, ConverterNotFound, ConversionError
 from .annotations import Annotation, get_annotation, alias, datefmt, enable_unknowns, fieldinfo, precision, typeinfo, unionclass
