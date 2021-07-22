@@ -15,4 +15,5 @@ __all__ = [
   'Annotation', 'get_annotation', 'alias', 'datefmt', 'enable_unknowns', 'fieldinfo', 'precision', 'typeinfo', 'unionclass',
   'Location', 'Position',
   'Module', 'SimpleModule', 'ObjectMapper',
+  'dataclass_to_schema',
 ]

@@ -1,0 +1,6 @@
+release_date: null
+changes:
+- type: change
+  component: general
+  description: import `dataclass_to_schema` into `databind.core` top-level package
+  fixes: []
