@@ -112,10 +112,10 @@ class AnnotatedType(BaseType):
     return func(AnnotatedType(self.type.visit(func), self.annotations))
 
   @staticmethod
-  def unpack(type_: 'AnnotatedType') -> t.Tuple[BaseType, t.Tuple[t.Any, ...]]:
+  def unpack(type_: 'BaseType') -> t.Tuple[BaseType, t.Tuple[t.Any, ...]]:
     if isinstance(type_, AnnotatedType):
       return type_.type, type_.annotations
-    return type_, []
+    return type_, ()
 
 
 @dataclasses.dataclass
@@ -281,7 +281,7 @@ class UnknownType(BaseType):
   def to_typing(self) -> t.Any:
     raise NotImplementedError('UnknownType cannot be converted to typing')
 
-  def visit(self) -> None:
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     raise NotImplementedError('UnknownType cannot be visited')
 
 
@@ -312,7 +312,7 @@ def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   return None, []
 
 
-def find_generic_bases(type_: t.Type, generic_type: t.Optional[t.Any] = None) -> t.Optional[t.Any]:
+def find_generic_bases(type_hint: t.Type, generic_type: t.Optional[t.Any] = None) -> t.List[t.Any]:
   """
   This method finds all generic bases of a given type or generic aliases.
 
@@ -334,7 +334,7 @@ def find_generic_bases(type_: t.Type, generic_type: t.Optional[t.Any] = None) ->
   ```
   """
 
-  type_, args = _unpack_type_hint(type_)
+  type_, args = _unpack_type_hint(type_hint)
   params = getattr(type_, '__parameters__', [])
   bases = getattr(type_, '__orig_bases__', [])
 

@@ -11,7 +11,6 @@ Note: `make_dataclass` is not currently overridden, so it will not support non-d
 following default arguments.
 """
 
-import enum
 import dataclasses
 import typing as t
 from dataclasses import Field, FrozenInstanceError, InitVar, MISSING, fields, asdict, astuple, make_dataclass, replace, is_dataclass

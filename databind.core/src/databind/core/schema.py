@@ -134,7 +134,6 @@ class Schema:
     group: str
     path: str
     field: Field
-    name = property(lambda s: s.field.name)
 
   def flat_fields(self) -> t.Iterator[_FlatField]:
     """
@@ -161,11 +160,11 @@ def _check_no_colliding_flattened_fields(schema: Schema) -> None:
   Raises a #SchemaDefinitionError if the constraint is violated.
   """
 
-  fields = {}
+  fields: t.Dict[str, str] = {}
   for field in schema.flat_fields():
-    if field.name in fields:
-      raise SchemaDefinitionError(f'Flat field conflict in schema {schema.name!r}: ({fields[field.name]}, {field.path})')
-    fields[field.name] = field.path
+    if field.field.name in fields:
+      raise SchemaDefinitionError(f'Flat field conflict in schema {schema.name!r}: ({fields[field.field.name]}, {field.path})')
+    fields[field.field.name] = field.path
 
 
 class SchemaDefinitionError(Exception):

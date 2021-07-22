@@ -75,7 +75,7 @@ class SimpleModule(Module):
     self.__type_hint_adapters.append(module)
 
   def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
-    preconditions.check_instance_of(type_, BaseType)
+    preconditions.check_instance_of(type_, BaseType)  # type: ignore
     if isinstance(type_, ConcreteType) and type_.type in self.__converters_by_type[direction]:
       return self.__converters_by_type[direction][type_.type]
     elif type(type_) in self.__converters_by_type[direction]:

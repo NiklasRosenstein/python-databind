@@ -16,7 +16,7 @@ def _get_log_level(logger: t.Optional[logging.Logger]) -> int:
   return 0
 
 
-def _indent_exc(exc: Exception) -> str:
+def _indent_exc(exc: str) -> str:
   lines = []
   for index, line in enumerate(str(exc).splitlines()):
     if index > 0:

@@ -74,7 +74,7 @@ def load(
   if hasattr(data, 'read'):
     if not filename:
       filename = getattr(data, 'name', None)
-    data = json.load(data)
+    data = json.load(t.cast(t.TextIO, data))
   return (mapper or new_mapper()).deserialize(data, type_, filename=filename, annotations=annotations, settings=options)
 
 

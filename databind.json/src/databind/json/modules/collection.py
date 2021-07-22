@@ -25,6 +25,6 @@ class CollectionConverter(IConverter):
     else:
       assert False, ctx.direction
 
-    return python_type(
+    return python_type(  # type: ignore
       ctx.push(ctx.type.item_type, val, idx, ctx.field).convert()
       for idx, val in enumerate(ctx.value))

@@ -7,7 +7,7 @@ interpreted as a datamodel.
 import sys
 import typing as t
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
-from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
+from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY  # type: ignore
 from databind.core.annotations import get_type_annotations
 from databind.core.annotations.alias import alias
 from databind.core.api import Context, ITypeHintAdapter
@@ -55,7 +55,7 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
 
     fields[field.name] = Field(field.name, field_type_hint, field_annotations,
       NotSet.Value if field.default == _MISSING else field.default,
-      NotSet.Value if field.default_factory == _MISSING else field.default_factory)
+      NotSet.Value if field.default_factory == _MISSING else field.default_factory)  # type: ignore
 
   return Schema(
     dataclass_type.__name__,

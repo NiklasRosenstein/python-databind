@@ -25,7 +25,7 @@ class UnionTypeError(Exception):
     typ = self.type.__name__ if isinstance(self.type, type) else str(self.type)
     owner = self.subtypes.owner() if self.subtypes.owner else None
     if not owner or owner.name or not owner.python_type:
-      return f'type `{typ}` is not a member of union `{owner.name}`'
+      return f'type `{typ}` is not a member of union `{owner.name if owner else "unknown"}`'
     else:
       owner_name = owner.python_type.__name__ if isinstance(owner.python_type, type) else str(owner.python_type)
       return f'type `{typ}` is not a member of @unionclass `{owner_name}`'
@@ -140,6 +140,7 @@ class DynamicSubtypes(IUnionSubtypes):
         if not isinstance(member, BaseType):
           member = from_typing(member)
         self._members[name] = member
+      assert isinstance(member, BaseType)
       return member
 
   def get_type_names(self) -> t.List[str]:
@@ -193,8 +194,8 @@ class ImportSubtypes(IUnionSubtypes):
     return 'ImportSubtypes()'
 
   def get_type_name(self, type_: 'BaseType') -> str:
-    type_name = f'{type_.__module__}.{type_.__qualname__}'
-    if '<' in type_.__qualname__:
+    type_name = f'{type_.__module__}.{type_.__qualname__}'  # type: ignore
+    if '<' in type_.__qualname__:  # type: ignore
       raise ValueError(f'non-global type {type_name} is not addressible')
     return type_name
 

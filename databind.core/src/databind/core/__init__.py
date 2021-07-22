@@ -6,6 +6,7 @@ from .api import IConverter, IConverterProvider, IAnnotationsProvider, ITypeHint
 from .annotations import Annotation, get_annotation, alias, datefmt, enable_unknowns, fieldinfo, precision, typeinfo, unionclass
 from .location import Location, Position
 from .objectmapper import Module, SimpleModule, ObjectMapper
+from .default.dataclasses import dataclass_to_schema
 
 __all__ = [
   'IConverter', 'ConverterNotFound',

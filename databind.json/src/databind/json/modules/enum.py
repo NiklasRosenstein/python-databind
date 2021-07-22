@@ -41,6 +41,6 @@ class EnumConverter(IConverter, IConverterProvider):
         try:
           return ctx.type.type[ctx.value]
         except KeyError:
-          raise ConversionError(f'{ctx.value!r} is not a member of enumeration {ctx.type}')
+          raise ctx.error(f'{ctx.value!r} is not a member of enumeration {ctx.type}')
 
     assert False
