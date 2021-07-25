@@ -44,7 +44,7 @@ def test_find_generic_bases():
   assert find_generic_bases(MyMulti) == [t.List[T], Foo[T], t.Generic[T]]
   assert find_generic_bases(MyMulti[int]) == [t.List[int], Foo[int], t.Generic[T]]
 
-  class MyMore(t.List[int], t.Mapping[int, str]):
+  class MyMore(t.List[int], t.Mapping[int, str]):  # type: ignore
     pass
   assert find_generic_bases(MyMore) == [t.List[int], t.Mapping[int, str]]
   assert find_generic_bases(MyMore, t.List) == [t.List[int]]

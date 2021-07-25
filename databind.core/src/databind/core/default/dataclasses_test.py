@@ -2,9 +2,11 @@
 import typing as t
 import typing_extensions as te
 from dataclasses import dataclass, field
-from databind.core.dataclasses import dataclass as ddataclass, field as dfield
+
+import pytest
 
 from databind.core.annotations import alias
+from databind.core.dataclasses import dataclass as ddataclass, field as dfield
 from databind.core.objectmapper import ObjectMapper
 from databind.core.schema import Field, Schema
 from databind.core.types import ConcreteType, ListType, ObjectType, OptionalType, from_typing
@@ -78,3 +80,24 @@ def test_databind_dataclass_field_annotations():
     [],
     MyClass
   )
+
+
+@pytest.mark.skip("https://github.com/NiklasRosenstein/databind/issues/6")
+def test_schema_from_generic_impl():
+  T = t.TypeVar('T')
+  @dataclass
+  class Base(t.Generic[T]):
+    items: t.List[T]
+  @dataclass
+  class Subclass(Base[int]):
+    pass
+
+  schema = dataclass_to_schema(Base[int])
+  assert schema.fields == {
+    'items': Field('items', ListType(ConcreteType(int)))
+  }
+
+  schema = dataclass_to_schema(Subclass)
+  assert schema.fields == {
+    'items': Field('items', ListType(ConcreteType(int)))
+  }
