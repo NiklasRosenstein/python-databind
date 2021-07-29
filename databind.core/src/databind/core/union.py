@@ -83,8 +83,6 @@ class EntrypointSubtypes(IUnionSubtypes):
     return self._entrypoints_cache
 
   def get_type_name(self, type_: 'BaseType') -> str:
-    if isinstance(type_, AnnotatedType):
-      type_ = type_.type
     subject_type: t.Optional[t.Type] = None
     if isinstance(type_, ConcreteType):
       subject_type = type_.type
@@ -247,4 +245,4 @@ class UnionStyle(enum.Enum):
   flat = enum.auto()
 
 
-from .types import AnnotatedType, BaseType, ConcreteType, ObjectType, from_typing
+from .types import BaseType, ConcreteType, ObjectType, from_typing

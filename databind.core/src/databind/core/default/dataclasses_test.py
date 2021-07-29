@@ -10,7 +10,17 @@ from databind.core.dataclasses import dataclass as ddataclass, field as dfield
 from databind.core.objectmapper import ObjectMapper
 from databind.core.schema import Field, Schema
 from databind.core.types import ConcreteType, ListType, ObjectType, OptionalType, from_typing
-from .dataclasses import dataclass_to_schema
+from .dataclasses import DataclassAdapter, dataclass_to_schema
+
+
+def test_dataclass_adapter():
+  @dataclass
+  class MyDataclass:
+    f: te.Annotated[int, 'foo']
+
+  typ = DataclassAdapter().adapt_type_hint(ConcreteType(MyDataclass, ['foobar']))
+  assert typ == ObjectType(dataclass_to_schema(MyDataclass), ['foobar'])
+  assert typ.schema.fields['f'].type.annotations == ['foo']
 
 
 def test_dataclass_to_schema_conversion():
@@ -35,7 +45,7 @@ def test_dataclass_to_schema_conversion():
     {
       'a': Field('a', ConcreteType(int)),
       'b': Field('b', OptionalType(ConcreteType(str)), [alias('balias')], default=None),
-      'c': Field('c', ConcreteType(str), [alias('calias')], default=42),
+      'c': Field('c', ConcreteType(str, [alias('calias')]), [], default=42),
       'd': Field('d', OptionalType(ObjectType(dataclass_to_schema(P))), default=None),
     },
     [],

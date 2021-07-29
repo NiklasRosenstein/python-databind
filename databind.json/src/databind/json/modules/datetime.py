@@ -11,7 +11,7 @@ import datetime
 import typing as t
 from databind.core import annotations as A
 from databind.core.api import Context, Direction, IConverter, Context
-from databind.core.types import AnnotatedType, ConcreteType
+from databind.core.types import ConcreteType
 from nr import preconditions
 from nr.parsing.date import ISO_8601, duration
 

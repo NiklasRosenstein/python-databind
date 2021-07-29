@@ -11,7 +11,6 @@ the reverse operation.
 __all__ = [
   'BaseType',
   'ConcreteType',
-  'AnnotatedType',
   'ImplicitUnionType',
   'OptionalType',
   'CollectionType',
@@ -42,6 +41,8 @@ if t.TYPE_CHECKING:
 class BaseType(metaclass=abc.ABCMeta):
   """ Base class for an API representation of #typing type hints. """
 
+  annotations: t.List[t.Any]
+
   def __init__(self) -> None:
     raise TypeError('TypeHint cannot be constructed')
 
@@ -51,23 +52,6 @@ class BaseType(metaclass=abc.ABCMeta):
 
   @abc.abstractmethod
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType': ...
-
-  def normalize(self) -> 'BaseType':
-    """
-    Bubbles up all annotations from nested #Annotated hints into a single #Annotated hint at
-    the root if there exists at least one annotation in the tree.
-    """
-
-    annotations: t.List[t.Any] = []
-    def visitor(hint: BaseType) -> BaseType:
-      if isinstance(hint, AnnotatedType):
-        annotations.extend(hint.annotations)
-        return hint.type
-      return hint
-    new_hint = self.visit(visitor)
-    if annotations:
-      return AnnotatedType(new_hint, tuple(annotations))
-    return new_hint
 
 
 @dataclasses.dataclass
@@ -79,6 +63,7 @@ class ConcreteType(BaseType):
   """
 
   type: t.Type
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
     return f'ConcreteType({self.type.__name__})'
@@ -91,34 +76,6 @@ class ConcreteType(BaseType):
 
 
 @dataclasses.dataclass
-class AnnotatedType(BaseType):
-  """ Represents an annotated type. Nested annotations are flattened with #normalize(). """
-
-  type: BaseType
-  annotations: t.Tuple[t.Any, ...]
-
-  def __init__(self, type_: BaseType, annotations: t.Sequence[t.Any]) -> None:
-    preconditions.check_instance_of(type_, BaseType)  # type: ignore
-    self.type = type_
-    self.annotations = tuple(annotations)
-
-  def __repr__(self) -> str:
-    return f'AnnotatedType({self.type!r}, annotations={self.annotations!r})'
-
-  def to_typing(self) -> t.Any:
-    return te.Annotated[(self.type.to_typing(),) + self.annotations]  # type: ignore
-
-  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(AnnotatedType(self.type.visit(func), self.annotations))
-
-  @staticmethod
-  def unpack(type_: 'BaseType') -> t.Tuple[BaseType, t.Tuple[t.Any, ...]]:
-    if isinstance(type_, AnnotatedType):
-      return type_.type, type_.annotations
-    return type_, ()
-
-
-@dataclasses.dataclass
 class ImplicitUnionType(BaseType):
   """
   Represents an implicit union of types (i.e. accept as input and output values of multiple
@@ -128,6 +85,7 @@ class ImplicitUnionType(BaseType):
   """
 
   types: t.Tuple[BaseType, ...]
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
     return f'ImplicitUnionType({", ".join(map(repr, self.types))})'
@@ -136,7 +94,7 @@ class ImplicitUnionType(BaseType):
     return t.Union[tuple(x.to_typing() for x in self.types)]
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(ImplicitUnionType(tuple(t.visit(func) for t in self.types)))
+    return func(ImplicitUnionType(tuple(t.visit(func) for t in self.types), self.annotations))
 
 
 @dataclasses.dataclass
@@ -144,6 +102,7 @@ class OptionalType(BaseType):
   """ Represents an optional type. """
 
   type: BaseType
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
     return f'OptionalType({self.type!r})'
@@ -152,7 +111,7 @@ class OptionalType(BaseType):
     return t.Optional[self.type]
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(OptionalType(self.type.visit(func)))
+    return func(OptionalType(self.type.visit(func), self.annotations))
 
 
 class CollectionType(BaseType):
@@ -160,6 +119,7 @@ class CollectionType(BaseType):
 
   item_type: BaseType
   python_type: t.Type[t.Collection]
+  annotations: t.List[t.Any]
 
   def __repr__(self) -> str:
     result = f'{type(self).__name__}({self.item_type!r}'
@@ -167,12 +127,8 @@ class CollectionType(BaseType):
       result += ', python_type=' + self.python_type.__name__
     return result + ')'
 
-  # https://github.com/python/mypy/issues/5374
-  def to_typing(self) -> t.Any:
-    raise NotImplementedError
-
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(type(self)(self.item_type.visit(func), self.python_type))  # type: ignore
+    return func(type(self)(self.item_type.visit(func), self.python_type, self.annotations))  # type: ignore
 
 
 @dataclasses.dataclass(repr=False)
@@ -181,6 +137,7 @@ class ListType(CollectionType):
 
   item_type: BaseType
   python_type: t.Type[t.Collection] = list
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def to_typing(self) -> t.Any:
     return t.List[self.item_type.to_typing()]  # type: ignore
@@ -192,6 +149,7 @@ class SetType(CollectionType):
 
   item_type: BaseType
   python_type: t.Type[t.Collection] = set
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def to_typing(self) -> t.Any:
     return t.Set[self.item_type.to_typing()]  # type: ignore
@@ -207,6 +165,7 @@ class MapType(BaseType):
   key_type: BaseType
   value_type: BaseType
   impl_hint: _GenericAlias = t.Dict
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
     return f'MapType({self.key_type!r}, {self.value_type!r})'
@@ -215,7 +174,7 @@ class MapType(BaseType):
     return self.impl_hint[self.key_type.to_typing(), self.value_type.to_typing()]
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(MapType(self.key_type.visit(func), self.value_type.visit(func), self.impl_hint))
+    return func(MapType(self.key_type.visit(func), self.value_type.visit(func), self.impl_hint, self.annotations))
 
 
 @dataclasses.dataclass
@@ -227,6 +186,7 @@ class ObjectType(BaseType):
   """
 
   schema: 'Schema'
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
     return f'ObjectType({self.schema.python_type.__name__})'
@@ -252,6 +212,7 @@ class UnionType(BaseType):
   discriminator_key: t.Optional[str] = None
   name: t.Optional[str] = None
   python_type: t.Optional[t.Any] = None  # Can be a Python type or an actual type hint
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __post_init__(self) -> None:
     if not self.name and self.python_type is None:
@@ -441,7 +402,9 @@ def from_typing(type_hint: t.Any) -> BaseType:
       else:
         return ImplicitUnionType(tuple(from_typing(a) for a in args))
     elif hasattr(te, 'Annotated') and generic == te.Annotated and len(args) >= 2:  # type: ignore
-      return AnnotatedType(from_typing(args[0]), args[1:])
+      type_ = from_typing(args[0])
+      type_.annotations += args[1:]
+      return type_
 
   if isinstance(type_hint, type):
     return ConcreteType(type_hint)

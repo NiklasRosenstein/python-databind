@@ -9,7 +9,7 @@ from databind.core.schema import Field
 from databind.core.settings import Settings
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
-from .types import AnnotatedType, BaseType
+from .types import BaseType
 
 T = t.TypeVar('T', bound=Annotation)
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
@@ -133,14 +133,6 @@ class Context:
   #: representing a complex type (e.g., a list or map).
   field: Field
 
-  def __post_init__(self) -> None:
-    # Unpack annotations from an annotated type into the field data for convenience.
-    # This means we won't have to deal with AnnotatedType in converters.
-    self.location.type, annotations = AnnotatedType.unpack(self.location.type)
-    if annotations:
-      self.field = copy.copy(self.field)
-      self.field.annotations += annotations
-
   def __str__(self) -> str:
     return f'Context(direction={self.direction.name}, value={_trunc(repr(self.value), 30)})'
 
@@ -164,7 +156,8 @@ class Context:
     return self.mapper.get_converter(self.location.type, self.direction).convert(self)
 
   def get_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
-    return get_annotation(self.field.annotations, annotation_cls, None) or \
+    return self.field.get_annotation(annotation_cls) or \
+      get_annotation(self.location.type.annotations, annotation_cls, None) or \
       self.mapper.get_global_annotation(annotation_cls)
 
   def error(self, message: str) -> 'ConversionError':

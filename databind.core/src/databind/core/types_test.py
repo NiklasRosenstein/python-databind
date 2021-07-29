@@ -83,19 +83,30 @@ def test_populate_type_parameters():
   assert populate_type_parameters(t.Mapping, [K, V], [V], [str]) == t.Mapping[K, str]
 
 
-def test_annotation_unpacking():
-  assert AnnotatedType(ListType(AnnotatedType(ConcreteType(int), [42])), [43]).normalize() == \
-    AnnotatedType(ListType(ConcreteType(int)), [42, 43])
-
-
 def test_from_typing():
   assert from_typing(int) == ConcreteType(int)
-  assert from_typing(t.List[int]) == ListType(ConcreteType(int))
   assert from_typing(t.Mapping[str, t.Set[int]]) == MapType(ConcreteType(str), SetType(ConcreteType(int)), t.Mapping)
-  assert from_typing(t.Dict[str, t.Set[int]]) == MapType(ConcreteType(str), SetType(ConcreteType(int)), t.Dict)
-  assert from_typing(t.Optional[str]) == OptionalType(ConcreteType(str))
-  assert from_typing(te.Annotated[t.Dict[te.Annotated[int, 42], te.Annotated[str, 'foo']], 'bar']).normalize() == \
-    AnnotatedType(MapType(ConcreteType(int), ConcreteType(str)), [42, 'foo', 'bar'])
+
+  t1 = from_typing(te.Annotated[t.List[te.Annotated[int, 42]], 'foobar'])
+  assert t1 == ListType(ConcreteType(int, annotations=[42]), annotations=['foobar'])
+  assert t1 == t1.visit(lambda x: x)
+
+  t1 = from_typing(te.Annotated[t.Dict[str, t.Set[int]], 'foobar'])
+  assert t1 == MapType(ConcreteType(str), SetType(ConcreteType(int)), t.Dict, annotations=['foobar'])
+  assert t1.visit(lambda x: x) == t1
+
+  t1 = from_typing(te.Annotated[t.Optional[str], 'foobar'])
+  assert t1 == OptionalType(ConcreteType(str), annotations=['foobar'])
+  assert t1.visit(lambda x: x) == t1
+
+  t1 = from_typing(te.Annotated[int, 42])
+  assert t1 == ConcreteType(int, annotations=[42])
+  assert t1 != ConcreteType(int, annotations=[40])
+  assert t1.visit(lambda x: x) == t1
+
+  t1 = from_typing(te.Annotated[t.Dict[te.Annotated[int, 42], te.Annotated[str, 'foo']], 'bar'])
+  assert t1 == MapType(ConcreteType(int, [42]), ConcreteType(str, ['foo']), annotations=['bar'])
+  assert t1.visit(lambda x: x) == t1
 
 
 def test_custom_generic_subclass():
@@ -111,3 +122,9 @@ def test_custom_generic_subclass():
 
 def test_any():
   assert from_typing(t.Any) == ConcreteType(object)
+
+
+def test_visit():
+  assert ConcreteType(int, [42]).visit(lambda x: x) == ConcreteType(int, [42])
+  assert ListType(ConcreteType(int, [42]), tuple, ['foo']).visit(lambda x: x) == ListType(ConcreteType(int, [42]), tuple, ['foo'])
+  assert SetType(ConcreteType(int, [42]), tuple, ['foo']).visit(lambda x: x) == SetType(ConcreteType(int, [42]), tuple, ['foo'])

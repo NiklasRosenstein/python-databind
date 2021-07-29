@@ -28,7 +28,7 @@ class UnionConverter(IConverter):
       member_type = from_typing(type(ctx.value))
       member_name = ctx.type.subtypes.get_type_name(member_type)
 
-    type_hint = ctx.mapper.adapt_type_hint(member_type).normalize()
+    type_hint = ctx.mapper.adapt_type_hint(member_type)
 
     if is_deserialize:
       if style == A.unionclass.Style.nested:
