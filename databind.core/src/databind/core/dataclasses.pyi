@@ -3,6 +3,7 @@ from typing import *
 import sys
 
 _T = TypeVar('_T')
+ANNOTATIONS_METADATA_KEY: str
 
 if sys.version_info >= (3, 10):
     @overload

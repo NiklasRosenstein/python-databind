@@ -1,7 +1,6 @@
 
 import pytest
-import dataclasses
-from .dataclasses import *
+from databind.core.dataclasses import dataclass, field
 
 
 def test_non_default_argument_after_default():

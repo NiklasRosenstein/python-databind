@@ -51,8 +51,8 @@ class Field:
           f'{self.name!r} is of type {self.type!r}')
 
   def get_annotation(self, annotation_cls: t.Type[T]) -> t.Optional[T]:
-    return get_annotation(self.annotations, annotation_cls, None) or \
-      get_annotation(self.type.annotations, annotation_cls, None)
+    return A.get_annotation(self.annotations, annotation_cls, None) or \
+      A.get_annotation(self.type.annotations, annotation_cls, None)
 
   @property
   def aliases(self) -> t.Sequence[str]:
@@ -63,7 +63,7 @@ class Field:
     serialization.
     """
 
-    ann = self.get_annotation(alias)
+    ann = self.get_annotation(A.alias)
     if ann is None:
       return []
     return ann.aliases
@@ -75,7 +75,7 @@ class Field:
     as nullable/optional.
     """
 
-    return Optional(self.get_annotation(fieldinfo)).map(lambda f: f.required).or_else(False)
+    return Optional(self.get_annotation(A.fieldinfo)).map(lambda f: f.required).or_else(False)
 
   @property
   def flat(self) -> t.Optional[bool]:
@@ -85,23 +85,23 @@ class Field:
     #MapType.
     """
 
-    return Optional(self.get_annotation(fieldinfo)).map(lambda f: f.flat).or_else(False)
+    return Optional(self.get_annotation(A.fieldinfo)).map(lambda f: f.flat).or_else(False)
 
   @property
-  def datefmt(self) -> t.Optional['datefmt']:
+  def datefmt(self) -> t.Optional['A.datefmt']:
     """
     Returns the date format that is configured for the field via an annotation.
     """
 
-    return self.get_annotation(datefmt)
+    return self.get_annotation(A.datefmt)
 
   @property
-  def precision(self) -> t.Optional['precision']:
+  def precision(self) -> t.Optional['A.precision']:
     """
     Returns the decimal context that is configured for the field via an annotation.
     """
 
-    return self.get_annotation(precision)
+    return self.get_annotation(A.precision)
 
   def get_default(self) -> t.Union[NotSet, t.Any]:
     if self.default_factory is not NotSet.Value:
@@ -133,12 +133,12 @@ class Schema:
     _check_no_colliding_flattened_fields(self)
 
   @property
-  def typeinfo(self) -> t.Optional['typeinfo']:
-    return get_annotation(self.annotations, typeinfo, None)
+  def typeinfo(self) -> t.Optional['A.typeinfo']:
+    return A.get_annotation(self.annotations, A.typeinfo, None)
 
   @property
-  def unionclass(self) -> t.Optional['unionclass']:
-    return get_annotation(self.annotations, unionclass, None)
+  def unionclass(self) -> t.Optional['A.unionclass']:
+    return A.get_annotation(self.annotations, A.unionclass, None)
 
   class _FlatField(t.NamedTuple):
     group: str
@@ -210,7 +210,7 @@ def _get_type_hints(type_: t.Any) -> t.Any:
 
 
 from databind.core.annotations import get_type_annotations
-from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY  # type: ignore  # TODO (NiklasRosenstein): Why does Pylance/Mypy
+from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 
 
@@ -233,12 +233,12 @@ def dataclass_to_schema(dataclass_type: t.Type, type_converter: ITypeHintConvert
     field_annotations = list(field.metadata.get(ANNOTATIONS_METADATA_KEY, []))
 
     # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.
-    if not any(isinstance(x, alias) for x in field_annotations):
+    if not any(isinstance(x, A.alias) for x in field_annotations):
       if 'alias' in field.metadata:
         aliases = field.metadata['alias']
         if isinstance(aliases, str):
           aliases = [aliases]
-        field_annotations.append(alias(*aliases))
+        field_annotations.append(A.alias(*aliases))
 
     field_default_factory = field.default_factory  # type: ignore
     fields[field.name] = Field(
@@ -277,4 +277,4 @@ class DataclassConverter(ITypeHintConverter):
     raise TypeHintConversionError(self, str(type_hint))
 
 
-from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
+import databind.core.annotations as A
