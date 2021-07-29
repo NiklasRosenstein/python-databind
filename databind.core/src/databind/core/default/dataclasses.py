@@ -13,7 +13,7 @@ from databind.core.annotations.alias import alias
 from databind.core.api import Context, ITypeHintAdapter
 from databind.core.objectmapper import Module
 from databind.core.schema import Field, Schema
-from databind.core.types import AnnotatedType, ConcreteType, ObjectType, BaseType, from_typing
+from databind.core.types import ConcreteType, ObjectType, BaseType, from_typing
 from nr import preconditions
 from nr.pylang.utils.singletons import NotSet
 
@@ -37,13 +37,11 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
       # exclude it from the definition of the type for de-/serializing.
       continue
 
-    field_type_hint = from_typing(annotations.get(field.name, t.Any))
+    # NOTE (NiklasRosenstein): We do not use #field.type because if it contains a #t.ForwardRef,
+    #   it will not be resolved and we can't convert that to our type representation.
+    field_type_hint = from_typing(annotations[field.name])
     field_type_hint = adapter.adapt_type_hint(field_type_hint)
-    if isinstance(field_type_hint, AnnotatedType):
-      field_type_hint, field_annotations = field_type_hint.type, list(field_type_hint.annotations)  # type: ignore  # see https://github.com/python/mypy/issues/9731
-    else:
-      field_annotations = []
-    field_annotations += field.metadata.get(ANNOTATIONS_METADATA_KEY, [])
+    field_annotations = list(field.metadata.get(ANNOTATIONS_METADATA_KEY, []))
 
     # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.
     if not any(isinstance(x, alias) for x in field_annotations):
@@ -53,9 +51,13 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
           aliases = [aliases]
         field_annotations.append(alias(*aliases))
 
-    fields[field.name] = Field(field.name, field_type_hint, field_annotations,
+    field_default_factory = field.default_factory  # type: ignore
+    fields[field.name] = Field(
+      field.name,
+      field_type_hint,
+      field_annotations,
       NotSet.Value if field.default == _MISSING else field.default,
-      NotSet.Value if field.default_factory == _MISSING else field.default_factory)  # type: ignore
+      NotSet.Value if field_default_factory == _MISSING else field_default_factory)
 
   return Schema(
     dataclass_type.__name__,
@@ -68,16 +70,16 @@ def dataclass_to_schema(dataclass_type: t.Type, adapter: t.Optional[ITypeHintAda
 class DataclassAdapter(Module):
 
   def __init__(self) -> None:
-    self._cache: t.Dict[t.Type, ObjectType] = {}
+    self._cache: t.Dict[t.Type, Schema] = {}
 
   depth = 0
   def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
     if isinstance(type_, ConcreteType) and is_dataclass(type_.type):
       # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
       if type_.type in self._cache:
-        return self._cache[type_.type]
-      new_type = ObjectType(Schema(type_.type.__name__, {}, [], type_.type))
-      self._cache[type_.type] = new_type
-      new_type.schema = dataclass_to_schema(type_.type, adapter)
-      return new_type
+        return ObjectType(self._cache[type_.type], type_.annotations)
+      schema = Schema(type_.type.__name__, {}, [], type_.type)
+      self._cache[type_.type] = schema
+      vars(schema).update(vars(dataclass_to_schema(type_.type, adapter)))
+      return ObjectType(schema, type_.annotations)
     return type_

@@ -14,6 +14,8 @@ from databind.core.types import BaseType, MapType, ObjectType
 from nr.optional import Optional
 from nr.pylang.utils import NotSet
 
+T = t.TypeVar('T')
+
 
 @dataclass
 class Field:
@@ -44,6 +46,10 @@ class Field:
       raise RuntimeError('fieldinfo(flat=True) can only be enabled for ObjectType or MapType fields, '
           f'{self.name!r} is of type {self.type!r}')
 
+  def get_annotation(self, annotation_cls: t.Type[T]) -> t.Optional[T]:
+    return get_annotation(self.annotations, annotation_cls, None) or \
+      get_annotation(self.type.annotations, annotation_cls, None)
+
   @property
   def aliases(self) -> t.Sequence[str]:
     """
@@ -53,7 +59,7 @@ class Field:
     serialization.
     """
 
-    ann = get_annotation(self.annotations, alias, None)
+    ann = self.get_annotation(alias)
     if ann is None:
       return []
     return ann.aliases
@@ -65,7 +71,7 @@ class Field:
     as nullable/optional.
     """
 
-    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.required).or_else(False)
+    return Optional(self.get_annotation(fieldinfo)).map(lambda f: f.required).or_else(False)
 
   @property
   def flat(self) -> t.Optional[bool]:
@@ -75,7 +81,7 @@ class Field:
     #MapType.
     """
 
-    return Optional(get_annotation(self.annotations, fieldinfo, None)).map(lambda f: f.flat).or_else(False)
+    return Optional(self.get_annotation(fieldinfo)).map(lambda f: f.flat).or_else(False)
 
   @property
   def datefmt(self) -> t.Optional[datefmt]:
@@ -83,7 +89,7 @@ class Field:
     Returns the date format that is configured for the field via an annotation.
     """
 
-    return get_annotation(self.annotations, datefmt, None)
+    return self.get_annotation(datefmt)
 
   @property
   def precision(self) -> t.Optional[precision]:
@@ -91,7 +97,7 @@ class Field:
     Returns the decimal context that is configured for the field via an annotation.
     """
 
-    return get_annotation(self.annotations, precision, None)
+    return self.get_annotation(precision)
 
   def get_default(self) -> t.Union[NotSet, t.Any]:
     if self.default_factory is not NotSet.Value:

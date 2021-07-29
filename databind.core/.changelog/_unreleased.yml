@@ -1,0 +1,6 @@
+release_date: null
+changes:
+- type: change
+  component: general
+  description: remove AnnotatedType and instead add BaseType.annotations
+  fixes: []

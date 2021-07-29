@@ -254,7 +254,7 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     if isinstance(type_hint, BaseType):
       th = type_hint
     else:
-      th = self.adapt_type_hint(from_typing(type_hint).normalize()).normalize()
+      th = self.adapt_type_hint(from_typing(type_hint))
     field = Field('$', th, annotations or [])
     loc = Location(None, th, key, filename, position)
     ctx = Context(None, self, Settings(*(settings or []), parent=self.settings), direction, value, loc, field)
