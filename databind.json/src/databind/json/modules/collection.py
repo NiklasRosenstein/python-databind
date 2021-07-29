@@ -1,7 +1,7 @@
 
 import typing as t
 from databind.core.api import Context, Direction, IConverter
-from databind.core.types import CollectionType
+from databind.core.types.types import CollectionType
 
 
 class CollectionConverter(IConverter):
