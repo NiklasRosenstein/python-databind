@@ -1,7 +1,10 @@
 
 import typing as t
 import typing_extensions as te
+import weakref
 from dataclasses import dataclass
+from databind.core.types import BaseType, ConcreteType, ITypeHintConverter
+from databind.core.types.converter import TypeHintConversionError
 
 import nr.preconditions as preconditions
 
@@ -140,3 +143,38 @@ class unionclass(Annotation):
       cls.__init__ = unionclass.no_construct
     self.decorated_type = None
     return super().__call__(cls)
+
+
+class UnionConverter(ITypeHintConverter):
+  """
+  Adapter for classes decorated with #@A.unionclass().
+  """
+
+  def convert_type_hint(self, type_hint: t.Any, recurse: ITypeHintConverter) -> BaseType:
+    if not isinstance(type_hint, BaseType):
+      raise TypeHintConversionError(self, str(type_hint))
+    from databind.core import annotations as A
+    if isinstance(type_hint, ConcreteType):
+      unionclass = A.get_annotation(type_hint.type, A.unionclass, None)
+    elif isinstance(type_hint, ObjectType) and type_hint.schema.unionclass:
+      unionclass = type_hint.schema.unionclass
+    else:
+      unionclass = A.get_annotation(type_hint.annotations, A.unionclass, None)
+    if unionclass:
+      if unionclass.subtypes.owner:
+        result_type = unionclass.subtypes.owner()
+        if result_type:
+          return result_type
+      result_type = UnionType(
+        unionclass.subtypes,
+        unionclass.style,
+        unionclass.discriminator_key,
+        unionclass.name,
+        type_hint.to_typing())
+      result_type.subtypes.owner = weakref.ref(result_type)
+      return result_type
+    return type_hint
+
+
+from databind.core.types.schema import ObjectType
+from databind.core.types.union import UnionType

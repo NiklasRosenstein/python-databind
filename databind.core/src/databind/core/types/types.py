@@ -1,23 +1,14 @@
 
 """
-This module represents a subset of the #typing type hints as a stable API. The concepts exposed by
-the #typing module are represented as instances of the #TypeHint subclass (e.g., #Union, #List,
-#Map). The purpose of this module is to provide an easy method to introspect type hints.
+Represent supported types for de-/serialization as Python objects.
 
-Use #from_typing() to convert an actual type hint to the stable API and #TypeHint.to_typing() for
-the reverse operation.
+Type hints from the #typing or #typing_extensions modules can be converted into this format via
+the #databind.core.types.converter module.
 """
 
 import abc
 import dataclasses
 import typing as t
-import typing_extensions as te
-from typing import _type_repr, _GenericAlias  # type: ignore
-
-
-if t.TYPE_CHECKING:
-  from .schema import Schema
-  from .union import IUnionSubtypes, UnionStyle
 
 
 class BaseType(metaclass=abc.ABCMeta):
@@ -146,7 +137,7 @@ class MapType(BaseType):
 
   key_type: BaseType
   value_type: BaseType
-  impl_hint: _GenericAlias = t.Dict
+  impl_hint: t.Any = t.Dict
   annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
@@ -157,57 +148,6 @@ class MapType(BaseType):
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(MapType(self.key_type.visit(func), self.value_type.visit(func), self.impl_hint, self.annotations))
-
-
-@dataclasses.dataclass
-class ObjectType(BaseType):
-  """
-  Represents a type hint for a datamodel (or #Schema). Instances of this type hint are usually
-  constructed in a later stage after #from_typing() when a #Concrete type hint was encountered
-  that can be interpreted as an #ObjectType (see #databind.core.default.dataclass.DataclassModule).
-  """
-
-  schema: 'Schema'
-  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
-
-  def __repr__(self) -> str:
-    return f'ObjectType({self.schema.python_type.__name__})'
-
-  def to_typing(self) -> t.Any:
-    return self.schema.python_type
-
-  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(self)
-
-
-@dataclasses.dataclass
-class UnionType(BaseType):
-  """
-  Represents a union of multiple types that is de-/serialized with a discriminator value.
-  """
-
-  DEFAULT_STYLE: t.ClassVar['UnionStyle']
-  DEFAULT_DISCRIMINATOR_KEY = 'type'
-
-  subtypes: 'IUnionSubtypes'
-  style: t.Optional['UnionStyle'] = None
-  discriminator_key: t.Optional[str] = None
-  name: t.Optional[str] = None
-  python_type: t.Optional[t.Any] = None  # Can be a Python type or an actual type hint
-  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
-
-  def __post_init__(self) -> None:
-    if not self.name and self.python_type is None:
-      raise ValueError(f'UnionType() requires either name or python_type')
-
-  def __repr__(self) -> str:
-    return f'UnionType({self.name or _type_repr(self.python_type)})'
-
-  def to_typing(self) -> t.Any:
-    return self.python_type
-
-  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
-    return func(self)
 
 
 class UnknownType(BaseType):
@@ -226,7 +166,3 @@ class UnknownType(BaseType):
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     raise NotImplementedError('UnknownType cannot be visited')
-
-
-from .union import UnionStyle
-UnionType.DEFAULT_STYLE = UnionStyle.nested

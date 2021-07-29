@@ -2,19 +2,25 @@
 import abc
 import bisect
 import collections
-import dataclasses as D
+import dataclasses
 import textwrap
 import typing as t
 import typing_extensions as te
 
+from .types import BaseType, ConcreteType, ListType, SetType, MapType, OptionalType, ImplicitUnionType
+from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
 
-@D.dataclass
+
+@dataclasses.dataclass
 class TypeHintConversionError(Exception):
   converter: 'ITypeHintConverter'
   message: str
 
 
 class ITypeHintConverter(abc.ABC):
+
+  def __call__(self, type_hint: t.Any) -> 'BaseType':
+    return self.convert_type_hint(type_hint, self)
 
   @abc.abstractmethod
   def convert_type_hint(self, type_hint: t.Any, recurse: 'ITypeHintConverter') -> 'BaseType': ...
@@ -102,27 +108,19 @@ class ChainTypeHintConverter(ITypeHintConverter):
 
   def convert_type_hint(self, type_hint: t.Any, recurse: 'ITypeHintConverter') -> 'BaseType':
     errors = []
-    for priority_group, converters in self._ordered:
+    for _priority_group, converters in self._ordered:
       for converter in converters:
         try:
-          return converter.convert_type_hint(type_hint, recurse)
+          type_hint = converter.convert_type_hint(type_hint, recurse)
         except TypeHintConversionError as exc:
           errors.append(exc)
+    if isinstance(type_hint, BaseType):
+      return type_hint
     if not errors:
       raise TypeHintConversionError(self, 'no converters registered')
-    summary = '\n'.join(f'{str(exc.converter): exc.message}' for exc in errors)
+    summary = '\n'.join(f'{str(exc.converter)}: {exc.message}' for exc in errors)
     summary = textwrap.indent(summary, '  ')
     raise TypeHintConversionError(self, 'no available converter matched\n' + summary)
 
 
-#: The global type hint converter.
-root = ChainTypeHintConverter(DefaultTypeHintConverter())
 
-
-def from_typing(type_hint: t.Any, converter: t.Optional['ITypeHintConverter'] = None) -> 'BaseType':
-  converter = converter or root
-  return converter.convert_type_hint(type_hint, converter)
-
-
-from .types import BaseType, ConcreteType, ListType, SetType, MapType, OptionalType, ImplicitUnionType
-from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION

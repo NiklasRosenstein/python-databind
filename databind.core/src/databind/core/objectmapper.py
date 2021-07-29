@@ -2,15 +2,14 @@
 import collections
 import typing as t
 from dataclasses import dataclass, field, Field as _Field
-from functools import reduce
 from databind.core.types import Field
 import nr.preconditions as preconditions
 from .api import (Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter,
-  IConverterProvider, IObjectMapper, ITypeHintAdapter, Context)
+  IConverterProvider, IObjectMapper, Context)
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
 from .settings import Settings
-from .types import ConcreteType, BaseType, from_typing
+from .types import ConcreteType, BaseType, from_typing, ITypeHintConverter, root as root_type_converter
 
 __all__ = [
   'IModule',
@@ -22,16 +21,13 @@ T = t.TypeVar('T')
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
-class Module(IConverterProvider, ITypeHintAdapter):
+class Module(IConverterProvider):
   """
   Combination of various interfaces, with default implementations acting as a no-op.
   """
 
   def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter:
     raise ConverterNotFound(type_, direction)
-
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
-    return type_
 
 
 class SimpleModule(Module):
@@ -46,7 +42,6 @@ class SimpleModule(Module):
     self.__converters_by_type: t.Dict[Direction, t.Dict[t.Type, IConverter]] = {
       Direction.deserialize: {}, Direction.serialize: {}}
     self.__converter_providers: t.List[IConverterProvider] = []
-    self.__type_hint_adapters: t.List[ITypeHintAdapter] = []
 
   def __repr__(self):
     return f"<{type(self).__name__} {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
@@ -65,14 +60,9 @@ class SimpleModule(Module):
       self.__converters_by_type[Direction.deserialize][type_] = converter
       self.__converters_by_type[Direction.serialize][type_] = converter
 
-  def add_type_hint_adapter(self, adapter: ITypeHintAdapter) -> None:
-    preconditions.check_instance_of(adapter, ITypeHintAdapter)  # type: ignore
-    self.__type_hint_adapters.append(adapter)
-
   def add_module(self, module: Module) -> None:
     preconditions.check_instance_of(module, Module)
     self.__converter_providers.append(module)
-    self.__type_hint_adapters.append(module)
 
   def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
     preconditions.check_instance_of(type_, BaseType)  # type: ignore
@@ -86,9 +76,6 @@ class SimpleModule(Module):
       except ConverterNotFound:
         pass  # intentional
     raise ConverterNotFound(type_, direction)
-
-  def adapt_type_hint(self, type_: BaseType, adapter: ITypeHintAdapter = None) -> BaseType:
-    return reduce(lambda t, a: a.adapt_type_hint(t, adapter), self.__type_hint_adapters, type_)
 
 
 class DefaultAnnotationsProvider(IAnnotationsProvider):
@@ -205,38 +192,9 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     for module in modules:
       self.add_module(module)
 
-  # IModule
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
-
-    if isinstance(type_, ConcreteType):
-      # Type's for which we have a serializer or deserializer do not require adaptation.
-      # The background here is that there can be #ConcreteType's that wrap a @dataclass
-      # which would be adapter to an #ObjectType by the #DataclassAdapter unless we catch
-      # that there is an explicit converter registered to handle that special case.
-      has_converter = False
-      try: self.get_converter(type_, Direction.deserialize)
-      except ConverterNotFound: pass
-      else: has_converter = True
-      if not has_converter:
-        try: self.get_converter(type_, Direction.serialize)
-        except ConverterNotFound: pass
-        else: has_converter = True
-        pass
-
-      if has_converter:
-        return type_
-
-    # Apply the type adaptation recursively on all nested types.
-    parent_method = super().adapt_type_hint
-    def visitor(current_type: BaseType) -> BaseType:
-      return parent_method(current_type, adapter or self)
-    return type_.visit(visitor)
-
   @classmethod
   def default(cls, *modules: Module, name: str = None) -> 'ObjectMapper':
-    from .default.dataclasses import DataclassAdapter
-    from .default.unionclass import UnionclassAdapter
-    mapper = cls(UnionclassAdapter(), DataclassAdapter(), *modules, name=name)
+    mapper = cls(*modules, name=name)
     mapper.add_annotations_provider(DefaultAnnotationsProvider())
     return mapper
 
@@ -249,15 +207,15 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     key: t.Union[str, int, None] = None,
     annotations: t.Optional[t.List[t.Any]] = None,
     settings: t.Optional[t.List[t.Any]] = None,
+    type_converter: t.Optional[ITypeHintConverter] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
-    if isinstance(type_hint, BaseType):
-      th = type_hint
-    else:
-      th = self.adapt_type_hint(from_typing(type_hint))
-    field = Field('$', th, annotations or [])
-    loc = Location(None, th, key, filename, position)
-    ctx = Context(None, self, Settings(*(settings or []), parent=self.settings), direction, value, loc, field)
+    type_converter = type_converter or root_type_converter
+    type_ = from_typing(type_hint, type_converter)
+    field = Field('$', type_, annotations or [])
+    loc = Location(None, type_, key, filename, position)
+    ctx = Context(None, type_converter or root_type_converter, self, Settings(*(settings or []), parent=self.settings),
+      direction, value, loc, field)
     return ctx.convert()
 
   def deserialize(self,
@@ -268,8 +226,9 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     key: t.Union[str, int] = None,
     annotations: t.List[t.Any] = None,
     settings: t.Optional[t.List[t.Any]] = None,
+    type_converter: t.Optional[ITypeHintConverter] = None,
   ) -> T:
-    return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations, settings)
+    return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations, settings, type_converter)
 
   def serialize(self,
     value: t.Any,
@@ -279,5 +238,6 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     key: t.Union[str, int] = None,
     annotations: t.List[t.Any] = None,
     settings: t.Optional[t.List[t.Any]] = None,
+    type_converter: t.Optional[ITypeHintConverter] = None,
   ) -> t.Any:
-    return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations, settings)
+    return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations, settings, type_converter)

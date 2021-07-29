@@ -8,7 +8,7 @@ from databind.core.types import Field
 from databind.core.settings import Settings
 from .annotations import Annotation, get_annotation
 from .location import Location, Position
-from .types import BaseType
+from .types import BaseType, ITypeHintConverter
 
 T = t.TypeVar('T', bound=Annotation)
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
@@ -71,28 +71,7 @@ class IAnnotationsProvider(metaclass=abc.ABCMeta):
     ...
 
 
-class ITypeHintAdapter(metaclass=abc.ABCMeta):
-  """
-  The #ITypeAdapter has a chance to alter a #TypeHint before it is used to look up an #IConverter
-  via an #IConverterProvider. The operation must be idempotent.
-  """
-
-  @abc.abstractmethod
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional['ITypeHintAdapter'] = None) -> BaseType: ...
-
-  Noop: t.ClassVar[t.Type['ITypeHintAdapter']]
-
-
-class _NoopTypeHintAdapterAdapter(ITypeHintAdapter):
-
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
-    return type_
-
-
-ITypeHintAdapter.Noop = _NoopTypeHintAdapterAdapter
-
-
-class IObjectMapper(IAnnotationsProvider, IConverterProvider, ITypeHintAdapter):
+class IObjectMapper(IAnnotationsProvider, IConverterProvider):
   """
   An object mapper is a combination of various interfaces that are required during the
   de/serialization process.
@@ -109,6 +88,9 @@ class Context:
 
   #: Reference to the parent #Value object.
   parent: t.Optional['Context']
+
+  #: The type adapter used in this context.
+  type_converter: ITypeHintConverter
 
   #: The object mapper that is used to convert the value.
   mapper: IObjectMapper
@@ -148,7 +130,7 @@ class Context:
     position: t.Optional[Position] = None
   ) -> 'Context':
     location = self.location.push(type_, key, filename, position)
-    return Context(self, self.mapper, self.settings, self.direction, value,
+    return Context(self, self.type_converter, self.mapper, self.settings, self.direction, value,
       location, field or Field(str(key or '$'), type_, []))
 
   def convert(self) -> t.Any:

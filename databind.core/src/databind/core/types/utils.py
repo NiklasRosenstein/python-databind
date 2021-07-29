@@ -13,6 +13,10 @@ _ORIGIN_CONVERSION = {  # TODO: Build automatically
 }
 
 
+def type_repr(typ: t.Any) -> str:
+  return t._type_repr(typ)  # type: ignore
+
+
 def unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   """
   Unpacks a type hint into it's origin type and parameters. Returns #None if the

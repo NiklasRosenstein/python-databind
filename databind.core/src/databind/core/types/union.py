@@ -11,8 +11,10 @@ import weakref
 from nr.stream import Stream
 from nr.pylang.utils.funcdef import except_format
 
-if t.TYPE_CHECKING:
-  from databind.core.types import UnionType
+from .converter import ITypeHintConverter
+from .schema import ObjectType
+from .types import BaseType, ConcreteType
+from .utils import type_repr
 
 
 @dataclasses.dataclass
@@ -39,7 +41,7 @@ class IUnionSubtypes(abc.ABC):
   owner: t.Optional['weakref.ref[UnionType]'] = None
 
   @abc.abstractmethod
-  def get_type_name(self, type_: 'BaseType') -> str:
+  def get_type_name(self, type_: 'BaseType', type_converter: 'ITypeHintConverter') -> str:
     """
     Given a type that is a member of the union subtypes, return the name of the type
     that is used as a discriminator when serializing a value of the type. Raises a
@@ -47,7 +49,7 @@ class IUnionSubtypes(abc.ABC):
     """
 
   @abc.abstractmethod
-  def get_type_by_name(self, name: str) -> 'BaseType':
+  def get_type_by_name(self, name: str, type_converter: 'ITypeHintConverter') -> 'BaseType':
     """
     Given the name of the type that is used as a discriminator value when deserializing
     a value, return the actual type behind that name in the union subtypes. If the name
@@ -67,9 +69,10 @@ class EntrypointSubtypes(IUnionSubtypes):
   Provides union subtypes per a Python entrypoint group.
   """
 
-  def __init__(self, name: str) -> None:
+  def __init__(self, name: str, type_converter: 'ITypeHintConverter') -> None:
     self._name = name
     self._entrypoints_cache: t.Optional[t.Dict[str, pkg_resources.EntryPoint]] = None
+    self._type_converter = type_converter
 
   def __repr__(self) -> str:
     return f'EntrypointSubtypes(name={self._name!r})'
@@ -82,7 +85,7 @@ class EntrypointSubtypes(IUnionSubtypes):
         self._entrypoints_cache[ep.name] = ep
     return self._entrypoints_cache
 
-  def get_type_name(self, type_: 'BaseType') -> str:
+  def get_type_name(self, type_: 'BaseType', type_converter: 'ITypeHintConverter') -> str:
     subject_type: t.Optional[t.Type] = None
     if isinstance(type_, ConcreteType):
       subject_type = type_.type
@@ -94,9 +97,9 @@ class EntrypointSubtypes(IUnionSubtypes):
           return ep.name
     raise UnionTypeError(type_, self)
 
-  def get_type_by_name(self, name: str) -> 'BaseType':
+  def get_type_by_name(self, name: str, type_converter: 'ITypeHintConverter') -> 'BaseType':
     try:
-      return from_typing(self._entrypoints[name].load())
+      return type_converter(self._entrypoints[name].load())
     except KeyError:
       raise UnionTypeError(name, self)
 
@@ -107,26 +110,27 @@ class EntrypointSubtypes(IUnionSubtypes):
 @dataclasses.dataclass
 class DynamicSubtypes(IUnionSubtypes):
 
-  _LazyType = t.Union['BaseType', t.Callable[[], t.Union[t.Type, 'BaseType']]]
-  _members: t.Dict[str, _LazyType]
+  #: A #typing type hint, an actual type, a #BaseType or a callable that returns one of the aforementioned.
+  _Type = t.Union[t.Any, t.Type, 'BaseType', t.Callable[[], t.Union[t.Any, t.Type, 'BaseType']]]
+  _members: t.Dict[str, _Type]
 
-  def __init__(self, members: t.Dict[str, t.Union[_LazyType, t.Type]] = None) -> None:
-    self._members = {k: from_typing(v) if isinstance(v, type) else v for k, v in (members or {}).items()}
+  def __init__(self, members: t.Dict[str, _Type] = None) -> None:
+    self._members = members or {}
 
   def __repr__(self) -> str:
     return f'DynamicSubtypes(members={self.get_type_names()})'
 
-  def get_type_name(self, type_: 'BaseType') -> str:
+  def get_type_name(self, type_: 'BaseType', type_converter: 'ITypeHintConverter') -> str:
     if not isinstance(type_, BaseType):
       raise RuntimeError(f'expected BaseType, got {type(type_).__name__}')
     if isinstance(type_, ConcreteType):
       for key in self._members:
-        value = self.get_type_by_name(key)
+        value = self.get_type_by_name(key, type_converter)
         if value == type_:
           return key
     raise UnionTypeError(type_, self)
 
-  def get_type_by_name(self, name: str) -> 'BaseType':
+  def get_type_by_name(self, name: str, type_converter: 'ITypeHintConverter') -> 'BaseType':
     try:
       member = self._members[name]
     except KeyError:
@@ -136,7 +140,7 @@ class DynamicSubtypes(IUnionSubtypes):
       if isinstance(member, types.FunctionType):
         member = member()
         if not isinstance(member, BaseType):
-          member = from_typing(member)
+          member = type_converter(member)
         self._members[name] = member
       assert isinstance(member, BaseType)
       return member
@@ -144,9 +148,7 @@ class DynamicSubtypes(IUnionSubtypes):
   def get_type_names(self) -> t.List[str]:
     return list(self._members.keys())
 
-  def add_type(self, name: str, type_: t.Union[_LazyType, t.Any]) -> None:
-    if not isinstance(type_, BaseType) and not isinstance(type_, types.FunctionType):
-      type_ = from_typing(type_)
+  def add_type(self, name: str, type_: _Type) -> None:
     if name in self._members:
       raise RuntimeError(f'type {name!r} already registered')
     self._members[name] = type_
@@ -160,18 +162,18 @@ class ChainSubtypes(IUnionSubtypes):
   def __repr__(self) -> str:
     return f'ChainSubtypes({", ".join(map(repr, self._subtypes))})'
 
-  def get_type_name(self, type_: 'BaseType') -> str:
+  def get_type_name(self, type_: 'BaseType', type_converter: 'ITypeHintConverter') -> str:
     for subtypes in self._subtypes:
       try:
-        return subtypes.get_type_name(type_)
+        return subtypes.get_type_name(type_, type_converter)
       except UnionTypeError:
         pass
     raise UnionTypeError(type_, self)
 
-  def get_type_by_name(self, name: str) -> 'BaseType':
+  def get_type_by_name(self, name: str, type_converter: 'ITypeHintConverter') -> 'BaseType':
     for subtypes in self._subtypes:
       try:
-        return subtypes.get_type_by_name(name)
+        return subtypes.get_type_by_name(name, type_converter)
       except UnionTypeError:
         pass
     raise UnionTypeError(name, self)
@@ -191,13 +193,13 @@ class ImportSubtypes(IUnionSubtypes):
   def __repr__(self) -> str:
     return 'ImportSubtypes()'
 
-  def get_type_name(self, type_: 'BaseType') -> str:
+  def get_type_name(self, type_: 'BaseType', type_converter: 'ITypeHintConverter') -> str:
     type_name = f'{type_.__module__}.{type_.__qualname__}'  # type: ignore
     if '<' in type_.__qualname__:  # type: ignore
       raise ValueError(f'non-global type {type_name} is not addressible')
     return type_name
 
-  def get_type_by_name(self, name: str) -> 'BaseType':
+  def get_type_by_name(self, name: str, type_converter: 'ITypeHintConverter') -> 'BaseType':
     parts = name.split('.')
     offset = 1
     module_name = parts[0]
@@ -223,7 +225,7 @@ class ImportSubtypes(IUnionSubtypes):
     if not isinstance(target, type):
       raise ValueError(f'{name!r} does not point to a type (got {type(target).__name__} instead)')
 
-    return from_typing(target)
+    return type_converter(target)
 
   def get_type_names(self) -> t.List[str]:
     raise NotImplementedError
@@ -245,5 +247,31 @@ class UnionStyle(enum.Enum):
   flat = enum.auto()
 
 
-from .converter import from_typing
-from .types import BaseType, ConcreteType, ObjectType
+@dataclasses.dataclass
+class UnionType(BaseType):
+  """
+  Represents a union of multiple types that is de-/serialized with a discriminator value.
+  """
+
+  DEFAULT_STYLE: t.ClassVar['UnionStyle'] = UnionStyle.nested
+  DEFAULT_DISCRIMINATOR_KEY = 'type'
+
+  subtypes: 'IUnionSubtypes'
+  style: t.Optional['UnionStyle'] = None
+  discriminator_key: t.Optional[str] = None
+  name: t.Optional[str] = None
+  python_type: t.Optional[t.Any] = None  # Can be a Python type or an actual type hint
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
+
+  def __post_init__(self) -> None:
+    if not self.name and self.python_type is None:
+      raise ValueError(f'UnionType() requires either name or python_type')
+
+  def __repr__(self) -> str:
+    return f'UnionType({self.name or type_repr(self.python_type)})'
+
+  def to_typing(self) -> t.Any:
+    return self.python_type
+
+  def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
+    return func(self)
