@@ -1,7 +1,7 @@
 
 import typing as t
 import typing_extensions as te
-from .adapter import from_typing
+from .converter import from_typing
 from .types import *
 
 T = t.TypeVar('T')

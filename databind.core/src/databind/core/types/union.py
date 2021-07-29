@@ -245,5 +245,5 @@ class UnionStyle(enum.Enum):
   flat = enum.auto()
 
 
-from .adapter import from_typing
+from .converter import from_typing
 from .types import BaseType, ConcreteType, ObjectType

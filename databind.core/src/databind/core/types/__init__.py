@@ -1,5 +1,5 @@
 
-from .adapter import from_typing
+from .converter import from_typing
 
 from .types import (
   BaseType,
