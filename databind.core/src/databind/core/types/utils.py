@@ -13,7 +13,7 @@ _ORIGIN_CONVERSION = {  # TODO: Build automatically
 }
 
 
-def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
+def unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   """
   Unpacks a type hint into it's origin type and parameters. Returns #None if the
   *hint* does not represent a type or type hint in any way.
@@ -62,7 +62,7 @@ def find_generic_bases(type_hint: t.Type, generic_type: t.Optional[t.Any] = None
   ```
   """
 
-  type_, args = _unpack_type_hint(type_hint)
+  type_, args = unpack_type_hint(type_hint)
   params = getattr(type_, '__parameters__', [])
   bases = getattr(type_, '__orig_bases__', [])
 

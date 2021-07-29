@@ -8,7 +8,7 @@ def from_typing(type_hint: t.Any) -> 'BaseType':
   Convert a #typing type hint to an API #TypeHint.
   """
 
-  generic, args = _unpack_type_hint(type_hint)
+  generic, args = unpack_type_hint(type_hint)
 
   # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
   # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
@@ -18,7 +18,7 @@ def from_typing(type_hint: t.Any) -> 'BaseType':
   generic_bases = find_generic_bases(type_hint)
   if len(generic_bases) == 1:
     python_type = generic
-    generic, args = _unpack_type_hint(generic_bases[0])
+    generic, args = unpack_type_hint(generic_bases[0])
 
   if generic is not None:
     generic = _ORIGIN_CONVERSION.get(generic, generic)
@@ -56,4 +56,4 @@ def from_typing(type_hint: t.Any) -> 'BaseType':
 
 
 from .types import BaseType, ConcreteType, ListType, SetType, MapType, OptionalType, ImplicitUnionType
-from .utils import _unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
+from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION

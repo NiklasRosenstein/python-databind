@@ -1,7 +1,7 @@
 
 import typing as t
 
-from .utils import _unpack_type_hint, find_generic_bases, populate_type_parameters
+from .utils import unpack_type_hint, find_generic_bases, populate_type_parameters
 
 T = t.TypeVar('T')
 K = t.TypeVar('K')
@@ -9,22 +9,22 @@ V = t.TypeVar('V')
 
 
 def test_unpack_type_hint():
-  assert _unpack_type_hint(t.List) == (list, [])
-  assert _unpack_type_hint(t.List[int]) == (list, [int])
-  assert _unpack_type_hint(t.Dict) == (dict, [])
-  assert _unpack_type_hint(t.Dict[int, str]) == (dict, [int, str])
+  assert unpack_type_hint(t.List) == (list, [])
+  assert unpack_type_hint(t.List[int]) == (list, [int])
+  assert unpack_type_hint(t.Dict) == (dict, [])
+  assert unpack_type_hint(t.Dict[int, str]) == (dict, [int, str])
 
   class MyList(t.List[int]): pass
-  assert _unpack_type_hint(MyList) == (MyList, [])
+  assert unpack_type_hint(MyList) == (MyList, [])
 
   class MyList(t.List[T]): pass
-  assert _unpack_type_hint(MyList) == (MyList, [])
-  assert _unpack_type_hint(MyList[int]) == (MyList, [int])
+  assert unpack_type_hint(MyList) == (MyList, [])
+  assert unpack_type_hint(MyList[int]) == (MyList, [int])
 
   class Foo(t.Generic[T]): pass
   class MyMulti(t.List[T], Foo[T]): pass
-  assert _unpack_type_hint(MyMulti) == (MyMulti, [])
-  assert _unpack_type_hint(MyMulti[int]) == (MyMulti, [int])
+  assert unpack_type_hint(MyMulti) == (MyMulti, [])
+  assert unpack_type_hint(MyMulti[int]) == (MyMulti, [int])
 
 
 def test_find_generic_bases():
