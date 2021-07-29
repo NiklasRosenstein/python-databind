@@ -8,34 +8,16 @@ Use #from_typing() to convert an actual type hint to the stable API and #TypeHin
 the reverse operation.
 """
 
-__all__ = [
-  'BaseType',
-  'ConcreteType',
-  'ImplicitUnionType',
-  'OptionalType',
-  'CollectionType',
-  'ListType',
-  'SetType',
-  'MapType',
-  'ObjectType',
-  'UnionType',
-  'from_typing',
-]
-
 import abc
 import dataclasses
-import sys
 import typing as t
 import typing_extensions as te
-from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
 from typing import _type_repr, _GenericAlias  # type: ignore
-
-from nr import preconditions
 
 
 if t.TYPE_CHECKING:
-  from databind.core.union import IUnionSubtypes, UnionStyle
   from .schema import Schema
+  from .union import IUnionSubtypes, UnionStyle
 
 
 class BaseType(metaclass=abc.ABCMeta):
@@ -244,172 +226,6 @@ class UnknownType(BaseType):
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     raise NotImplementedError('UnknownType cannot be visited')
-
-
-def _unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
-  """
-  Unpacks a type hint into it's origin type and parameters. Returns #None if the
-  *hint* does not represent a type or type hint in any way.
-  """
-
-  if hasattr(te, '_AnnotatedAlias') and isinstance(hint, te._AnnotatedAlias):  # type: ignore
-    return te.Annotated, list((hint.__origin__,) + hint.__metadata__)  # type: ignore
-
-  if hasattr(t, '_SpecialGenericAlias') and isinstance(hint, t._SpecialGenericAlias):  # type: ignore
-    return hint.__origin__, []
-
-  if isinstance(hint, t._GenericAlias) or (sys.version_info >= (3, 9) and isinstance(hint, t.GenericAlias)):  # type: ignore
-    if sys.version_info >= (3, 9) or hint.__args__ != hint.__parameters__:
-      return hint.__origin__, list(hint.__args__)
-    else:
-      return hint.__origin__, []
-
-  if isinstance(hint, type):
-    return hint, []
-
-  if isinstance(hint, t._SpecialForm):
-    return hint, []
-
-  return None, []
-
-
-def find_generic_bases(type_hint: t.Type, generic_type: t.Optional[t.Any] = None) -> t.List[t.Any]:
-  """
-  This method finds all generic bases of a given type or generic aliases.
-
-  As a reminder, a generic alias is any subclass of #t.Generic that is indexed with type arguments
-  or a special alias like #t.List, #t.Set, etc. The type arguments of that alias are propagated
-  into the returned generic bases (except if the base is a #t.Generic because that can only accept
-  type variables as arguments).
-
-  Examples:
-
-  ```py
-  class MyList(t.List[int]):
-    ...
-  class MyGenericList(t.List[T]):
-    ...
-  assert find_generic_bases(MyList) == [t.List[int]]
-  assert find_generic_bases(MyGenericList) == [t.List[T]]
-  assert find_generic_bases(MyGenericList[int]) == [t.List[int]]
-  ```
-  """
-
-  type_, args = _unpack_type_hint(type_hint)
-  params = getattr(type_, '__parameters__', [])
-  bases = getattr(type_, '__orig_bases__', [])
-
-  generic_choices: t.Tuple[t.Any, ...] = (generic_type,) if generic_type else ()
-  if generic_type and generic_type.__origin__:
-    generic_choices += (generic_type.__origin__,)
-
-  result: t.List[t.Any] = []
-  for base in bases:
-    origin = getattr(base, '__origin__', None)
-    if (not generic_type and origin) or \
-       (base == generic_type or origin in generic_choices):
-      result.append(base)
-
-  for base in bases:
-    result += find_generic_bases(base, generic_type)
-
-  # Replace type parameters.
-  for idx, hint in enumerate(result):
-    origin = _ORIGIN_CONVERSION.get(hint.__origin__, hint.__origin__)
-    if origin == t.Generic:  # type: ignore
-      continue
-    result[idx] = populate_type_parameters(origin, hint.__args__, params, args)
-
-  return result
-
-
-def populate_type_parameters(
-  generic_type: t.Any,
-  generic_args: t.List[t.Any],
-  parameters: t.List[t.Any],
-  arguments: t.List[t.Any]) -> t.Any:
-  """
-  Given a generic type and it's aliases (for example from `__parameters__`), this function will return an
-  alias for the generic type where occurrences of type variables from *parameters* are replaced with actual
-  type arguments from *arguments*.
-
-  Example:
-
-  ```py
-  assert populate_type_parameters(t.List, [T], [T], [int]) == t.List[int]
-  assert populate_type_parameters(t.Mapping, [K, V], [V], [str]) == t.Mapping[K, str]
-  ```
-  """
-
-  new_args = []
-  for type_arg in generic_args:
-    arg_index = parameters.index(type_arg) if type_arg in parameters else -1
-    if arg_index >= 0 and arg_index < len(arguments):
-      new_args.append(arguments[arg_index])
-    else:
-      new_args.append(type_arg)
-  return generic_type[tuple(new_args)]
-
-
-_ORIGIN_CONVERSION = {
-  list: t.List,
-  set: t.Set,
-  dict: t.Dict,
-  _Mapping: t.Mapping,
-  _MutableMapping: t.MutableMapping,
-}
-
-
-def from_typing(type_hint: t.Any) -> BaseType:
-  """
-  Convert a #typing type hint to an API #TypeHint.
-  """
-
-  generic, args = _unpack_type_hint(type_hint)
-
-  # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
-  # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
-  # to it in "python_type" so we know what we need to construct during deserialization.
-  # NOTE (@NiklasRosenstein): We only support a single generic base.
-  python_type: t.Optional[t.Type] = None
-  generic_bases = find_generic_bases(type_hint)
-  if len(generic_bases) == 1:
-    python_type = generic
-    generic, args = _unpack_type_hint(generic_bases[0])
-
-  if generic is not None:
-    generic = _ORIGIN_CONVERSION.get(generic, generic)
-    if generic == t.Any:
-      return ConcreteType(object)
-    elif generic == t.List and len(args) == 1:
-      return ListType(from_typing(args[0]), python_type or list)
-    elif generic == t.Set and len(args) == 1:
-      return SetType(from_typing(args[0]), python_type or set)
-    elif generic in (t.Dict, t.Mapping, t.MutableMapping) and len(args) == 2:
-      return MapType(from_typing(args[0]), from_typing(args[1]), python_type or generic)
-    elif (generic == t.Optional and len(args) == 1) or (generic == t.Union and None in args and len(args) == 2):  # type: ignore
-      if len(args) == 1:
-        return OptionalType(from_typing(args[0]))
-      elif len(args) == 2:
-        return OptionalType(from_typing(next(x for x in args if x is not None)))
-      else:
-        raise ValueError(f'unexpected args for {generic}: {args}')
-    elif generic == t.Union and len(args) > 0:
-      if len(args) == 1:
-        return from_typing(args[0])
-      elif type(None) in args:
-        return OptionalType(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
-      else:
-        return ImplicitUnionType(tuple(from_typing(a) for a in args))
-    elif hasattr(te, 'Annotated') and generic == te.Annotated and len(args) >= 2:  # type: ignore
-      type_ = from_typing(args[0])
-      type_.annotations += args[1:]
-      return type_
-
-  if isinstance(type_hint, type):
-    return ConcreteType(type_hint)
-
-  raise ValueError(f'unsupported type hint {type_hint!r}')
 
 
 from .union import UnionStyle

@@ -5,8 +5,7 @@ import typing_extensions as te
 import pytest
 from databind.core.annotations import fieldinfo
 from databind.core.objectmapper import ObjectMapper
-from databind.core.schema import SchemaDefinitionError
-from databind.core.types import ObjectType, from_typing
+from databind.core.types import SchemaDefinitionError, ObjectType, from_typing
 
 @pytest.fixture
 def mapper() -> ObjectMapper:

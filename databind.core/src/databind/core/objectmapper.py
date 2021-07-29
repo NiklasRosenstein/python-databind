@@ -3,7 +3,7 @@ import collections
 import typing as t
 from dataclasses import dataclass, field, Field as _Field
 from functools import reduce
-from databind.core.schema import Field
+from databind.core.types import Field
 import nr.preconditions as preconditions
 from .api import (Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter,
   IConverterProvider, IObjectMapper, ITypeHintAdapter, Context)

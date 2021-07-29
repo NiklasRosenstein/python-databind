@@ -7,12 +7,12 @@ import pkg_resources
 import types
 import typing as t
 import weakref
+
 from nr.stream import Stream
+from nr.pylang.utils.funcdef import except_format
 
 if t.TYPE_CHECKING:
   from databind.core.types import UnionType
-
-from nr.pylang.utils.funcdef import except_format
 
 
 @dataclasses.dataclass
@@ -245,4 +245,5 @@ class UnionStyle(enum.Enum):
   flat = enum.auto()
 
 
-from .types import BaseType, ConcreteType, ObjectType, from_typing
+from .adapter import from_typing
+from .types import BaseType, ConcreteType, ObjectType

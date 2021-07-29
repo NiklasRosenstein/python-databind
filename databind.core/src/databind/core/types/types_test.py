@@ -1,8 +1,9 @@
 
 import typing as t
 import typing_extensions as te
+from .adapter import from_typing
 from .types import *
-from .types import _unpack_type_hint, find_generic_bases, populate_type_parameters
+from .utils import _unpack_type_hint, find_generic_bases, populate_type_parameters
 
 T = t.TypeVar('T')
 K = t.TypeVar('K')

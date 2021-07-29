@@ -1,11 +1,10 @@
 
 import abc
-import copy
 import enum
 import typing as t
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from databind.core.schema import Field
+from databind.core.types import Field
 from databind.core.settings import Settings
 from .annotations import Annotation, get_annotation
 from .location import Location, Position

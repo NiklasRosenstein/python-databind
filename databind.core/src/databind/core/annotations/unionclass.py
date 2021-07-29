@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import nr.preconditions as preconditions
 
-from databind.core.union import ChainSubtypes, DynamicSubtypes, EntrypointSubtypes, IUnionSubtypes, ImportSubtypes, UnionStyle
+from databind.core.types.union import ChainSubtypes, DynamicSubtypes, EntrypointSubtypes, IUnionSubtypes, ImportSubtypes, UnionStyle
 from . import Annotation, get_annotation
 from .typeinfo import typeinfo
 

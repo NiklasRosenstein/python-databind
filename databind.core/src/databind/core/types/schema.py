@@ -6,11 +6,8 @@ The abstraction helps keeping the serializer implementation separate from the #d
 and to open it up for the possibility to extend it to other ways of describing the schema.
 """
 
-import abc
 import typing as t
 from dataclasses import dataclass, field
-from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
-from databind.core.types import BaseType, MapType, ObjectType
 from nr.optional import Optional
 from nr.pylang.utils import NotSet
 
@@ -27,7 +24,7 @@ class Field:
   name: str
 
   #: The type hint associated with this field.
-  type: BaseType
+  type: 'BaseType'
 
   #: A list of the annotations that are associated with the field. Some of the data from these
   #: annotations may be extracted into the other properties on the #Field instance already (such
@@ -84,7 +81,7 @@ class Field:
     return Optional(self.get_annotation(fieldinfo)).map(lambda f: f.flat).or_else(False)
 
   @property
-  def datefmt(self) -> t.Optional[datefmt]:
+  def datefmt(self) -> t.Optional['datefmt']:
     """
     Returns the date format that is configured for the field via an annotation.
     """
@@ -92,7 +89,7 @@ class Field:
     return self.get_annotation(datefmt)
 
   @property
-  def precision(self) -> t.Optional[precision]:
+  def precision(self) -> t.Optional['precision']:
     """
     Returns the decimal context that is configured for the field via an annotation.
     """
@@ -129,11 +126,11 @@ class Schema:
     _check_no_colliding_flattened_fields(self)
 
   @property
-  def typeinfo(self) -> t.Optional[typeinfo]:
+  def typeinfo(self) -> t.Optional['typeinfo']:
     return get_annotation(self.annotations, typeinfo, None)
 
   @property
-  def unionclass(self) -> t.Optional[unionclass]:
+  def unionclass(self) -> t.Optional['unionclass']:
     return get_annotation(self.annotations, unionclass, None)
 
   class _FlatField(t.NamedTuple):
@@ -175,3 +172,7 @@ def _check_no_colliding_flattened_fields(schema: Schema) -> None:
 
 class SchemaDefinitionError(Exception):
   pass
+
+
+from databind.core.annotations import get_annotation, alias, datefmt, fieldinfo, precision, typeinfo, unionclass
+from .types import BaseType, MapType, ObjectType

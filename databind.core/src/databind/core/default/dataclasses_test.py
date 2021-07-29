@@ -8,8 +8,7 @@ import pytest
 from databind.core.annotations import alias
 from databind.core.dataclasses import dataclass as ddataclass, field as dfield
 from databind.core.objectmapper import ObjectMapper
-from databind.core.schema import Field, Schema
-from databind.core.types import ConcreteType, ListType, ObjectType, OptionalType, from_typing
+from databind.core.types import Field, Schema, ConcreteType, ListType, ObjectType, OptionalType, from_typing
 from .dataclasses import DataclassAdapter, dataclass_to_schema
 
 
