@@ -139,10 +139,10 @@ class DynamicSubtypes(IUnionSubtypes):
       # Resolve the callable once.
       if isinstance(member, types.FunctionType):
         member = member()
-        if not isinstance(member, BaseType):
-          member = type_converter(member)
-        self._members[name] = member
-      assert isinstance(member, BaseType)
+      if not isinstance(member, BaseType):
+        member = type_converter(member)
+      self._members[name] = member
+      assert isinstance(member, BaseType), (member, type(member))
       return member
 
   def get_type_names(self) -> t.List[str]:
