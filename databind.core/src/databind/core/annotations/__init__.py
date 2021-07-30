@@ -46,7 +46,7 @@ class Annotation:
 
   ANNOTATIONS_ATTRIBUTE_NAME = '__databind_annotations__'
 
-  owner: t.Optional['weakref.ref[t.Type]'] = None
+  owner: t.Optional['weakref.ReferenceType[t.Type]'] = None
 
   def __call__(self, cls: T_Type) -> T_Type:
     """

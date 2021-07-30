@@ -38,7 +38,7 @@ class IUnionSubtypes(abc.ABC):
   This interface describes the subtypes of a union type.
   """
 
-  owner: t.Optional['weakref.ref[UnionType]'] = None
+  owner: t.Optional['weakref.ReferenceType[UnionType]'] = None
 
   @abc.abstractmethod
   def get_type_name(self, type_: 'BaseType', type_converter: 'ITypeHintConverter') -> str:
