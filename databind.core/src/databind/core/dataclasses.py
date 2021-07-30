@@ -22,6 +22,7 @@ __all__ = [
   # dataclasses API
   'dataclass',
   'field',
+  'fields',
   'Field',
   'FrozenInstanceError',
   'InitVar',
