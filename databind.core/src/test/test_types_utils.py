@@ -1,7 +1,7 @@
 
 import typing as t
 
-from .utils import unpack_type_hint, find_generic_bases, populate_type_parameters
+from databind.core.types.utils import unpack_type_hint, find_generic_bases, populate_type_parameters
 
 T = t.TypeVar('T')
 K = t.TypeVar('K')

@@ -2,10 +2,8 @@
 import typing as t
 import typing_extensions as te
 from dataclasses import dataclass
-from databind.core.types import ConcreteType
-from databind.core.types.types import ListType
-from .union import DynamicSubtypes, ImportSubtypes, UnionConverter, UnionType, union
-from . import from_typing, root
+from databind.core.types import ConcreteType, ListType, from_typing, root
+from databind.core.types.union import DynamicSubtypes, ImportSubtypes, UnionConverter, UnionType, union
 
 
 class Foobar: pass

@@ -7,8 +7,7 @@ import pytest
 from databind.core.annotations import alias, fieldinfo
 from databind.core.dataclasses import dataclass as ddataclass, field as dfield
 from databind.core.types import Field, Schema, ConcreteType, ListType, ObjectType, OptionalType, from_typing, root as root_type_converter
-from databind.core.types.schema import SchemaDefinitionError, ObjectType
-from .schema import DataclassConverter, dataclass_to_schema
+from databind.core.types.schema import SchemaDefinitionError, ObjectType, DataclassConverter, dataclass_to_schema
 
 
 def test_schema_flat_fields_check():

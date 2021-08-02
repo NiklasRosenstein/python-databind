@@ -2,7 +2,7 @@
 from datetime import date, time, datetime
 from nr.parsing.date import date_format, time_format, datetime_format
 from nr.parsing.date.format_sets import ISO_8601
-from .datefmt import datefmt
+from databind.core.annotations.datefmt import datefmt
 
 
 def test_datefmt_formatters():

@@ -1,7 +1,7 @@
 
 import enum
 from dataclasses import dataclass
-from .settings import Settings
+from databind.core.mapper.settings import Settings
 
 
 def test_settings():

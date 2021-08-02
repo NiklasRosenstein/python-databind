@@ -3,7 +3,7 @@ import abc
 import typing_extensions as te
 import dataclasses
 from databind.core.annotations import fieldinfo, unionclass
-from . import loads
+from databind.json import loads
 
 
 @dataclasses.dataclass

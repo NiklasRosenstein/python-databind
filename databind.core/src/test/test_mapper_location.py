@@ -1,6 +1,6 @@
 
 import typing as t
-from .location import Format, Location, Position
+from databind.core.mapper.location import Format, Location, Position
 from databind.core.types import from_typing
 
 
