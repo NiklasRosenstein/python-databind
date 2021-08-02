@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from databind.core.annotations import Annotation, get_annotation
 from databind.core.annotations.base import AnnotationsProvider
-from databind.core.types import BaseType, ITypeHintConverter, Field
+from databind.core.types import BaseType, TypeHintConverter, Field
 from .location import Location, Position
 from .settings import Settings
 
@@ -58,7 +58,7 @@ class Context:
   parent: t.Optional['Context']
 
   #: The type adapter used in this context.
-  type_converter: ITypeHintConverter
+  type_converter: TypeHintConverter
 
   #: Provider for de-/serializers.
   converters: ConverterProvider

@@ -15,7 +15,7 @@ from nr.optional import Optional
 from nr.pylang.utils import NotSet
 
 import databind.core.annotations as A
-from .converter import ITypeHintConverter, TypeHintConversionError
+from .converter import TypeHintConverter, TypeHintConversionError
 from .types import BaseType, ConcreteType, MapType
 
 T = t.TypeVar('T')
@@ -215,7 +215,7 @@ from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 
 
-def dataclass_to_schema(dataclass_type: t.Type, type_converter: ITypeHintConverter) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintConverter) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
 
@@ -257,7 +257,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_converter: ITypeHintConvert
   )
 
 
-class DataclassConverter(ITypeHintConverter):
+class DataclassConverter(TypeHintConverter):
   """
   Understands #ConcreteType annotations for #@dataclasses.dataclass decorated classes and converts
   them to an #ObjectType.
@@ -266,7 +266,7 @@ class DataclassConverter(ITypeHintConverter):
   def __init__(self) -> None:
     self._cache: t.Dict[t.Type, Schema] = {}
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'ITypeHintConverter') -> 'BaseType':
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType':
     if isinstance(type_hint, ConcreteType) and is_dataclass(type_hint.type):
       # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
       if type_hint.type in self._cache:

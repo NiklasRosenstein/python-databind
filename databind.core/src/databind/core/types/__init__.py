@@ -1,6 +1,6 @@
 
 from .converter import (
-  ITypeHintConverter,
+  TypeHintConverter,
   DefaultTypeHintConverter,
   ChainTypeHintConverter,
   TypeHintConversionError,
@@ -49,6 +49,6 @@ root = ChainTypeHintConverter(
 )
 
 
-def from_typing(type_hint: t.Any, converter: t.Optional['ITypeHintConverter'] = None) -> BaseType:
+def from_typing(type_hint: t.Any, converter: t.Optional['TypeHintConverter'] = None) -> BaseType:
   converter = converter or root
   return converter.convert_type_hint(type_hint, converter)

@@ -13,25 +13,25 @@ from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
 
 @dataclasses.dataclass
 class TypeHintConversionError(Exception):
-  converter: 'ITypeHintConverter'
+  converter: 'TypeHintConverter'
   message: str
 
 
-class ITypeHintConverter(abc.ABC):
+class TypeHintConverter(abc.ABC):
 
   def __call__(self, type_hint: t.Any) -> 'BaseType':
     return self.convert_type_hint(type_hint, self)
 
   @abc.abstractmethod
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'ITypeHintConverter') -> 'BaseType': ...
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType': ...
 
 
-class DefaultTypeHintConverter(ITypeHintConverter):
+class DefaultTypeHintConverter(TypeHintConverter):
   """
   Converter for all the supported standard #typing type hints.
   """
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'ITypeHintConverter') -> 'BaseType':
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType':
     generic, args = unpack_type_hint(type_hint)
     from_typing = lambda th: recurse.convert_type_hint(th, recurse)
 
@@ -80,20 +80,20 @@ class DefaultTypeHintConverter(ITypeHintConverter):
     raise TypeHintConversionError(self, f'unsupported type hint {type_hint!r}')
 
 
-class ChainTypeHintConverter(ITypeHintConverter):
+class ChainTypeHintConverter(TypeHintConverter):
   """
   Delegates to a chain of #ITypeHintConverter#s. Each converter can have a priority. Converters
   passed to the construct will have priority 0 and a higher priority indicates that the converter
   will be used checked first.
   """
 
-  def __init__(self, *converters: ITypeHintConverter) -> None:
-    self._priorities: t.Dict[int, t.List[ITypeHintConverter]] = collections.defaultdict(list)
+  def __init__(self, *converters: TypeHintConverter) -> None:
+    self._priorities: t.Dict[int, t.List[TypeHintConverter]] = collections.defaultdict(list)
     self._priorities[0] = list(converters)
-    self._ordered: t.List[t.Tuple[int, t.List[ITypeHintConverter]]] = list(self._priorities.items())
+    self._ordered: t.List[t.Tuple[int, t.List[TypeHintConverter]]] = list(self._priorities.items())
     self._ordered.sort()
 
-  def register(self, converter: ITypeHintConverter, priority: int = 0) -> None:
+  def register(self, converter: TypeHintConverter, priority: int = 0) -> None:
     """
     Register a new converter. The default priority is 0. Within the same priority group, a converter
     will always be appended at the end of the list such that it will be checked last in the priority
@@ -106,7 +106,7 @@ class ChainTypeHintConverter(ITypeHintConverter):
       item = (priority, self._priorities[priority])
       self._ordered.insert(bisect.bisect(self._ordered, item), item)
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'ITypeHintConverter') -> 'BaseType':
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType':
     errors = []
     for _priority_group, converters in self._ordered:
       for converter in converters:
