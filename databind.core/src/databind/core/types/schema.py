@@ -14,6 +14,7 @@ import nr.preconditions as preconditions
 from nr.optional import Optional
 from nr.pylang.utils import NotSet
 
+import databind.core.annotations as A
 from .converter import ITypeHintConverter, TypeHintConversionError
 from .types import BaseType, ConcreteType, MapType
 
@@ -275,6 +276,3 @@ class DataclassConverter(ITypeHintConverter):
       vars(schema).update(vars(dataclass_to_schema(type_hint.type, recurse)))
       return ObjectType(schema, type_hint.annotations)
     raise TypeHintConversionError(self, str(type_hint))
-
-
-import databind.core.annotations as A
