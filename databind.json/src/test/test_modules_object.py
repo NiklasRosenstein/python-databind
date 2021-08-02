@@ -88,3 +88,17 @@ def test_deserialize_dataclass_field_as():
 
   assert mapper.deserialize({'one': {}}, Three) == Three(Two())
   assert mapper.serialize(Three(Two()), Three) == {'one': {}}
+
+
+@pytest.mark.skip("https://github.com/NiklasRosenstein/databind/issues/7")
+def test_map_remainders():
+
+  @dataclasses.dataclass
+  class Config:
+    port: int
+    rest: te.Annotated[t.Dict[str, t.Union[str, int]], A.fieldinfo(flat=True)]
+
+  payload = {'port': 42, 'foo': 'bar', 'spam': 0}
+  cfg = mapper.deserialize(payload, Config)
+  assert cfg == Config(42, {'foo': 'bar', 'spam': 0})
+  assert mapper.serialize(cfg, Config) == payload
