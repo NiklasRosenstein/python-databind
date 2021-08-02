@@ -6,15 +6,21 @@ import importlib
 import pkg_resources
 import types
 import typing as t
+import typing_extensions as te
 import weakref
 
+import nr.preconditions as preconditions
 from nr.stream import Stream
 from nr.pylang.utils.funcdef import except_format
 
-from .converter import ITypeHintConverter
+from databind.core.annotations.base import Annotation, get_annotation
+from databind.core.annotations.typeinfo import typeinfo
+from .converter import ITypeHintConverter, TypeHintConversionError
 from .schema import ObjectType
 from .types import BaseType, ConcreteType
 from .utils import type_repr
+
+T_Type = t.TypeVar('T_Type', bound=t.Type)
 
 
 @dataclasses.dataclass
@@ -30,7 +36,7 @@ class UnionTypeError(Exception):
       return f'type `{typ}` is not a member of union `{owner.name if owner else "unknown"}`'
     else:
       owner_name = owner.python_type.__name__ if isinstance(owner.python_type, type) else str(owner.python_type)
-      return f'type `{typ}` is not a member of @unionclass `{owner_name}`'
+      return f'type `{typ}` is not a member of @union `{owner_name}`'
 
 
 class IUnionSubtypes(abc.ABC):
@@ -275,3 +281,165 @@ class UnionType(BaseType):
 
   def visit(self, func: t.Callable[['BaseType'], 'BaseType']) -> 'BaseType':
     return func(self)
+
+
+class _Subtypes:
+  dynamic: te.Final = DynamicSubtypes
+  entrypoint: te.Final = EntrypointSubtypes
+  chain: te.Final = ChainSubtypes
+  import_: te.Final = ImportSubtypes
+
+
+@dataclasses.dataclass
+class union(Annotation):
+  """
+  Used to annotate that a class describes a union.
+
+  Note that if the decorated class provides properties that should be inherited by the child
+  dataclasses, you need to also decorate the class as a `@dataclass`. In the natural scenario,
+  a union class in itself is not constructible. If you wish to be able to create instances of
+  the decorated class, set the `constructible` parameter to `True`.  If the parameter is not
+  specified or set to `False`, the decorated classes' constructor will be replaced with
+  #no_construct.
+
+  Examples:
+
+  ```py
+  import abc
+  import dataclasses
+  from databind.core.annotations import union
+
+  @union()
+  @dataclasses.dataclass
+  class Person:
+    name: str
+
+  @union.subtype(Person)
+  @dataclasses.dataclass
+  class Student(Person):
+      courses: t.Set[str]
+
+  @union(subtypes = union.Subtypes.entrypoint('my.entrypoint'))
+  class IPlugin(abc.ABC):
+    pass # ...
+  ```
+  """
+
+  Subtypes = _Subtypes
+  Style = UnionStyle
+
+  subtypes: IUnionSubtypes
+  style: t.Optional[UnionStyle]
+  discriminator_key: t.Optional[str]
+  constructible: bool
+  name: t.Optional[str]
+  decorated_type: t.Optional[t.Type]
+
+  def __init__(self,
+    subtypes: t.Union[IUnionSubtypes, t.Sequence[t.Type], t.Mapping[str, t.Type]] = None,
+    *,
+    style: t.Optional[UnionStyle] = None,
+    discriminator_key: t.Optional[str] = None,
+    constructible: bool = False,
+    name: str = None,
+  ) -> None:
+
+    self.subtypes = DynamicSubtypes()
+    if isinstance(subtypes, IUnionSubtypes):
+      self.subtypes = subtypes
+    elif isinstance(subtypes, t.Sequence):
+      for typ in subtypes:
+        self.subtypes.add_type(typeinfo.get_name(typ), typ)
+    elif isinstance(subtypes, t.Mapping):
+      for key, typ in subtypes.items():
+        self.subtypes.add_type(key, typ)
+    elif subtypes is not None:
+      raise TypeError(f'bad subtypes argument: {subtypes!r}')
+
+    self.style = style
+    self.discriminator_key = discriminator_key
+    self.constructible = constructible
+    self.name = name
+    self.decorated_type = None
+
+  @staticmethod
+  def subtype(extends: t.Type, name: str = None) -> t.Callable[[T_Type], T_Type]:
+    """
+    Decorator for subtypes of the #@union-decorated type *extends*. The *extends* class must
+    use #union.Subtypes.Dynamic. If a *name* is specified, the class will also be decorated
+    with the #typeinfo annotation.
+
+    The decorated class _must_ be a subclass of the *extends* class, otherwise a #TypeError is
+    raised.
+
+    Example:
+
+    ```py
+    @dataclass
+    @union.subtype(Person)
+    class Student(Person):
+      courses: t.Set[str]
+    ```
+    """
+
+    preconditions.check_instance_of(extends, type)
+    inst = preconditions.check_not_none(get_annotation(extends, union, None),
+      lambda: f'{extends.__name__} is not annotated with @union')
+    subtypes = preconditions.check_instance_of(inst.subtypes, DynamicSubtypes,
+      lambda: f'{extends.__name__} is not using union.Subtypes.Dynamic')
+    def decorator(subtype: T_Type) -> T_Type:
+      preconditions.check_subclass_of(subtype, extends)
+      if name is not None:
+        subtype = typeinfo(name)(subtype)
+      subtypes.add_type(typeinfo.get_name(subtype), subtype)
+      return subtype
+    return decorator
+
+  @staticmethod
+  def no_construct(self: t.Any) -> None:
+    """
+    This class is not constructible. Use any of it's subtypes.
+    """
+
+    raise TypeError(f'@union {type(self).__name__} is not constructible')
+
+  # Annotation
+
+  def __call__(self, cls: T_Type) -> T_Type:
+    if not self.constructible:
+      cls.__init__ = union.no_construct
+    self.decorated_type = None
+    return super().__call__(cls)
+
+
+class UnionConverter(ITypeHintConverter):
+  """
+  Adapter for classes decorated with #@union().
+  """
+
+  def convert_type_hint(self, type_hint: t.Any, recurse: ITypeHintConverter) -> BaseType:
+    if not isinstance(type_hint, BaseType):
+      raise TypeHintConversionError(self, str(type_hint))
+    if isinstance(type_hint, ConcreteType):
+      union_ann = get_annotation(type_hint.type, union, None)
+    elif isinstance(type_hint, ObjectType) and type_hint.schema.union:
+      union_ann = type_hint.schema.union
+    else:
+      union_ann = get_annotation(type_hint.annotations, union, None)
+    if union_ann:
+      if union_ann.subtypes.owner:
+        result_type = union_ann.subtypes.owner()
+        if result_type:
+          return result_type
+      result_type = UnionType(
+        union_ann.subtypes,
+        union_ann.style,
+        union_ann.discriminator_key,
+        union_ann.name,
+        type_hint.to_typing())
+      result_type.subtypes.owner = weakref.ref(result_type)
+      return result_type
+    return type_hint
+
+
+unionclass = union  # Backwards compatibility <=1.0.1

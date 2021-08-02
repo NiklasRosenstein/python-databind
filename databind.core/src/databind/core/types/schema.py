@@ -137,8 +137,8 @@ class Schema:
     return A.get_annotation(self.annotations, A.typeinfo, None)
 
   @property
-  def unionclass(self) -> t.Optional['A.unionclass']:
-    return A.get_annotation(self.annotations, A.unionclass, None)
+  def union(self) -> t.Optional['A.union']:
+    return A.get_annotation(self.annotations, A.union, None)
 
   class _FlatField(t.NamedTuple):
     group: str

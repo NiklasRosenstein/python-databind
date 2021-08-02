@@ -34,10 +34,12 @@ from .union import (
   UnionTypeError,
   UnionStyle,
   UnionType,
+  union,
+  unionclass,
+  UnionConverter,
 )
 
 import typing as t
-from databind.core.annotations.unionclass import UnionConverter
 
 #: The global type hint converter.
 root = ChainTypeHintConverter(
