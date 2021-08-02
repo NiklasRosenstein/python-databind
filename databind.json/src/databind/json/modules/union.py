@@ -1,11 +1,11 @@
 
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, ConversionError, Direction, IConverter
-from databind.core.types import BaseType, UnionType, from_typing
+from databind.core.mapper import Context, ConversionError, Direction, Converter
+from databind.core.types import BaseType, UnionType
 
 
-class UnionConverter(IConverter):
+class UnionConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, UnionType)
@@ -21,14 +21,14 @@ class UnionConverter(IConverter):
       if discriminator_key not in ctx.value:
         raise ConversionError(f'missing discriminator key {discriminator_key!r}', ctx.location)
       member_name = ctx.value[discriminator_key]
-      member_type = ctx.type.subtypes.get_type_by_name(member_name)
+      member_type = ctx.type.subtypes.get_type_by_name(member_name, ctx.type_converter)
       assert isinstance(member_type, BaseType), f'"{type(ctx.type.subtypes).__name__}" returned member_type must '\
           f'be BaseType, got "{type(member_type).__name__}"'
     else:
-      member_type = from_typing(type(ctx.value))
-      member_name = ctx.type.subtypes.get_type_name(member_type)
+      member_type = ctx.type_converter.adapt_type_hint(type(ctx.value))
+      member_name = ctx.type.subtypes.get_type_name(member_type, ctx.type_converter)
 
-    type_hint = ctx.mapper.adapt_type_hint(member_type)
+    type_hint = member_type
 
     if is_deserialize:
       if style == A.unionclass.Style.nested:

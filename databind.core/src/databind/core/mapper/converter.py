@@ -1,15 +1,14 @@
 
 import abc
-import copy
 import enum
 import typing as t
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from databind.core.schema import Field
-from databind.core.settings import Settings
-from .annotations import Annotation, get_annotation
+from databind.core.annotations import Annotation, get_annotation
+from databind.core.annotations.base import AnnotationsProvider
+from databind.core.types import BaseType, TypeHintAdapter, Field
 from .location import Location, Position
-from .types import BaseType
+from .settings import Settings
 
 T = t.TypeVar('T', bound=Annotation)
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
@@ -27,7 +26,7 @@ class Direction(enum.Enum):
   serialize = enum.auto()
 
 
-class IConverter(metaclass=abc.ABCMeta):
+class Converter(metaclass=abc.ABCMeta):
   """
   Interface for deserializers and serializers.
   """
@@ -36,68 +35,15 @@ class IConverter(metaclass=abc.ABCMeta):
   def convert(self, ctx: 'Context') -> t.Any: ...
 
 
-class IConverterProvider(metaclass=abc.ABCMeta):
+class ConverterProvider(metaclass=abc.ABCMeta):
   """
   Provider for an #IConverter for a #TypeHint.
   """
 
   @abc.abstractmethod
-  def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter: ...
+  def get_converter(self, type_: BaseType, direction: 'Direction') -> Converter: ...
 
   Wrapper: t.Type['_ConverterProviderWrapper']
-
-
-class IAnnotationsProvider(metaclass=abc.ABCMeta):
-  """
-  Interface to provide annotations for a given type or field in a type.
-  """
-
-  @abc.abstractmethod
-  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
-    ...
-
-  @abc.abstractmethod
-  def get_type_annotation(self,
-      type: t.Type,
-      annotation_cls: t.Type[T_Annotation]
-  ) -> t.Optional[T_Annotation]:
-    ...
-
-  @abc.abstractmethod
-  def get_field_annotation(self,
-      type: t.Type,
-      field_name: str,
-      annotation_cls: t.Type[T_Annotation]
-  ) -> t.Optional[T_Annotation]:
-    ...
-
-
-class ITypeHintAdapter(metaclass=abc.ABCMeta):
-  """
-  The #ITypeAdapter has a chance to alter a #TypeHint before it is used to look up an #IConverter
-  via an #IConverterProvider. The operation must be idempotent.
-  """
-
-  @abc.abstractmethod
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional['ITypeHintAdapter'] = None) -> BaseType: ...
-
-  Noop: t.ClassVar[t.Type['ITypeHintAdapter']]
-
-
-class _NoopTypeHintAdapterAdapter(ITypeHintAdapter):
-
-  def adapt_type_hint(self, type_: BaseType, adapter: t.Optional[ITypeHintAdapter] = None) -> BaseType:
-    return type_
-
-
-ITypeHintAdapter.Noop = _NoopTypeHintAdapterAdapter
-
-
-class IObjectMapper(IAnnotationsProvider, IConverterProvider, ITypeHintAdapter):
-  """
-  An object mapper is a combination of various interfaces that are required during the
-  de/serialization process.
-  """
 
 
 @dataclass
@@ -111,8 +57,14 @@ class Context:
   #: Reference to the parent #Value object.
   parent: t.Optional['Context']
 
-  #: The object mapper that is used to convert the value.
-  mapper: IObjectMapper
+  #: The type adapter used in this context.
+  type_converter: TypeHintAdapter
+
+  #: Provider for de-/serializers.
+  converters: ConverterProvider
+
+  #: Provider of annotations.
+  annotations: AnnotationsProvider
 
   #: Settings for this conversion context (in addition to the mapper settings).
   settings: Settings
@@ -149,16 +101,16 @@ class Context:
     position: t.Optional[Position] = None
   ) -> 'Context':
     location = self.location.push(type_, key, filename, position)
-    return Context(self, self.mapper, self.settings, self.direction, value,
+    return Context(self, self.type_converter, self.converters, self.annotations, self.settings, self.direction, value,
       location, field or Field(str(key or '$'), type_, []))
 
   def convert(self) -> t.Any:
-    return self.mapper.get_converter(self.location.type, self.direction).convert(self)
+    return self.converters.get_converter(self.location.type, self.direction).convert(self)
 
   def get_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
     return self.field.get_annotation(annotation_cls) or \
       get_annotation(self.location.type.annotations, annotation_cls, None) or \
-      self.mapper.get_global_annotation(annotation_cls)
+      self.annotations.get_global_annotation(annotation_cls)
 
   def error(self, message: str) -> 'ConversionError':
     return ConversionError(message, self.location)
@@ -188,16 +140,16 @@ class ConversionError(Exception):
     return f'{self.location}: {self.message}'
 
 
-class _ConverterProviderWrapper(IConverterProvider):
+class _ConverterProviderWrapper(ConverterProvider):
 
-  def __init__(self, func: t.Callable[[BaseType], IConverter]) -> None:
+  def __init__(self, func: t.Callable[[BaseType], Converter]) -> None:
     self._func = func
 
-  def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter:
+  def get_converter(self, type_: BaseType, direction: 'Direction') -> Converter:
     return self._func(type_, direction)  # type: ignore
 
 
-IConverterProvider.Wrapper = _ConverterProviderWrapper
+ConverterProvider.Wrapper = _ConverterProviderWrapper
 
 
 def _trunc(s: str, l: int) -> str:

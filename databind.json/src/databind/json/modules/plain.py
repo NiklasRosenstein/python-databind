@@ -6,7 +6,7 @@ Provides the #PlainDatatypeModule which contains converters for plain datatypes.
 
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, Direction, IConverter, Context
+from databind.core.mapper import Context, Direction, Converter, Context
 from databind.core.types import ConcreteType
 from nr import preconditions
 
@@ -26,7 +26,7 @@ def _bool_from_str(s: str) -> bool:
   raise ValueError(f'not a truthy keyword: {s!r}')
 
 
-class PlainJsonConverter(IConverter):
+class PlainJsonConverter(Converter):
   """
   Converter for the following plain types:
 

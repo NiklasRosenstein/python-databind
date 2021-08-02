@@ -4,3 +4,10 @@ changes:
   component: general
   description: remove AnnotatedType and instead add BaseType.annotations
   fixes: []
+- type: breaking_change
+  component: general
+  description: Reorganize a lot of internal APIs and some public APIs (e.g. renamed
+    `ITypeHintConverter` to `TypeHintAdapter`, `IConverter` to `Converter` + respective
+    module name changes, deprecated `ObjectMapper.default()`, remove `IObjectMapper`
+    and replace `Context.mapper` with `Context.converters` and `Context.annotations`.
+  fixes: []

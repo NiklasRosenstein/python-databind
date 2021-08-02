@@ -1,12 +1,11 @@
 
 import typing as t
 import pytest
-from databind.core.api import ConversionError
-from databind.core.objectmapper import ObjectMapper
-from databind.core.types import from_typing
+from databind.core.mapper import ConversionError
+from databind.core.mapper import ObjectMapper
 from databind.json import JsonModule
 
-mapper = ObjectMapper.default(JsonModule())
+mapper = ObjectMapper(JsonModule())
 
 
 def test_collection_mapper():

@@ -1,10 +1,10 @@
 
 import typing as t
-from databind.core.api import Context, Direction, IConverter
-from databind.core.types import CollectionType
+from databind.core.mapper import Context, Direction, Converter
+from databind.core.types.types import CollectionType
 
 
-class CollectionConverter(IConverter):
+class CollectionConverter(Converter):
 
   def __init__(self, json_type: t.Type[t.Collection] = list) -> None:
     self.json_type = json_type

@@ -10,7 +10,7 @@ The date is parsed using the #nr.parsing.date module.
 import datetime
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, Direction, IConverter, Context
+from databind.core.mapper import Context, Direction, Converter, Context
 from databind.core.types import ConcreteType
 from nr import preconditions
 from nr.parsing.date import ISO_8601, duration
@@ -18,7 +18,7 @@ from nr.parsing.date import ISO_8601, duration
 T_DateTypes = t.TypeVar('T_DateTypes', bound=t.Union[datetime.date, datetime.time, datetime.datetime])
 
 
-class DatetimeJsonConverter(IConverter):
+class DatetimeJsonConverter(Converter):
 
   DEFAULT_DATE_FMT = A.datefmt(ISO_8601)
   DEFAULT_TIME_FMT = A.datefmt(ISO_8601)
@@ -46,7 +46,7 @@ class DatetimeJsonConverter(IConverter):
       return datefmt.format(ctx.value)
 
 
-class DurationConverter(IConverter):
+class DurationConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ConcreteType)

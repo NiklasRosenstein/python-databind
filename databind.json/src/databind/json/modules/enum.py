@@ -1,11 +1,11 @@
 
 import enum
 import typing as t
-from databind.core.api import Context, ConversionError, ConverterNotFound, Direction, IConverter, IConverterProvider
+from databind.core.mapper import Context, ConversionError, ConverterNotFound, Direction, Converter, ConverterProvider
 from databind.core.types import BaseType, ConcreteType
 
 
-class EnumConverter(IConverter, IConverterProvider):
+class EnumConverter(Converter, ConverterProvider):
   """
   Converter for enum values.
 
@@ -13,7 +13,7 @@ class EnumConverter(IConverter, IConverterProvider):
   * #enum.Enum subclasses are serialized to strings (from the enum value name).
   """
 
-  def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
+  def get_converter(self, type_: BaseType, direction: Direction) -> Converter:
     if isinstance(type_, ConcreteType) and issubclass(type_.type, enum.Enum):
       return self
     raise ConverterNotFound(type_, direction)

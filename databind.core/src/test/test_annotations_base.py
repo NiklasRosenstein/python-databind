@@ -1,6 +1,6 @@
 
-from . import Annotation, get_annotation
 from dataclasses import dataclass
+from databind.core.annotations.base import Annotation, get_annotation
 
 
 def test_get_annotation():

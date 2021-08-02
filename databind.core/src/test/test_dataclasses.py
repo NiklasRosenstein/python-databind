@@ -1,7 +1,7 @@
 
 import pytest
-import dataclasses
-from .dataclasses import *
+from dataclasses import dataclass as orig_dataclass
+from databind.core.dataclasses import dataclass, field, fields
 
 
 def test_non_default_argument_after_default():
@@ -36,7 +36,7 @@ def test_dataclass_non_default_arguments_subclass():
   B('a', 'b', 'c')
 
   with pytest.raises(TypeError) as excinfo:
-    @dataclasses.dataclass
+    @orig_dataclass
     class C(A):
       c: str
   assert str(excinfo.value) == "non-default argument 'c' follows default argument"

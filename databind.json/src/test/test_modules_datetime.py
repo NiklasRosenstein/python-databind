@@ -1,12 +1,15 @@
 
 import typing_extensions as te
 from datetime import date, datetime, time, timezone
-from databind.core.annotations.datefmt import datefmt
-from databind.core.objectmapper import ObjectMapper
-from databind.json import JsonModule
+
+import pytest
 from nr.parsing.date.duration import duration
 
-mapper = ObjectMapper.default(JsonModule())
+from databind.core.annotations.datefmt import datefmt
+from databind.core.mapper import ObjectMapper
+from databind.json import JsonModule
+
+mapper = ObjectMapper(JsonModule())
 
 
 def test_datetime():

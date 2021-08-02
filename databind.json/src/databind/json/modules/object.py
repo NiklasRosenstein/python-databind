@@ -6,11 +6,11 @@ schemas (see #databind.core.schema).
 
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, ConversionError, Direction, IConverter, Context
+from databind.core.mapper import Context, ConversionError, Direction, Converter, Context
 from databind.core.types import ObjectType
 
 
-class ObjectTypeConverter(IConverter):
+class ObjectTypeConverter(Converter):
 
   def _serialize(self, ctx: Context, type_: ObjectType) -> t.Dict[str, t.Any]:
     skip_default_values = True

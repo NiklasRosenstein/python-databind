@@ -2,7 +2,7 @@
 import logging
 import traceback
 import typing as t
-from databind.core.api import Context, ConversionError, IConverter
+from databind.core.mapper import Context, ConversionError, Converter
 from databind.core.types import ImplicitUnionType
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def _indent_exc(exc: str) -> str:
   return '\n'.join(lines)
 
 
-class ImplicitUnionConverter(IConverter):
+class ImplicitUnionConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ImplicitUnionType)
