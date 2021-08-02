@@ -1,8 +1,11 @@
 name: databind.core
 version: 1.0.1
-description: |
-  Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses.
+description: 'Databind is a library inspired by jackson-databind to de-/serialize
+  Python dataclasses.
+
   Compatible with Python 3.7 and newer.
+
+  '
 typed: true
 requirements:
 - python ^3.7
@@ -11,12 +14,13 @@ requirements:
 - nr.parsing.date ^1.0.1
 - nr.preconditions ^0.0.4
 - nr.stream ^0.1.1
+- Deprecated ^1.2.12
+test-requirements:
+- pytest
 dev-requirements:
 - mypy
 - types-dataclasses
 - types-deprecated
 - types-pkg_resources
-test-requirements:
-- pytest
 test-driver:
   type: pytest
