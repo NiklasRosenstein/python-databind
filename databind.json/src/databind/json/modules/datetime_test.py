@@ -5,7 +5,7 @@ import pytest
 from nr.parsing.date.duration import duration
 
 from databind.core.annotations.datefmt import datefmt
-from databind.core.objectmapper import ObjectMapper
+from databind.core.mapper import ObjectMapper
 from databind.json import JsonModule
 
 mapper = ObjectMapper.default(JsonModule())

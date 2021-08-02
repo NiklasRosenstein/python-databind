@@ -2,10 +2,10 @@
 import dataclasses
 import typing as t
 
-from databind.core.location import Location
+from databind.core.mapper.location import Location
 
 if t.TYPE_CHECKING:
-  from databind.core.api import Context
+  from databind.core.mapper import Context
 
 
 @dataclasses.dataclass

@@ -6,7 +6,7 @@ Provides the #DecimalModule for decimal value de/serialization.
 import decimal
 import typing as t
 from databind.core import annotations as A
-from databind.core.api import Context, Direction, IConverter, Context
+from databind.core.mapper import Context, Direction, IConverter, Context
 from databind.core.types import ConcreteType
 from nr import preconditions
 from nr.optional import Optional

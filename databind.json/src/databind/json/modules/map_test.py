@@ -1,6 +1,6 @@
 
 import typing as t
-from databind.core.objectmapper import ObjectMapper
+from databind.core.mapper import ObjectMapper
 from databind.core.types import from_typing
 from databind.json import JsonModule
 

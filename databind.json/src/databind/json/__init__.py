@@ -10,7 +10,7 @@ import typing as t
 
 from nr.parsing.date import duration
 
-from databind.core.objectmapper import ObjectMapper, SimpleModule
+from databind.core.mapper import ObjectMapper, SimpleModule
 from databind.core.types import ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
 from .modules.any import AnyConverter
 from .modules.collection import CollectionConverter

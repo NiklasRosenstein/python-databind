@@ -1,7 +1,7 @@
 
 import typing as t
 from .location import Format, Location, Position
-from .types import from_typing
+from databind.core.types import from_typing
 
 
 def test_location_str():

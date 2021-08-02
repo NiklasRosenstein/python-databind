@@ -5,7 +5,7 @@ import typing as t
 import typing_extensions as te
 from databind.core.annotations import unionclass
 from databind.core.annotations.typeinfo import typeinfo
-from databind.core.objectmapper import ObjectMapper
+from databind.core.mapper import ObjectMapper
 from databind.core.types import from_typing
 from databind.json import JsonModule, new_mapper
 

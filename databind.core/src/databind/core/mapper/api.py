@@ -4,11 +4,10 @@ import enum
 import typing as t
 from dataclasses import dataclass
 
-from databind.core.types import Field
-from databind.core.settings import Settings
-from .annotations import Annotation, get_annotation
+from databind.core.annotations import Annotation, get_annotation
+from databind.core.types import BaseType, ITypeHintConverter, Field
 from .location import Location, Position
-from .types import BaseType, ITypeHintConverter
+from .settings import Settings
 
 T = t.TypeVar('T', bound=Annotation)
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)

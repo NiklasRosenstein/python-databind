@@ -2,7 +2,7 @@
 import enum
 import typing as t
 from dataclasses import dataclass
-from .types import BaseType, UnknownType
+from databind.core.types import BaseType, UnknownType
 
 
 def _get_location_chain(location: 'Location') -> t.List['Location']:
