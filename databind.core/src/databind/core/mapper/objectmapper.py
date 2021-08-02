@@ -6,7 +6,7 @@ import deprecated
 import nr.preconditions as preconditions
 
 from databind.core.annotations import Annotation
-from databind.core.types import BaseType, Field, from_typing, TypeHintConverter, root as root_type_converter
+from databind.core.types import BaseType, Field, from_typing, TypeHintAdapter, root as root_type_converter
 from .converter import Context, Direction, Context
 from .module import Module, SimpleModule
 from .location import Location, Position
@@ -45,7 +45,7 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     key: t.Union[str, int, None] = None,
     annotations: t.Optional[t.List[t.Any]] = None,
     settings: t.Optional[t.List[t.Any]] = None,
-    type_converter: t.Optional[TypeHintConverter] = None,
+    type_converter: t.Optional[TypeHintAdapter] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
     type_converter = type_converter or root_type_converter
@@ -64,7 +64,7 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     key: t.Union[str, int] = None,
     annotations: t.List[t.Any] = None,
     settings: t.Optional[t.List[t.Any]] = None,
-    type_converter: t.Optional[TypeHintConverter] = None,
+    type_converter: t.Optional[TypeHintAdapter] = None,
   ) -> T:
     return self.convert(Direction.deserialize, value, type_hint, filename, pos, key, annotations, settings, type_converter)
 
@@ -76,6 +76,6 @@ class ObjectMapper(SimpleModule, AnnotationsRegistry):
     key: t.Union[str, int] = None,
     annotations: t.List[t.Any] = None,
     settings: t.Optional[t.List[t.Any]] = None,
-    type_converter: t.Optional[TypeHintConverter] = None,
+    type_converter: t.Optional[TypeHintAdapter] = None,
   ) -> t.Any:
     return self.convert(Direction.serialize, value, type_hint, filename, pos, key, annotations, settings, type_converter)

@@ -15,7 +15,7 @@ from nr.optional import Optional
 from nr.pylang.utils import NotSet
 
 import databind.core.annotations as A
-from .converter import TypeHintConverter, TypeHintConversionError
+from .adapter import TypeHintAdapter, TypeHintAdapterError
 from .types import BaseType, ConcreteType, MapType
 
 T = t.TypeVar('T')
@@ -215,7 +215,7 @@ from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 
 
-def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintConverter) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintAdapter) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
 
@@ -257,7 +257,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintConverte
   )
 
 
-class DataclassConverter(TypeHintConverter):
+class DataclassConverter(TypeHintAdapter):
   """
   Understands #ConcreteType annotations for #@dataclasses.dataclass decorated classes and converts
   them to an #ObjectType.
@@ -266,7 +266,7 @@ class DataclassConverter(TypeHintConverter):
   def __init__(self) -> None:
     self._cache: t.Dict[t.Type, Schema] = {}
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType':
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
     if isinstance(type_hint, ConcreteType) and is_dataclass(type_hint.type):
       # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
       if type_hint.type in self._cache:
@@ -275,4 +275,4 @@ class DataclassConverter(TypeHintConverter):
       self._cache[type_hint.type] = schema
       vars(schema).update(vars(dataclass_to_schema(type_hint.type, recurse)))
       return ObjectType(schema, type_hint.annotations)
-    raise TypeHintConversionError(self, str(type_hint))
+    raise TypeHintAdapterError(self, str(type_hint))

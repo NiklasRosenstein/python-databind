@@ -12,26 +12,26 @@ from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
 
 
 @dataclasses.dataclass
-class TypeHintConversionError(Exception):
-  converter: 'TypeHintConverter'
+class TypeHintAdapterError(Exception):
+  converter: 'TypeHintAdapter'
   message: str
 
 
-class TypeHintConverter(abc.ABC):
+class TypeHintAdapter(abc.ABC):
 
   def __call__(self, type_hint: t.Any) -> 'BaseType':
     return self.convert_type_hint(type_hint, self)
 
   @abc.abstractmethod
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType': ...
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType': ...
 
 
-class DefaultTypeHintConverter(TypeHintConverter):
+class DefaultTypeHintAdapter(TypeHintAdapter):
   """
   Converter for all the supported standard #typing type hints.
   """
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType':
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
     generic, args = unpack_type_hint(type_hint)
     from_typing = lambda th: recurse.convert_type_hint(th, recurse)
 
@@ -77,23 +77,23 @@ class DefaultTypeHintConverter(TypeHintConverter):
     if isinstance(type_hint, type):
       return ConcreteType(type_hint)
 
-    raise TypeHintConversionError(self, f'unsupported type hint {type_hint!r}')
+    raise TypeHintAdapterError(self, f'unsupported type hint {type_hint!r}')
 
 
-class ChainTypeHintConverter(TypeHintConverter):
+class ChainTypeHintAdapter(TypeHintAdapter):
   """
-  Delegates to a chain of #ITypeHintConverter#s. Each converter can have a priority. Converters
+  Delegates to a chain of #TypeHintAdapter#s. Each converter can have a priority. Converters
   passed to the construct will have priority 0 and a higher priority indicates that the converter
   will be used checked first.
   """
 
-  def __init__(self, *converters: TypeHintConverter) -> None:
-    self._priorities: t.Dict[int, t.List[TypeHintConverter]] = collections.defaultdict(list)
+  def __init__(self, *converters: TypeHintAdapter) -> None:
+    self._priorities: t.Dict[int, t.List[TypeHintAdapter]] = collections.defaultdict(list)
     self._priorities[0] = list(converters)
-    self._ordered: t.List[t.Tuple[int, t.List[TypeHintConverter]]] = list(self._priorities.items())
+    self._ordered: t.List[t.Tuple[int, t.List[TypeHintAdapter]]] = list(self._priorities.items())
     self._ordered.sort()
 
-  def register(self, converter: TypeHintConverter, priority: int = 0) -> None:
+  def register(self, converter: TypeHintAdapter, priority: int = 0) -> None:
     """
     Register a new converter. The default priority is 0. Within the same priority group, a converter
     will always be appended at the end of the list such that it will be checked last in the priority
@@ -106,21 +106,21 @@ class ChainTypeHintConverter(TypeHintConverter):
       item = (priority, self._priorities[priority])
       self._ordered.insert(bisect.bisect(self._ordered, item), item)
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintConverter') -> 'BaseType':
+  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
     errors = []
     for _priority_group, converters in self._ordered:
       for converter in converters:
         try:
           type_hint = converter.convert_type_hint(type_hint, recurse)
-        except TypeHintConversionError as exc:
+        except TypeHintAdapterError as exc:
           errors.append(exc)
     if isinstance(type_hint, BaseType):
       return type_hint
     if not errors:
-      raise TypeHintConversionError(self, 'no converters registered')
+      raise TypeHintAdapterError(self, 'no converters registered')
     summary = '\n'.join(f'{str(exc.converter)}: {exc.message}' for exc in errors)
     summary = textwrap.indent(summary, '  ')
-    raise TypeHintConversionError(self, 'no available converter matched\n' + summary)
+    raise TypeHintAdapterError(self, 'no available converter matched\n' + summary)
 
 
 

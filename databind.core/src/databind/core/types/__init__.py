@@ -1,9 +1,9 @@
 
-from .converter import (
-  TypeHintConverter,
-  DefaultTypeHintConverter,
-  ChainTypeHintConverter,
-  TypeHintConversionError,
+from .adapter import (
+  TypeHintAdapterError,
+  TypeHintAdapter,
+  DefaultTypeHintAdapter,
+  ChainTypeHintAdapter,
 )
 
 from .types import (
@@ -42,13 +42,13 @@ from .union import (
 import typing as t
 
 #: The global type hint converter.
-root = ChainTypeHintConverter(
-  DefaultTypeHintConverter(),
+root = ChainTypeHintAdapter(
+  DefaultTypeHintAdapter(),
   UnionConverter(),
   DataclassConverter()
 )
 
 
-def from_typing(type_hint: t.Any, converter: t.Optional['TypeHintConverter'] = None) -> BaseType:
+def from_typing(type_hint: t.Any, converter: t.Optional['TypeHintAdapter'] = None) -> BaseType:
   converter = converter or root
   return converter.convert_type_hint(type_hint, converter)
