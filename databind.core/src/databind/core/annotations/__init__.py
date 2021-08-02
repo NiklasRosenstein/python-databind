@@ -9,7 +9,7 @@ of the following ways:
 * associate the annotation with a type or field in the #databind.core.ObjectMapper
 """
 
-from .base import Annotation, get_annotation, get_type_annotations
+from .base import Annotation, get_annotation, get_type_annotations, AnnotationsProvider, AnnotationsRegistry, DefaultAnnotationsProvider
 from .alias import alias
 from .datefmt import datefmt
 from .enable_unknowns import enable_unknowns, collect_unknowns
@@ -22,6 +22,9 @@ __all__ = [
   'Annotation',
   'get_annotation',
   'get_type_annotations',
+  'AnnotationsProvider',
+  'AnnotationsRegistry',
+  'DefaultAnnotationsProvider',
   'alias',
   'datefmt',
   'enable_unknowns',

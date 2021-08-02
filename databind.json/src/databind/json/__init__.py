@@ -59,7 +59,7 @@ class JsonModule(SimpleModule):
 
 
 def new_mapper() -> ObjectMapper:
-  return ObjectMapper.default(JsonModule(), name=__name__)
+  return ObjectMapper(JsonModule(), name=__name__)
 
 
 def load(

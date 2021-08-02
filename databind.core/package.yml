@@ -14,6 +14,7 @@ requirements:
 dev-requirements:
 - mypy
 - types-dataclasses
+- types-deprecated
 - types-pkg_resources
 test-requirements:
 - pytest

@@ -8,7 +8,7 @@ from databind.core.annotations.datefmt import datefmt
 from databind.core.mapper import ObjectMapper
 from databind.json import JsonModule
 
-mapper = ObjectMapper.default(JsonModule())
+mapper = ObjectMapper(JsonModule())
 
 
 def test_datetime():

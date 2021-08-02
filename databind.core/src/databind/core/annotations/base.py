@@ -1,4 +1,7 @@
 
+import abc
+import collections
+import dataclasses
 import typing as t
 import weakref
 
@@ -87,3 +90,134 @@ def get_annotation(
 
 def get_type_annotations(source: t.Type) -> t.Dict[t.Type, t.Any]:
   return vars(source).get(Annotation.ANNOTATIONS_ATTRIBUTE_NAME, {})
+
+
+class AnnotationsProvider(metaclass=abc.ABCMeta):
+  """
+  Interface to provide annotations for a given type or field in a type.
+  """
+
+  @abc.abstractmethod
+  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    ...
+
+  @abc.abstractmethod
+  def get_type_annotation(self,
+      type: t.Type,
+      annotation_cls: t.Type[T_Annotation]
+  ) -> t.Optional[T_Annotation]:
+    ...
+
+  @abc.abstractmethod
+  def get_field_annotation(self,
+      type: t.Type,
+      field_name: str,
+      annotation_cls: t.Type[T_Annotation]
+  ) -> t.Optional[T_Annotation]:
+    ...
+
+
+class AnnotationsRegistry(AnnotationsProvider):
+  """
+  A registry for type annotations and type field annotations and additional annotation providers.
+  Effectively this class allows to chain multiple annotation providers and manually override
+  individual annotations. Subproviders are tested in the reverse order that they were added.
+  """
+
+  @dataclasses.dataclass
+  class _TypeOverrides:
+    annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
+    fields: t.Dict[str, t.List[t.Any]] = dataclasses.field(default_factory=lambda: collections.defaultdict(list))
+
+  def __init__(self) -> None:
+    self.__overrides: t.Dict[t.Type, AnnotationsRegistry._TypeOverrides] = collections.defaultdict(AnnotationsRegistry._TypeOverrides)
+    self.__subproviders: t.List[AnnotationsProvider] = []
+    self.__global_annotations: t.List[t.Any] = []
+
+  def add_global_annotation(self, annotation: t.Any) -> None:
+    self.__global_annotations.append(annotation)
+
+  def add_annotations_provider(self, provider: AnnotationsProvider) -> None:
+    self.__subproviders.append(provider)
+
+  # IAnnotationsProvider
+  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    return get_annotation(self.__global_annotations, annotation_cls, None)
+
+  # IAnnotationsProvider
+  def get_type_annotation(self,
+      type: t.Type,
+      annotation_cls: t.Type[T_Annotation]
+  ) -> t.Optional[T_Annotation]:
+    overrides = self.__overrides.get(type)
+    if overrides:
+      return get_annotation(overrides.annotations, annotation_cls, None)
+    for provider in reversed(self.__subproviders):
+      result = provider.get_type_annotation(type, annotation_cls)
+      if result is not None:
+        return result
+    return None
+
+  # IAnnotationsProvider
+  def get_field_annotation(self,
+      type: t.Type,
+      field_name: str,
+      annotation_cls: t.Type[T_Annotation]
+  ) -> t.Optional[T_Annotation]:
+    overrides = self.__overrides.get(type)
+    if overrides:
+      return get_annotation(overrides.fields.get(field_name, []), annotation_cls, None)
+    for provider in reversed(self.__subproviders):
+      result = provider.get_field_annotation(type, field_name, annotation_cls)
+      if result is not None:
+        return result
+    return None
+
+
+class DefaultAnnotationsProvider(AnnotationsProvider):
+  """
+  Default implementation for reading #Annotation#s from types, and for the fields of types
+  decorated with #@dataclasses.dataclass. Field annotations are read from the field metadata
+  directly (if attached to the `databind.core.annotations` key) and secondary from the
+  `_annotations` class on the MRO.
+  """
+
+  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
+    return None
+
+  def get_type_annotation(self,
+      type: t.Type,
+      annotation_cls: t.Type[T_Annotation]
+  ) -> t.Optional[T_Annotation]:
+    return get_annotation(type, annotation_cls, None)
+
+  def get_field_annotation(self,
+      type: t.Type,
+      field_name: str,
+      annotation_cls: t.Type[T_Annotation]
+  ) -> t.Optional[T_Annotation]:
+
+    # Look for annoations on the metadata of the dataclass fields.
+    fields: t.Dict[str, dataclasses.Field] = getattr(type, '__dataclass_fields__', {})
+    field = fields.get(field_name)
+    if not field:
+      return None
+
+    annotations = field.metadata.get('databind.core.annotations', [])
+    ann = get_annotation(annotations, annotation_cls, None)
+    if ann is not None:
+      return ann
+
+    # Search for annotations of the field in the `_annotations` class.
+    for curr_type in type.__mro__:
+      if hasattr(curr_type, '_annotations'):
+        meta_cls: t.Type = curr_type._annotations  # type: ignore
+        annotations = getattr(meta_cls, field_name, [])
+        if isinstance(annotations, Annotation):
+          ann = t.cast(T_Annotation, annotations)
+        else:
+          ann = get_annotation(annotations, annotation_cls, None)
+        if ann is not None:
+          break
+
+    return ann

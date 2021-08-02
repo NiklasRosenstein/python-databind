@@ -6,10 +6,9 @@ import typing_extensions as te
 from databind.core.annotations import unionclass
 from databind.core.annotations.typeinfo import typeinfo
 from databind.core.mapper import ObjectMapper
-from databind.core.types import from_typing
 from databind.json import JsonModule, new_mapper
 
-mapper = ObjectMapper.default(JsonModule())
+mapper = ObjectMapper(JsonModule())
 
 
 def test_unionclass_from_annotated():

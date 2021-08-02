@@ -1,12 +1,14 @@
 
-import collections
 import typing as t
-from dataclasses import dataclass, field, Field as _Field
-from databind.core.annotations import Annotation, get_annotation
-from databind.core.types import BaseType, ConcreteType, Field, from_typing, ITypeHintConverter, root as root_type_converter
+from databind.core.annotations.base import AnnotationsRegistry
+
+import deprecated
 import nr.preconditions as preconditions
-from .api import (Context, ConverterNotFound, Direction, IAnnotationsProvider, IConverter,
-  IConverterProvider, IObjectMapper, Context)
+
+from databind.core.annotations import Annotation
+from databind.core.types import BaseType, Field, from_typing, ITypeHintConverter, root as root_type_converter
+from .converter import Context, Direction, Context
+from .module import Module, SimpleModule
 from .location import Location, Position
 from .settings import Settings
 
@@ -20,169 +22,7 @@ T = t.TypeVar('T')
 T_Annotation = t.TypeVar('T_Annotation', bound=Annotation)
 
 
-class Module(IConverterProvider):
-  """
-  Combination of various interfaces, with default implementations acting as a no-op.
-  """
-
-  def get_converter(self, type_: BaseType, direction: 'Direction') -> IConverter:
-    raise ConverterNotFound(type_, direction)
-
-
-class SimpleModule(Module):
-  """
-  A module that you can register de-/serializers to and even other submodules. Only de-/serializers
-  for concrete types can be registered in a #SimpleModule. Submodules are tested in the reversed
-  order that they were registered.
-  """
-
-  def __init__(self, name: str = None) -> None:
-    self.__name = name
-    self.__converters_by_type: t.Dict[Direction, t.Dict[t.Type, IConverter]] = {
-      Direction.deserialize: {}, Direction.serialize: {}}
-    self.__converter_providers: t.List[IConverterProvider] = []
-
-  def __repr__(self):
-    return f"<{type(self).__name__} {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
-
-  def add_converter_provider(self, provider: IConverterProvider) -> None:
-    preconditions.check_instance_of(provider, IConverterProvider)  # type: ignore
-    self.__converter_providers.append(provider)
-
-  def add_converter_for_type(self, type_: t.Type, converter: IConverter, direction: Direction = None) -> None:
-    preconditions.check_instance_of(type_, type)
-    preconditions.check_instance_of(converter, IConverter)  # type: ignore
-    if direction is not None:
-      preconditions.check_instance_of(direction, Direction)
-      self.__converters_by_type[direction][type_] = converter
-    else:
-      self.__converters_by_type[Direction.deserialize][type_] = converter
-      self.__converters_by_type[Direction.serialize][type_] = converter
-
-  def add_module(self, module: Module) -> None:
-    preconditions.check_instance_of(module, Module)
-    self.__converter_providers.append(module)
-
-  def get_converter(self, type_: BaseType, direction: Direction) -> IConverter:
-    preconditions.check_instance_of(type_, BaseType)  # type: ignore
-    if isinstance(type_, ConcreteType) and type_.type in self.__converters_by_type[direction]:
-      return self.__converters_by_type[direction][type_.type]
-    elif type(type_) in self.__converters_by_type[direction]:
-      return self.__converters_by_type[direction][type(type_)]
-    for module in reversed(self.__converter_providers):
-      try:
-        return module.get_converter(type_, direction)
-      except ConverterNotFound:
-        pass  # intentional
-    raise ConverterNotFound(type_, direction)
-
-
-class DefaultAnnotationsProvider(IAnnotationsProvider):
-  """
-  Default implementation for reading #Annotation#s from types, and for the fields of types
-  decorated with #@dataclasses.dataclass. Field annotations are read from the field metadata
-  directly (if attached to the `databind.core.annotations` key) and secondary from the
-  `_annotations` class on the MRO.
-  """
-
-  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
-    return None
-
-  def get_type_annotation(self,
-      type: t.Type,
-      annotation_cls: t.Type[T_Annotation]
-  ) -> t.Optional[T_Annotation]:
-    return get_annotation(type, annotation_cls, None)
-
-  def get_field_annotation(self,
-      type: t.Type,
-      field_name: str,
-      annotation_cls: t.Type[T_Annotation]
-  ) -> t.Optional[T_Annotation]:
-
-    # Look for annoations on the metadata of the dataclass fields.
-    fields: t.Dict[str, _Field] = getattr(type, '__dataclass_fields__', {})
-    field = fields.get(field_name)
-    if not field:
-      return None
-    annotations = field.metadata.get('databind.core.annotations', [])
-    ann = get_annotation(annotations, annotation_cls, None)
-    if ann is not None:
-      return ann
-
-    # Search for annotations of the field in the `_annotations` class.
-    for curr_type in type.__mro__:
-      if hasattr(curr_type, '_annotations'):
-        meta_cls: t.Type = curr_type._annotations  # type: ignore
-        annotations = getattr(meta_cls, field_name, [])
-        if isinstance(annotations, Annotation):
-          ann = t.cast(T_Annotation, annotations)
-        else:
-          ann = get_annotation(annotations, annotation_cls, None)
-        if ann is not None:
-          break
-
-    return ann
-
-
-class AnnotationsRegistry(IAnnotationsProvider):
-  """
-  A registry for type annotations and type field annotations and additional annotation providers.
-  Effectively this class allows to chain multiple annotation providers and manually override
-  individual annotations. Subproviders are tested in the reverse order that they were added.
-  """
-
-  @dataclass
-  class _TypeOverrides:
-    annotations: t.List[t.Any] = field(default_factory=list)
-    fields: t.Dict[str, t.List[t.Any]] = field(default_factory=lambda: collections.defaultdict(list))
-
-  def __init__(self) -> None:
-    self.__overrides: t.Dict[t.Type, AnnotationsRegistry._TypeOverrides] = collections.defaultdict(AnnotationsRegistry._TypeOverrides)
-    self.__subproviders: t.List[IAnnotationsProvider] = []
-    self.__global_annotations: t.List[t.Any] = []
-
-  def add_global_annotation(self, annotation: t.Any) -> None:
-    self.__global_annotations.append(annotation)
-
-  def add_annotations_provider(self, provider: IAnnotationsProvider) -> None:
-    self.__subproviders.append(provider)
-
-  # IAnnotationsProvider
-  def get_global_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
-    return get_annotation(self.__global_annotations, annotation_cls, None)
-
-  # IAnnotationsProvider
-  def get_type_annotation(self,
-      type: t.Type,
-      annotation_cls: t.Type[T_Annotation]
-  ) -> t.Optional[T_Annotation]:
-    overrides = self.__overrides.get(type)
-    if overrides:
-      return get_annotation(overrides.annotations, annotation_cls, None)
-    for provider in reversed(self.__subproviders):
-      result = provider.get_type_annotation(type, annotation_cls)
-      if result is not None:
-        return result
-    return None
-
-  # IAnnotationsProvider
-  def get_field_annotation(self,
-      type: t.Type,
-      field_name: str,
-      annotation_cls: t.Type[T_Annotation]
-  ) -> t.Optional[T_Annotation]:
-    overrides = self.__overrides.get(type)
-    if overrides:
-      return get_annotation(overrides.fields.get(field_name, []), annotation_cls, None)
-    for provider in reversed(self.__subproviders):
-      result = provider.get_field_annotation(type, field_name, annotation_cls)
-      if result is not None:
-        return result
-    return None
-
-
-class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
+class ObjectMapper(SimpleModule, AnnotationsRegistry):
 
   def __init__(self, *modules: Module, name: str = None):
     SimpleModule.__init__(self, name)
@@ -192,10 +32,9 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
       self.add_module(module)
 
   @classmethod
+  @deprecated.deprecated("Use the ObjectMapper() constructor directly.")
   def default(cls, *modules: Module, name: str = None) -> 'ObjectMapper':
-    mapper = cls(*modules, name=name)
-    mapper.add_annotations_provider(DefaultAnnotationsProvider())
-    return mapper
+    return cls(*modules, name=name)
 
   def convert(self,
     direction: Direction,
@@ -213,8 +52,8 @@ class ObjectMapper(IObjectMapper, SimpleModule, AnnotationsRegistry):
     type_ = from_typing(type_hint, type_converter)
     field = Field('$', type_, annotations or [])
     loc = Location(None, type_, key, filename, position)
-    ctx = Context(None, type_converter or root_type_converter, self, Settings(*(settings or []), parent=self.settings),
-      direction, value, loc, field)
+    ctx = Context(None, type_converter or root_type_converter, self, self,
+      Settings(*(settings or []), parent=self.settings), direction, value, loc, field)
     return ctx.convert()
 
   def deserialize(self,

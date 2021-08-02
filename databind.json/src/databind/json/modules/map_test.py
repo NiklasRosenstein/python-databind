@@ -4,7 +4,7 @@ from databind.core.mapper import ObjectMapper
 from databind.core.types import from_typing
 from databind.json import JsonModule
 
-mapper = ObjectMapper.default(JsonModule())
+mapper = ObjectMapper(JsonModule())
 
 
 def test_map():

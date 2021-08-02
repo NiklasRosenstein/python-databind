@@ -8,7 +8,7 @@ from databind.core import annotations as A
 from databind.core.mapper import ConversionError, ObjectMapper
 from databind.json import JsonModule
 
-mapper = ObjectMapper.default(JsonModule())
+mapper = ObjectMapper(JsonModule())
 
 
 def test_object_deserializer():

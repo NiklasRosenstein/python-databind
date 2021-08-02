@@ -1,11 +1,11 @@
 
 import typing as t
 from databind.core import annotations as A
-from databind.core.mapper import Context, ConversionError, Direction, IConverter
+from databind.core.mapper import Context, ConversionError, Direction, Converter
 from databind.core.types import BaseType, UnionType, from_typing
 
 
-class UnionConverter(IConverter):
+class UnionConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, UnionType)
