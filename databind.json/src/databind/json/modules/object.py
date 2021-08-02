@@ -28,15 +28,16 @@ class ObjectTypeConverter(Converter):
       groups[field.name] = ctx.push(field.type, value, field.name, field).convert()
 
     result: t.Dict[str, t.Any] = {}
-    for flat_field in type_.schema.flat_fields():
-      alias = (flat_field.field.aliases or [flat_field.field.name])[0]
-      if flat_field.group == '$':
-        value = getattr(ctx.value, flat_field.field.name)
+    flattened = type_.schema.flattened()
+    for name, flat_field in flattened.fields.items():
+      alias = (flat_field.field.aliases or [name])[0]
+      if not flat_field.group:
+        value = getattr(ctx.value, name)
         if skip_default_values and value != flat_field.field.get_default():
-          result[alias] = ctx.push(flat_field.field.type, value, flat_field.field.name, flat_field.field).convert()
-      elif alias in groups[flat_field.group]:
+          result[alias] = ctx.push(flat_field.field.type, value, name, flat_field.field).convert()
+      elif alias in groups[flat_field.group or '$']:
         # May not be contained if we skipped default values.
-        result[alias] = groups[flat_field.group][alias]
+        result[alias] = groups[flat_field.group or '$'][alias]
 
     # TODO (@NiklasRosenstein): Support flat MapType() field
 
@@ -53,13 +54,14 @@ class ObjectTypeConverter(Converter):
 
     # Collect keys into groups.
     used_keys: t.Set[str] = set()
-    for flat_field in type_.schema.flat_fields():
-      aliases = flat_field.field.aliases or [flat_field.field.name]
+    flattened = type_.schema.flattened()
+    for name, flat_field in flattened.fields.items():
+      aliases = flat_field.field.aliases or [name]
       for alias in aliases:
         if alias in ctx.value:
           value = ctx.value[alias]
-          groups.setdefault(flat_field.group, {})[flat_field.field.name] = \
-            ctx.push(flat_field.field.type, value, flat_field.field.name, flat_field.field).convert()
+          groups.setdefault(flat_field.group or '$', {})[name] = \
+            ctx.push(flat_field.field.type, value, name, flat_field.field).convert()
           used_keys.add(alias)
           break
 

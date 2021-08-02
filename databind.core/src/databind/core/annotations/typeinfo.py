@@ -1,7 +1,7 @@
 
 import typing as t
 from dataclasses import dataclass
-from . import Annotation, get_annotation
+from databind.core.annotations.base import Annotation, get_annotation
 
 
 @dataclass

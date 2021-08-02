@@ -7,7 +7,7 @@ de/serialization of decimal values.
 import decimal
 import typing as t
 from dataclasses import dataclass
-from . import Annotation
+from databind.core.annotations.base import Annotation
 
 
 @dataclass

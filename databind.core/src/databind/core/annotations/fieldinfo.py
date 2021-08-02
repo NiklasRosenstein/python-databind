@@ -5,7 +5,7 @@ Provides the #fieldinfo() annotation to add additional metadata to a field.
 
 import typing as t
 from dataclasses import dataclass
-from . import Annotation
+from databind.core.annotations.base import Annotation
 
 
 @dataclass

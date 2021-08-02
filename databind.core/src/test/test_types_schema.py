@@ -8,7 +8,7 @@ from databind.core.annotations import alias, fieldinfo
 from databind.core.dataclasses import dataclass as ddataclass, field as dfield
 from databind.core.mapper import ObjectMapper
 from databind.core.types import Field, Schema, ConcreteType, ListType, ObjectType, OptionalType
-from databind.core.types.schema import SchemaDefinitionError, ObjectType, DataclassAdapter, dataclass_to_schema
+from databind.core.types.schema import FlattenedSchema, PropagatedField, SchemaDefinitionError, ObjectType, DataclassAdapter, dataclass_to_schema
 
 mapper = ObjectMapper()
 from_typing = mapper.adapt_type_hint
@@ -30,7 +30,7 @@ def test_schema_flat_fields_check():
 
   with pytest.raises(SchemaDefinitionError) as excinfo:
     assert isinstance(from_typing(B), ObjectType)
-  assert '($.foo, $.a.foo)' in str(excinfo)
+  assert '$.foo, $.a.foo' in str(excinfo.value)
 
 
 def test_dataclass_adapter():
@@ -115,10 +115,10 @@ def test_databind_dataclass_field_annotations():
 @pytest.mark.skip("https://github.com/NiklasRosenstein/databind/issues/6")
 def test_schema_from_generic_impl():
   T = t.TypeVar('T')
-  @dataclass
+  @dataclasses.dataclass
   class Base(t.Generic[T]):
     items: t.List[T]
-  @dataclass
+  @dataclasses.dataclass
   class Subclass(Base[int]):
     pass
 
@@ -131,3 +131,22 @@ def test_schema_from_generic_impl():
   assert schema.fields == {
     'items': Field('items', ListType(ConcreteType(int)))
   }
+
+
+def test_schema_multilevel_flat_fields():
+  @dataclasses.dataclass
+  class C:
+    d: int
+  @dataclasses.dataclass
+  class B:
+    c: te.Annotated[C, fieldinfo(flat=True)]
+  @dataclasses.dataclass
+  class A:
+    b: te.Annotated[B, fieldinfo(flat=True)]
+
+  schema = dataclass_to_schema(A, mapper)
+  flattened = schema.flattened()
+  assert flattened == FlattenedSchema(
+    schema,
+    {'d': PropagatedField(dataclass_to_schema(C, mapper), Field('d', ConcreteType(int)), 'b', ['b', 'c', 'd'])},
+    None)
