@@ -2,7 +2,7 @@ release_date: null
 changes:
 - type: change
   component: general
-  description: remove AnnotatedType and instead add BaseType.annotations
+  description: remove `AnnotatedType`, add `BaseType.annotations` instead.
   fixes: []
 - type: breaking_change
   component: general
