@@ -22,7 +22,7 @@ from .schema import (
   Schema,
   SchemaDefinitionError,
   ObjectType,
-  DataclassConverter,
+  DataclassAdapter,
 )
 
 from .union import (
@@ -36,19 +36,39 @@ from .union import (
   UnionType,
   union,
   unionclass,
-  UnionConverter,
+  UnionAdapter,
 )
 
-import typing as t
+__all__ = [
+  'TypeHintAdapterError',
+  'TypeHintAdapter',
+  'DefaultTypeHintAdapter',
+  'ChainTypeHintAdapter',
 
-#: The global type hint converter.
-root = ChainTypeHintAdapter(
-  DefaultTypeHintAdapter(),
-  UnionConverter(),
-  DataclassConverter()
-)
+  'BaseType',
+  'ConcreteType',
+  'ImplicitUnionType',
+  'OptionalType',
+  'ListType',
+  'SetType',
+  'MapType',
+  'UnknownType',
 
+  'Field',
+  'Schema',
+  'SchemaDefinitionError',
+  'ObjectType',
+  'DataclassAdapter',
 
-def from_typing(type_hint: t.Any, converter: t.Optional['TypeHintAdapter'] = None) -> BaseType:
-  converter = converter or root
-  return converter.convert_type_hint(type_hint, converter)
+  'UnionSubtypes',
+  'EntrypointSubtypes',
+  'DynamicSubtypes',
+  'ChainSubtypes',
+  'ImportSubtypes',
+  'UnionTypeError',
+  'UnionStyle',
+  'UnionType',
+  'union',
+  'unionclass',
+  'UnionAdapter',
+]

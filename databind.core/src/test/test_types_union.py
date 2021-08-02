@@ -2,16 +2,20 @@
 import typing as t
 import typing_extensions as te
 from dataclasses import dataclass
-from databind.core.types import ConcreteType, ListType, from_typing, root
-from databind.core.types.union import DynamicSubtypes, ImportSubtypes, UnionConverter, UnionType, union
+from databind.core.mapper import ObjectMapper
+from databind.core.types import ConcreteType, ListType
+from databind.core.types.union import DynamicSubtypes, ImportSubtypes, UnionAdapter, UnionType, union
+
+mapper = ObjectMapper()
+from_typing = mapper.adapt_type_hint
 
 
 class Foobar: pass
 
 
 def test_import_subtypes():
-  assert ImportSubtypes().get_type_name(Foobar, root) == f'{__name__}.Foobar'
-  assert ImportSubtypes().get_type_by_name(f'{__name__}.Foobar', root) == ConcreteType(Foobar)
+  assert ImportSubtypes().get_type_name(Foobar, mapper) == f'{__name__}.Foobar'
+  assert ImportSubtypes().get_type_by_name(f'{__name__}.Foobar', mapper) == ConcreteType(Foobar)
 
 
 def test_union_adapter():
@@ -27,10 +31,11 @@ def test_union_adapter():
     assert type_.style == None
     assert type_.discriminator_key == None
 
-  type_ = UnionConverter().convert_type_hint(from_typing(MyUnionType), UnionConverter())
+  type_ = UnionAdapter().adapt_type_hint(ConcreteType(MyUnionType))
   _check(type_)
 
-  type_ = from_typing(from_typing(MyUnionType))
+  type_ = from_typing(MyUnionType)
+  print(type_)
   _check(type_)
 
 

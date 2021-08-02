@@ -105,7 +105,7 @@ class EntrypointSubtypes(UnionSubtypes):
 
   def get_type_by_name(self, name: str, type_converter: 'TypeHintAdapter') -> 'BaseType':
     try:
-      return type_converter(self._entrypoints[name].load())
+      return type_converter.adapt_type_hint(self._entrypoints[name].load())
     except KeyError:
       raise UnionTypeError(name, self)
 
@@ -146,7 +146,7 @@ class DynamicSubtypes(UnionSubtypes):
       if isinstance(member, types.FunctionType):
         member = member()
       if not isinstance(member, BaseType):
-        member = type_converter(member)
+        member = type_converter.adapt_type_hint(member)
       self._members[name] = member
       assert isinstance(member, BaseType), (member, type(member))
       return member
@@ -231,7 +231,7 @@ class ImportSubtypes(UnionSubtypes):
     if not isinstance(target, type):
       raise ValueError(f'{name!r} does not point to a type (got {type(target).__name__} instead)')
 
-    return type_converter(target)
+    return type_converter.adapt_type_hint(target)
 
   def get_type_names(self) -> t.List[str]:
     raise NotImplementedError
@@ -412,12 +412,12 @@ class union(Annotation):
     return super().__call__(cls)
 
 
-class UnionConverter(TypeHintAdapter):
+class UnionAdapter(TypeHintAdapter):
   """
   Adapter for classes decorated with #@union().
   """
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
     if not isinstance(type_hint, BaseType):
       raise TypeHintAdapterError(self, str(type_hint))
     if isinstance(type_hint, ConcreteType):

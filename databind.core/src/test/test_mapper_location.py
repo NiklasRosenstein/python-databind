@@ -1,13 +1,15 @@
 
 import typing as t
 from databind.core.mapper.location import Format, Location, Position
-from databind.core.types import from_typing
+from databind.core.mapper import ObjectMapper
 
 
 def test_location_str():
-  l1 = Location(None, from_typing(t.Dict[str, t.List[int]]), None, '<string>', Position(0, 0))
-  l2 = Location(l1, from_typing(t.List[int]), 'config', None, Position(1, 4))
-  l3 = Location(l2, from_typing(int), None, 'https://example.org/config.json', Position(0, 0))
+  mapper = ObjectMapper()
+
+  l1 = Location(None, mapper.adapt_type_hint(t.Dict[str, t.List[int]]), None, '<string>', Position(0, 0))
+  l2 = Location(l1, mapper.adapt_type_hint(t.List[int]), 'config', None, Position(1, 4))
+  l3 = Location(l2, mapper.adapt_type_hint(int), None, 'https://example.org/config.json', Position(0, 0))
 
   assert str(l1) == '[<string>:0:0] ($ MapType(ConcreteType(str), ListType(ConcreteType(int))))'
   assert str(l2) == str(l1) + ' -> (.config ListType(ConcreteType(int)))'

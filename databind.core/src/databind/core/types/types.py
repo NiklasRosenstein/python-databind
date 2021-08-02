@@ -31,8 +31,7 @@ class BaseType(metaclass=abc.ABCMeta):
 class ConcreteType(BaseType):
   """
   Represents a concrete type, that is an actual Python type, not a typing hint. Note that concrete
-  types may be reinterpreted as a #Datamodel by the object mapper, but #from_typing() cannot do
-  that because the reinterpretation is up to the object mapper configuration.
+  types may be reinterpreted by #TypeHintAdapter#s (for example the #DataclassAdapter).
   """
 
   type: t.Type

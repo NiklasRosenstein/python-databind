@@ -6,8 +6,12 @@ import pytest
 
 from databind.core.annotations import alias, fieldinfo
 from databind.core.dataclasses import dataclass as ddataclass, field as dfield
-from databind.core.types import Field, Schema, ConcreteType, ListType, ObjectType, OptionalType, from_typing, root as root_type_converter
-from databind.core.types.schema import SchemaDefinitionError, ObjectType, DataclassConverter, dataclass_to_schema
+from databind.core.mapper import ObjectMapper
+from databind.core.types import Field, Schema, ConcreteType, ListType, ObjectType, OptionalType
+from databind.core.types.schema import SchemaDefinitionError, ObjectType, DataclassAdapter, dataclass_to_schema
+
+mapper = ObjectMapper()
+from_typing = mapper.adapt_type_hint
 
 
 def test_schema_flat_fields_check():
@@ -34,8 +38,8 @@ def test_dataclass_adapter():
   class MyDataclass:
     f: te.Annotated[int, 'foo']
 
-  typ = DataclassConverter().convert_type_hint(ConcreteType(MyDataclass, ['foobar']), root_type_converter)
-  assert typ == ObjectType(dataclass_to_schema(MyDataclass, root_type_converter), ['foobar'])
+  typ = DataclassAdapter().adapt_type_hint(ConcreteType(MyDataclass, ['foobar']), mapper)
+  assert typ == ObjectType(dataclass_to_schema(MyDataclass, mapper), ['foobar'])
   assert typ.schema.fields['f'].type.annotations == ['foo']
 
 
@@ -62,7 +66,7 @@ def test_dataclass_to_schema_conversion():
       'a': Field('a', ConcreteType(int)),
       'b': Field('b', OptionalType(ConcreteType(str)), [alias('balias')], default=None),
       'c': Field('c', ConcreteType(str, [alias('calias')]), [], default=42),
-      'd': Field('d', OptionalType(ObjectType(dataclass_to_schema(P, root_type_converter))), default=None),
+      'd': Field('d', OptionalType(ObjectType(dataclass_to_schema(P, mapper))), default=None),
     },
     [],
     MyDataclass,
@@ -118,12 +122,12 @@ def test_schema_from_generic_impl():
   class Subclass(Base[int]):
     pass
 
-  schema = dataclass_to_schema(Base[int], root_type_converter)
+  schema = dataclass_to_schema(Base[int], mapper)
   assert schema.fields == {
     'items': Field('items', ListType(ConcreteType(int)))
   }
 
-  schema = dataclass_to_schema(Subclass, root_type_converter)
+  schema = dataclass_to_schema(Subclass, mapper)
   assert schema.fields == {
     'items': Field('items', ListType(ConcreteType(int)))
   }

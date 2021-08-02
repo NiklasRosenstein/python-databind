@@ -186,8 +186,8 @@ class SchemaDefinitionError(Exception):
 class ObjectType(BaseType):
   """
   Represents a type hint for a datamodel (or #Schema). Instances of this type hint are usually
-  constructed in a later stage after #from_typing() when a #Concrete type hint was encountered
-  that can be interpreted as an #ObjectType (see #databind.core.default.dataclass.DataclassModule).
+  constructed in a later stage via the #DataclassAdapter() when a #Concrete type hint was encountered
+  that can be interpreted as an #ObjectType.
   """
 
   schema: 'Schema'
@@ -230,7 +230,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintAdapter)
 
     # NOTE (NiklasRosenstein): We do not use #field.type because if it contains a #t.ForwardRef,
     #   it will not be resolved and we can't convert that to our type representation.
-    field_type_hint = type_converter(annotations[field.name])
+    field_type_hint = type_converter.adapt_type_hint(annotations[field.name])
     field_annotations = list(field.metadata.get(ANNOTATIONS_METADATA_KEY, []))
 
     # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.
@@ -257,7 +257,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintAdapter)
   )
 
 
-class DataclassConverter(TypeHintAdapter):
+class DataclassAdapter(TypeHintAdapter):
   """
   Understands #ConcreteType annotations for #@dataclasses.dataclass decorated classes and converts
   them to an #ObjectType.
@@ -266,7 +266,7 @@ class DataclassConverter(TypeHintAdapter):
   def __init__(self) -> None:
     self._cache: t.Dict[t.Type, Schema] = {}
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
     if isinstance(type_hint, ConcreteType) and is_dataclass(type_hint.type):
       # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
       if type_hint.type in self._cache:

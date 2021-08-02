@@ -8,16 +8,7 @@ from databind.core.types import BaseType
 from .converter import Converter, ConverterNotFound, ConverterProvider, Direction
 
 
-class Module(ConverterProvider):
-  """
-  Combination of various interfaces, with default implementations acting as a no-op.
-  """
-
-  def get_converter(self, type_: BaseType, direction: Direction) -> Converter:
-    raise ConverterNotFound(type_, direction)
-
-
-class SimpleModule(Module):
+class SimpleModule(ConverterProvider):
   """
   A module that you can register de-/serializers to and even other submodules. Only de-/serializers
   for concrete types can be registered in a #SimpleModule. Submodules are tested in the reversed
@@ -46,10 +37,6 @@ class SimpleModule(Module):
     else:
       self.__converters_by_type[Direction.deserialize][type_] = converter
       self.__converters_by_type[Direction.serialize][type_] = converter
-
-  def add_module(self, module: Module) -> None:
-    preconditions.check_instance_of(module, Module)
-    self.__converter_providers.append(module)
 
   def get_converter(self, type_: BaseType, direction: Direction) -> Converter:
     preconditions.check_instance_of(type_, BaseType)  # type: ignore

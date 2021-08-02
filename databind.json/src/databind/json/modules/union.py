@@ -2,7 +2,7 @@
 import typing as t
 from databind.core import annotations as A
 from databind.core.mapper import Context, ConversionError, Direction, Converter
-from databind.core.types import BaseType, UnionType, from_typing
+from databind.core.types import BaseType, UnionType
 
 
 class UnionConverter(Converter):
@@ -25,7 +25,7 @@ class UnionConverter(Converter):
       assert isinstance(member_type, BaseType), f'"{type(ctx.type.subtypes).__name__}" returned member_type must '\
           f'be BaseType, got "{type(member_type).__name__}"'
     else:
-      member_type = from_typing(type(ctx.value))
+      member_type = ctx.type_converter.adapt_type_hint(type(ctx.value))
       member_name = ctx.type.subtypes.get_type_name(member_type, ctx.type_converter)
 
     type_hint = member_type

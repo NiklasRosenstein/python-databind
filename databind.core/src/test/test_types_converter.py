@@ -2,8 +2,11 @@
 import typing as t
 import typing_extensions as te
 from databind.core.types import *
+from databind.core.mapper import ObjectMapper
 
 T = t.TypeVar('T')
+mapper = ObjectMapper()
+from_typing = mapper.adapt_type_hint
 
 
 def test_from_typing():

@@ -13,27 +13,28 @@ from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
 
 @dataclasses.dataclass
 class TypeHintAdapterError(Exception):
-  converter: 'TypeHintAdapter'
+  adapter: 'TypeHintAdapter'
   message: str
 
 
 class TypeHintAdapter(abc.ABC):
 
-  def __call__(self, type_hint: t.Any) -> 'BaseType':
-    return self.convert_type_hint(type_hint, self)
+  Error = TypeHintAdapterError
+
+  def adapt_type_hint(self, type_hint: t.Any, recurse: t.Optional['TypeHintAdapter'] = None) -> BaseType:
+    return self._adapt_type_hint_impl(type_hint, recurse or self)
 
   @abc.abstractmethod
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType': ...
-
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> BaseType: ...
 
 class DefaultTypeHintAdapter(TypeHintAdapter):
   """
-  Converter for all the supported standard #typing type hints.
+  Adapter for all the supported standard #typing type hints.
   """
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
     generic, args = unpack_type_hint(type_hint)
-    from_typing = lambda th: recurse.convert_type_hint(th, recurse)
+    from_typing = lambda th: recurse._adapt_type_hint_impl(th, recurse)
 
     # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
     # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
@@ -82,45 +83,54 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
 
 class ChainTypeHintAdapter(TypeHintAdapter):
   """
-  Delegates to a chain of #TypeHintAdapter#s. Each converter can have a priority. Converters
-  passed to the construct will have priority 0 and a higher priority indicates that the converter
+  Delegates to a chain of #TypeHintAdapter#s. Each adapter can have a priority. Aonverters
+  passed to the construct will have priority 0 and a higher priority indicates that the adapter
   will be used checked first.
   """
 
-  def __init__(self, *converters: TypeHintAdapter) -> None:
+  def __init__(self, *adapters: TypeHintAdapter) -> None:
     self._priorities: t.Dict[int, t.List[TypeHintAdapter]] = collections.defaultdict(list)
-    self._priorities[0] = list(converters)
+    self._priorities[0] = list(adapters)
     self._ordered: t.List[t.Tuple[int, t.List[TypeHintAdapter]]] = list(self._priorities.items())
     self._ordered.sort()
+    self._stop_conditions: t.List[t.Callable[[BaseType], bool]] = []
 
-  def register(self, converter: TypeHintAdapter, priority: int = 0) -> None:
+  def add_type_hint_adapter_stop_condition(self, condition: t.Callable[[BaseType], bool]) -> None:
     """
-    Register a new converter. The default priority is 0. Within the same priority group, a converter
+    Add a stop condition that will determine if a #BaseType that was already adapter from another
+    #TypeHintAdapter will continue to be adapted by the remaining adapters in the chain. If no conditions
+    are registered, the default response will be #True.
+    """
+
+    self._stop_conditions.append(condition)
+
+  def add_type_hint_adapter(self, adapter: TypeHintAdapter, priority: int = 0) -> None:
+    """
+    Register a new adapter. The default priority is 0. Within the same priority group, a adapter
     will always be appended at the end of the list such that it will be checked last in the priority
     group.
     """
 
     priority_group_exists = priority in self._priorities
-    self._priorities[priority].append(converter)
+    self._priorities[priority].append(adapter)
     if not priority_group_exists:
       item = (priority, self._priorities[priority])
       self._ordered.insert(bisect.bisect(self._ordered, item), item)
 
-  def convert_type_hint(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> 'BaseType':
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
     errors = []
-    for _priority_group, converters in self._ordered:
-      for converter in converters:
+    for _priority_group, adapters in self._ordered:
+      for adapter in adapters:
         try:
-          type_hint = converter.convert_type_hint(type_hint, recurse)
+          type_hint = adapter._adapt_type_hint_impl(type_hint, recurse)
         except TypeHintAdapterError as exc:
           errors.append(exc)
+        if isinstance(type_hint, BaseType) and any(x(type_hint) for x in self._stop_conditions):
+          return type_hint
     if isinstance(type_hint, BaseType):
       return type_hint
     if not errors:
-      raise TypeHintAdapterError(self, 'no converters registered')
-    summary = '\n'.join(f'{str(exc.converter)}: {exc.message}' for exc in errors)
+      raise TypeHintAdapterError(self, 'no adapters registered')
+    summary = '\n'.join(f'{str(exc.adapter)}: {exc.message}' for exc in errors)
     summary = textwrap.indent(summary, '  ')
-    raise TypeHintAdapterError(self, 'no available converter matched\n' + summary)
-
-
-
+    raise TypeHintAdapterError(self, 'no available adapter matched\n' + summary)
