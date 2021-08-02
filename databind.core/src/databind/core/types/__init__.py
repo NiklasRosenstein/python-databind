@@ -26,7 +26,7 @@ from .schema import (
 )
 
 from .union import (
-  IUnionSubtypes,
+  UnionSubtypes,
   EntrypointSubtypes,
   DynamicSubtypes,
   ChainSubtypes,

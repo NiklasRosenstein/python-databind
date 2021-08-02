@@ -26,7 +26,7 @@ T_Type = t.TypeVar('T_Type', bound=t.Type)
 @dataclasses.dataclass
 class UnionTypeError(Exception):
   type: t.Union[str, t.Type, 'BaseType']
-  subtypes: 'IUnionSubtypes'
+  subtypes: 'UnionSubtypes'
 
   @except_format
   def __str__(self) -> str:
@@ -39,7 +39,7 @@ class UnionTypeError(Exception):
       return f'type `{typ}` is not a member of @union `{owner_name}`'
 
 
-class IUnionSubtypes(abc.ABC):
+class UnionSubtypes(abc.ABC):
   """
   This interface describes the subtypes of a union type.
   """
@@ -70,7 +70,7 @@ class IUnionSubtypes(abc.ABC):
     """
 
 
-class EntrypointSubtypes(IUnionSubtypes):
+class EntrypointSubtypes(UnionSubtypes):
   """
   Provides union subtypes per a Python entrypoint group.
   """
@@ -114,7 +114,7 @@ class EntrypointSubtypes(IUnionSubtypes):
 
 
 @dataclasses.dataclass
-class DynamicSubtypes(IUnionSubtypes):
+class DynamicSubtypes(UnionSubtypes):
 
   #: A #typing type hint, an actual type, a #BaseType or a callable that returns one of the aforementioned.
   _Type = t.Union[t.Any, t.Type, 'BaseType', t.Callable[[], t.Union[t.Any, t.Type, 'BaseType']]]
@@ -160,9 +160,9 @@ class DynamicSubtypes(IUnionSubtypes):
     self._members[name] = type_
 
 
-class ChainSubtypes(IUnionSubtypes):
+class ChainSubtypes(UnionSubtypes):
 
-  def __init__(self, *subtypes: IUnionSubtypes) -> None:
+  def __init__(self, *subtypes: UnionSubtypes) -> None:
     self._subtypes = subtypes
 
   def __repr__(self) -> str:
@@ -194,7 +194,7 @@ class ChainSubtypes(IUnionSubtypes):
     return Stream(_gen()).concat().distinct().collect()
 
 
-class ImportSubtypes(IUnionSubtypes):
+class ImportSubtypes(UnionSubtypes):
 
   def __repr__(self) -> str:
     return 'ImportSubtypes()'
@@ -262,7 +262,7 @@ class UnionType(BaseType):
   DEFAULT_STYLE: t.ClassVar['UnionStyle'] = UnionStyle.nested
   DEFAULT_DISCRIMINATOR_KEY = 'type'
 
-  subtypes: 'IUnionSubtypes'
+  subtypes: 'UnionSubtypes'
   style: t.Optional['UnionStyle'] = None
   discriminator_key: t.Optional[str] = None
   name: t.Optional[str] = None
@@ -328,7 +328,7 @@ class union(Annotation):
   Subtypes = _Subtypes
   Style = UnionStyle
 
-  subtypes: IUnionSubtypes
+  subtypes: UnionSubtypes
   style: t.Optional[UnionStyle]
   discriminator_key: t.Optional[str]
   constructible: bool
@@ -336,7 +336,7 @@ class union(Annotation):
   decorated_type: t.Optional[t.Type]
 
   def __init__(self,
-    subtypes: t.Union[IUnionSubtypes, t.Sequence[t.Type], t.Mapping[str, t.Type]] = None,
+    subtypes: t.Union[UnionSubtypes, t.Sequence[t.Type], t.Mapping[str, t.Type]] = None,
     *,
     style: t.Optional[UnionStyle] = None,
     discriminator_key: t.Optional[str] = None,
@@ -345,7 +345,7 @@ class union(Annotation):
   ) -> None:
 
     self.subtypes = DynamicSubtypes()
-    if isinstance(subtypes, IUnionSubtypes):
+    if isinstance(subtypes, UnionSubtypes):
       self.subtypes = subtypes
     elif isinstance(subtypes, t.Sequence):
       for typ in subtypes:
