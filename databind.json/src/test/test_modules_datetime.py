@@ -22,7 +22,6 @@ def test_datetime():
   assert mapper.serialize(datetime(2021, 3, 28, 21, 1, 54, 0, timezone.utc), te.Annotated[datetime, datefmt('%Y-%m-%d')]) == '2021-03-28'
 
 
-@pytest.mark.skip('need to figure out way to not convert "duration" to ObjectType()')
 def test_duration():
   assert mapper.deserialize('P20DT1H', duration) == duration(days=20, hours=1)
   assert mapper.serialize(duration(days=20, hours=1), duration) == 'P20DT1H'
