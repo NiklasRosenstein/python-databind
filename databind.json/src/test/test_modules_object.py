@@ -93,13 +93,17 @@ def test_deserialize_dataclass_field_as():
 def test_map_remainders():
 
   @dataclasses.dataclass
+  class Foo:
+    pass
+
+  @dataclasses.dataclass
   class Config:
     port: int
-    rest: te.Annotated[t.Dict[str, t.Union[str, int]], A.fieldinfo(flat=True)]
+    rest: te.Annotated[t.Dict[str, t.Union[str, int, Foo]], A.fieldinfo(flat=True)]
 
-  payload = {'port': 42, 'foo': 'bar', 'spam': 0}
+  payload = {'port': 42, 'foo': 'bar', 'spam': 0, 'baz': {}}
   cfg = mapper.deserialize(payload, Config)
-  assert cfg == Config(42, {'foo': 'bar', 'spam': 0})
+  assert cfg == Config(42, {'foo': 'bar', 'spam': 0, 'baz': Foo()})
   assert mapper.serialize(cfg, Config) == payload
 
   with pytest.raises(ConversionError) as excinfo:

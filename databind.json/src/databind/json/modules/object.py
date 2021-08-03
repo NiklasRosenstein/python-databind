@@ -40,7 +40,8 @@ class ObjectTypeConverter(Converter):
     # Explode values from the remainder field into the result.
     if flattened.remainder_field:
       assert isinstance(flattened.remainder_field.type, MapType)
-      for key, value in getattr(ctx.value, flattened.remainder_field.name).items():
+      remnants = ctx.push(flattened.remainder_field.type, getattr(ctx.value, flattened.remainder_field.name), None, flattened.remainder_field).convert()
+      for key, value in remnants.items():
         if key in result:
           raise ctx.error(f'key {key!r} of remainder field {flattened.remainder_field.name!r} cannot be exploded '
             'into resulting JSON object because of a conflict.')
