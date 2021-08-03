@@ -7,7 +7,7 @@ class UnionConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, UnionType)
-    fallback = ctx.get_annotation(A.unionclass) or A.unionclass()
+    fallback = ctx.get_annotation(A.union) or A.union()
     style = ctx.type.style or fallback.style or UnionType.DEFAULT_STYLE
     discriminator_key = ctx.type.discriminator_key or fallback.discriminator_key or UnionType.DEFAULT_DISCRIMINATOR_KEY
 
@@ -29,11 +29,11 @@ class UnionConverter(Converter):
     type_hint = member_type
 
     if is_deserialize:
-      if style == A.unionclass.Style.nested:
+      if style == A.union.Style.nested:
         if member_name not in ctx.value:
           raise ConversionError(f'missing union value key {member_name!r}', ctx.location)
         child_context = ctx.push(type_hint, ctx.value[member_name], member_name, ctx.field)
-      elif style == A.unionclass.Style.flat:
+      elif style == A.union.Style.flat:
         child_context = ctx.push(type_hint, dict(ctx.value), None, ctx.field)
         t.cast(t.Dict, child_context.value).pop(discriminator_key)
       else:
@@ -46,11 +46,11 @@ class UnionConverter(Converter):
     if is_deserialize:
       return result
     else:
-      if style == A.unionclass.Style.nested:
+      if style == A.union.Style.nested:
         result = {discriminator_key: member_name, member_name: result}
       else:
         if not isinstance(result, t.MutableMapping):
-          raise RuntimeError(f'unionclass.Style.flat is not supported for non-object member types')
+          raise RuntimeError(f'union.Style.flat is not supported for non-object member types')
         result[discriminator_key] = member_name
 
     return result
