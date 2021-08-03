@@ -3,65 +3,61 @@ import abc
 import dataclasses
 import typing as t
 import typing_extensions as te
-from databind.core.annotations import unionclass
-from databind.core.annotations.typeinfo import typeinfo
-from databind.core.mapper import ObjectMapper
-from databind.json import JsonModule, new_mapper
-
-mapper = ObjectMapper(JsonModule())
+from databind.core import annotations as A
+from databind.json import mapper
 
 
 def test_unionclass_from_annotated():
-  MyUnion = te.Annotated[t.Union[int, str], unionclass({
+  MyUnion = te.Annotated[t.Union[int, str], A.union({
     'int': int,
     'str': str
   }, name='MyUnion')]
-  assert mapper.deserialize({'type': 'int', 'int': 42}, MyUnion) == 42
-  assert mapper.deserialize({'type': 'str', 'str': 'foobar'}, MyUnion) == 'foobar'
-  assert mapper.serialize(42, MyUnion) == {'type': 'int', 'int': 42}
-  assert mapper.serialize('foobar', MyUnion) == {'type': 'str', 'str': 'foobar'}
+  assert mapper().deserialize({'type': 'int', 'int': 42}, MyUnion) == 42
+  assert mapper().deserialize({'type': 'str', 'str': 'foobar'}, MyUnion) == 'foobar'
+  assert mapper().serialize(42, MyUnion) == {'type': 'int', 'int': 42}
+  assert mapper().serialize('foobar', MyUnion) == {'type': 'str', 'str': 'foobar'}
 
 
 def test_unionclass_object_type():
 
-  @unionclass(style = unionclass.Style.flat)
+  @A.union(style = A.union.Style.flat)
   class Person(abc.ABC):
     @abc.abstractmethod
     def say_hello(self) -> str: ...
 
-  @unionclass.subtype(Person)
+  @A.union.subtype(Person)
   @dataclasses.dataclass
   class Student(Person):
     def say_hello(self) -> str:
       return 'Hi I study'
 
-  @unionclass.subtype(Person)
+  @A.union.subtype(Person)
   @dataclasses.dataclass
-  @typeinfo(name = 'teacher')
+  @A.typeinfo(name = 'teacher')
   class Teacher(Person):
     def say_hello(self) -> str:
       return 'Hi I teach'
 
-  assert mapper.deserialize({'type': 'Student'}, Person).say_hello() == 'Hi I study'
-  assert mapper.deserialize({'type': 'teacher'}, Person).say_hello() == 'Hi I teach'
+  assert mapper().deserialize({'type': 'Student'}, Person).say_hello() == 'Hi I study'
+  assert mapper().deserialize({'type': 'teacher'}, Person).say_hello() == 'Hi I teach'
 
 
 # ====
-# Test that DyamicSubtypes/unionclass accepts a lambda function for lazy evaluation.
+# Test that DyamicSubtypes/A.union accepts a lambda function for lazy evaluation.
 
 @dataclasses.dataclass
-class B: pass
+class Bcls: pass
 
 @dataclasses.dataclass
-class A:
-  other: te.Annotated['t.Union[B, C]', unionclass({
-    'b': B,
-    'c': lambda: C,
+class Acls:
+  other: te.Annotated['t.Union[Bcls, Ccls]', A.union({
+    'b': Bcls,
+    'c': lambda: Ccls,
   })]
 
 @dataclasses.dataclass
-class C: pass
+class Ccls: pass
 
 def test_dynamic_subtypes():
-  assert new_mapper().deserialize({'other': {'type': 'b', 'b': {}}}, A) == A(B())
-  assert new_mapper().deserialize({'other': {'type': 'c', 'c': {}}}, A) == A(C())
+  assert mapper().deserialize({'other': {'type': 'b', 'b': {}}}, Acls) == Acls(Bcls())
+  assert mapper().deserialize({'other': {'type': 'c', 'c': {}}}, Acls) == Acls(Ccls())

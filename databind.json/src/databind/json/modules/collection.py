@@ -1,7 +1,6 @@
 
 import typing as t
-from databind.core.mapper import Context, Direction, Converter
-from databind.core.types.types import CollectionType
+from databind.core import Context, Direction, Converter, CollectionType
 
 
 class CollectionConverter(Converter):

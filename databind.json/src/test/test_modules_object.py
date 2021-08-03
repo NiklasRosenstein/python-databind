@@ -5,9 +5,7 @@ import typing_extensions as te
 
 import pytest
 
-from databind.core.annotations.enable_unknowns import enable_unknowns
-from databind.core import annotations as A
-from databind.core.mapper import ConversionError, ObjectMapper
+from databind.core import annotations as A, ConversionError, ObjectMapper
 from databind.json import JsonModule
 
 mapper = ObjectMapper(JsonModule())
@@ -70,7 +68,7 @@ def test_unknown_keys():
   assert str(excinfo.value) == "[None] ($ ObjectType(Person)): unknown keys found while deserializing ObjectType(Person): {'age'}"
 
   unknown_keys = []
-  unknowns = enable_unknowns(callback=lambda ctx, keys: unknown_keys.extend(keys))
+  unknowns = A.enable_unknowns(callback=lambda ctx, keys: unknown_keys.extend(keys))
   mapper.deserialize({'name': 'John', 'age': 22}, Person, settings=[unknowns])
   assert unknown_keys == ['age']
 

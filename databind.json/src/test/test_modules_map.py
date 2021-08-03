@@ -1,6 +1,6 @@
 
 import typing as t
-from databind.core.mapper import ObjectMapper
+from databind.core import ObjectMapper
 from databind.json import JsonModule
 
 mapper = ObjectMapper(JsonModule())

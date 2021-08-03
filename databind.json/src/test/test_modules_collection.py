@@ -1,8 +1,7 @@
 
 import typing as t
 import pytest
-from databind.core.mapper import ConversionError
-from databind.core.mapper import ObjectMapper
+from databind.core import ConversionError, ObjectMapper
 from databind.json import JsonModule
 
 mapper = ObjectMapper(JsonModule())

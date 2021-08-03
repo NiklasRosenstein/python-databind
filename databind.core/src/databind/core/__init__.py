@@ -7,7 +7,7 @@ __version__ = '1.0.1'
 from . import annotations
 from . import dataclasses
 from .types.adapter import TypeHintAdapterError, TypeHintAdapter, DefaultTypeHintAdapter, ChainTypeHintAdapter
-from .types.types import BaseType, ConcreteType, ImplicitUnionType, OptionalType, ListType, SetType, MapType, UnknownType
+from .types.types import BaseType, ConcreteType, ImplicitUnionType, OptionalType, CollectionType, ListType, SetType, MapType, UnknownType
 from .types.schema import Field, Schema, SchemaDefinitionError, ObjectType, DataclassAdapter, dataclass_to_schema, FlattenedSchema, PropagatedField
 from .types.union import UnionSubtypes, UnionTypeError, UnionType, UnionAdapter
 from .mapper.converter import ConversionError, ConverterNotFound, Converter, ConverterProvider, Context, Direction
