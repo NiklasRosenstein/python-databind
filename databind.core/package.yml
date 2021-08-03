@@ -1,5 +1,5 @@
 name: databind.core
-version: 1.0.1
+version: 1.1.0
 description: 'Databind is a library inspired by jackson-databind to de-/serialize
   Python dataclasses.
 
