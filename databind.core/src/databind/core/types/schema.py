@@ -270,7 +270,7 @@ from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 
 
-def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintAdapter) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: TypeHintAdapter) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
 
@@ -285,7 +285,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_converter: TypeHintAdapter)
 
     # NOTE (NiklasRosenstein): We do not use #field.type because if it contains a #t.ForwardRef,
     #   it will not be resolved and we can't convert that to our type representation.
-    field_type_hint = type_converter.adapt_type_hint(annotations[field.name])
+    field_type_hint = type_hint_adapter.adapt_type_hint(annotations[field.name])
     field_annotations = list(field.metadata.get(ANNOTATIONS_METADATA_KEY, []))
 
     # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.

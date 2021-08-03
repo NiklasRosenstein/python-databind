@@ -47,7 +47,7 @@ class UnionSubtypes(abc.ABC):
   owner: t.Optional['weakref.ReferenceType[UnionType]'] = None
 
   @abc.abstractmethod
-  def get_type_name(self, type_: 'BaseType', type_converter: 'TypeHintAdapter') -> str:
+  def get_type_name(self, type_: 'BaseType', type_hint_adapter: 'TypeHintAdapter') -> str:
     """
     Given a type that is a member of the union subtypes, return the name of the type
     that is used as a discriminator when serializing a value of the type. Raises a
@@ -55,7 +55,7 @@ class UnionSubtypes(abc.ABC):
     """
 
   @abc.abstractmethod
-  def get_type_by_name(self, name: str, type_converter: 'TypeHintAdapter') -> 'BaseType':
+  def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
     """
     Given the name of the type that is used as a discriminator value when deserializing
     a value, return the actual type behind that name in the union subtypes. If the name
@@ -75,10 +75,10 @@ class EntrypointSubtypes(UnionSubtypes):
   Provides union subtypes per a Python entrypoint group.
   """
 
-  def __init__(self, name: str, type_converter: 'TypeHintAdapter') -> None:
+  def __init__(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> None:
     self._name = name
     self._entrypoints_cache: t.Optional[t.Dict[str, pkg_resources.EntryPoint]] = None
-    self._type_converter = type_converter
+    self._type_hint_adapter = type_hint_adapter
 
   def __repr__(self) -> str:
     return f'EntrypointSubtypes(name={self._name!r})'
@@ -91,7 +91,7 @@ class EntrypointSubtypes(UnionSubtypes):
         self._entrypoints_cache[ep.name] = ep
     return self._entrypoints_cache
 
-  def get_type_name(self, type_: 'BaseType', type_converter: 'TypeHintAdapter') -> str:
+  def get_type_name(self, type_: 'BaseType', type_hint_adapter: 'TypeHintAdapter') -> str:
     subject_type: t.Optional[t.Type] = None
     if isinstance(type_, ConcreteType):
       subject_type = type_.type
@@ -103,9 +103,9 @@ class EntrypointSubtypes(UnionSubtypes):
           return ep.name
     raise UnionTypeError(type_, self)
 
-  def get_type_by_name(self, name: str, type_converter: 'TypeHintAdapter') -> 'BaseType':
+  def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
     try:
-      return type_converter.adapt_type_hint(self._entrypoints[name].load())
+      return type_hint_adapter.adapt_type_hint(self._entrypoints[name].load())
     except KeyError:
       raise UnionTypeError(name, self)
 
@@ -126,17 +126,17 @@ class DynamicSubtypes(UnionSubtypes):
   def __repr__(self) -> str:
     return f'DynamicSubtypes(members={self.get_type_names()})'
 
-  def get_type_name(self, type_: 'BaseType', type_converter: 'TypeHintAdapter') -> str:
+  def get_type_name(self, type_: 'BaseType', type_hint_adapter: 'TypeHintAdapter') -> str:
     if not isinstance(type_, BaseType):
       raise RuntimeError(f'expected BaseType, got {type(type_).__name__}')
     if isinstance(type_, ConcreteType):
       for key in self._members:
-        value = self.get_type_by_name(key, type_converter)
+        value = self.get_type_by_name(key, type_hint_adapter)
         if value == type_:
           return key
     raise UnionTypeError(type_, self)
 
-  def get_type_by_name(self, name: str, type_converter: 'TypeHintAdapter') -> 'BaseType':
+  def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
     try:
       member = self._members[name]
     except KeyError:
@@ -146,7 +146,7 @@ class DynamicSubtypes(UnionSubtypes):
       if isinstance(member, types.FunctionType):
         member = member()
       if not isinstance(member, BaseType):
-        member = type_converter.adapt_type_hint(member)
+        member = type_hint_adapter.adapt_type_hint(member)
       self._members[name] = member
       assert isinstance(member, BaseType), (member, type(member))
       return member
@@ -168,18 +168,18 @@ class ChainSubtypes(UnionSubtypes):
   def __repr__(self) -> str:
     return f'ChainSubtypes({", ".join(map(repr, self._subtypes))})'
 
-  def get_type_name(self, type_: 'BaseType', type_converter: 'TypeHintAdapter') -> str:
+  def get_type_name(self, type_: 'BaseType', type_hint_adapter: 'TypeHintAdapter') -> str:
     for subtypes in self._subtypes:
       try:
-        return subtypes.get_type_name(type_, type_converter)
+        return subtypes.get_type_name(type_, type_hint_adapter)
       except UnionTypeError:
         pass
     raise UnionTypeError(type_, self)
 
-  def get_type_by_name(self, name: str, type_converter: 'TypeHintAdapter') -> 'BaseType':
+  def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
     for subtypes in self._subtypes:
       try:
-        return subtypes.get_type_by_name(name, type_converter)
+        return subtypes.get_type_by_name(name, type_hint_adapter)
       except UnionTypeError:
         pass
     raise UnionTypeError(name, self)
@@ -199,13 +199,13 @@ class ImportSubtypes(UnionSubtypes):
   def __repr__(self) -> str:
     return 'ImportSubtypes()'
 
-  def get_type_name(self, type_: 'BaseType', type_converter: 'TypeHintAdapter') -> str:
+  def get_type_name(self, type_: 'BaseType', type_hint_adapter: 'TypeHintAdapter') -> str:
     type_name = f'{type_.__module__}.{type_.__qualname__}'  # type: ignore
     if '<' in type_.__qualname__:  # type: ignore
       raise ValueError(f'non-global type {type_name} is not addressible')
     return type_name
 
-  def get_type_by_name(self, name: str, type_converter: 'TypeHintAdapter') -> 'BaseType':
+  def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
     parts = name.split('.')
     offset = 1
     module_name = parts[0]
@@ -231,7 +231,7 @@ class ImportSubtypes(UnionSubtypes):
     if not isinstance(target, type):
       raise ValueError(f'{name!r} does not point to a type (got {type(target).__name__} instead)')
 
-    return type_converter.adapt_type_hint(target)
+    return type_hint_adapter.adapt_type_hint(target)
 
   def get_type_names(self) -> t.List[str]:
     raise NotImplementedError
