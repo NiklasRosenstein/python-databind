@@ -75,10 +75,9 @@ class EntrypointSubtypes(UnionSubtypes):
   Provides union subtypes per a Python entrypoint group.
   """
 
-  def __init__(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> None:
+  def __init__(self, name: str) -> None:
     self._name = name
     self._entrypoints_cache: t.Optional[t.Dict[str, pkg_resources.EntryPoint]] = None
-    self._type_hint_adapter = type_hint_adapter
 
   def __repr__(self) -> str:
     return f'EntrypointSubtypes(name={self._name!r})'
