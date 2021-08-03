@@ -9,6 +9,7 @@ and to open it up for the possibility to extend it to other ways of describing t
 import dataclasses
 import sys
 import typing as t
+import warnings
 
 import nr.preconditions as preconditions
 from nr.optional import Optional
@@ -131,7 +132,8 @@ class Schema:
   python_type: t.Type
 
   def __post_init__(self) -> None:
-    _check_no_colliding_flattened_fields(self)
+    self._flattened: t.Optional[FlattenedSchema] = None
+    self.flattened()  # To immediately raise #SchemaDefinitionError on bad flat fields.
 
   @property
   def typeinfo(self) -> t.Optional['A.typeinfo']:
@@ -141,41 +143,94 @@ class Schema:
   def union(self) -> t.Optional['A.union']:
     return A.get_annotation(self.annotations, A.union, None)
 
-  class _FlatField(t.NamedTuple):
+  class _FieldInfo(t.NamedTuple):
     group: str
     path: str
     field: Field
 
-  def flat_fields(self) -> t.Iterator[_FlatField]:
+  def flattened(self) -> 'FlattenedSchema':
     """
-    Returns a list of the flattened fields of the schema and the group that they belong to.
-    Fields that belong to the root schema (ie. `self`) are grouped under the key `$`.
+    Returns the flattened version of this schema which is useful for the de-/serialization logic.
     """
 
-    stack = [('$', self)]
-    while stack:
-      path, schema = stack.pop(0)
-      for field_name, field in schema.fields.items():
-        field_path = path + '.' + field_name
-        if not field.flat:
-          group = path.split('.')[:2]
-          yield Schema._FlatField(group[-1], field_path, field)
-        if field.flat and isinstance(field.type, ObjectType):
-          stack.append((field_path, field.type.schema))
+    if self._flattened is not None:
+      return self._flattened
+
+    result = FlattenedSchema(self, {}, None)
+    for name, field in self.fields.items():
+      if field.flat:
+        if isinstance(field.type, ObjectType):
+          result.extend(name, field.type.schema.flattened())
+          continue
+        if isinstance(field.type, MapType):
+          if result.remainder_field is not None:
+            raise SchemaDefinitionError(f'Found multiple flat MapType fields (aka remainder fields) in schema {self.name!r}')
+          result.remainder_field = field
+          continue
+        warnings.warn(f'Field {name!r} of schema {self.name!r} is marked as flat but the annotation is not '
+          f'supported for fields of type {field.type!r}. The field will be treated as non-flat.', UserWarning)
+      result.add_field(name, self, name, PropagatedField(self, field, None, [name]))
+
+    self._flattened = result
+    return result
 
 
-def _check_no_colliding_flattened_fields(schema: Schema) -> None:
+class PropagatedField(t.NamedTuple):
   """
-  Checks that there are no colliding fields in the *schema* and it's flattened fields.
-
-  Raises a #SchemaDefinitionError if the constraint is violated.
+  Represents a field that may have been propagated from another field (i.e. that field was marked
+  as flat, thus all of it's fields are propagated into the parent schema). If a field was not
+  propagated from another field, it's #path and #group will be `$`.
   """
 
-  fields: t.Dict[str, str] = {}
-  for field in schema.flat_fields():
-    if field.field.name in fields:
-      raise SchemaDefinitionError(f'Flat field conflict in schema {schema.name!r}: ({fields[field.field.name]}, {field.path})')
-    fields[field.field.name] = field.path
+  #: The #Schema that the field belongs to.
+  schema: Schema
+
+  #: The original #Field object.
+  field: Field
+
+  #: The group that the schema belongs to. This is #None for a field that was not propagated,
+  #: (ie. #schema is the "root" schema that was flattened), or the name of the field that this
+  #: field was propagated from. For fields that are propagated from multiple levels of flattened
+  #: fields, the group will only name the immediate field name of the "root" schema.
+  group: t.Optional[str]
+
+  #: The path of the propagated field to find starting at the "root" schema.
+  path: t.List[str]
+
+  def format_path(self) -> str:
+    return '$' if not self.path else '$.' + '.'.join(self.path)
+
+
+@dataclasses.dataclass
+class FlattenedSchema:
+  """
+  Represents a #Schema after evaluating all proper fields annotated with #A.fieldinfo(flat=True).
+  """
+
+  #: The original schema.
+  schema: Schema
+
+  #: All fields from a #Schema and potentially the fields of it's own fields of those where
+  #: marked as flat.
+  fields: t.Dict[str, PropagatedField]
+
+  #: The one field that is a #MapType field and is marked flat.
+  remainder_field: t.Optional[Field]
+
+  def add_field(self, origin_field_name: str, origin_schema: Schema, name: str, field: PropagatedField) -> None:
+    if name in self.fields:
+      raise SchemaDefinitionError(f'Conflict when expanding field \'{origin_schema.name}.{name}\' into '
+        f'{self.schema.name!r} (from \'{self.schema.name}.{origin_field_name}\'): '
+        f'{self.fields[name].format_path()}, {field.format_path()}')
+    self.fields[name] = field
+
+  def extend(self, field_name: str, schema: 'FlattenedSchema') -> None:
+    if schema.remainder_field:
+      raise SchemaDefinitionError(f'Cannot expand schema with remainder_field ({schema.remainder_field.name}) into '
+        f'another schema.')
+    for name, field in schema.fields.items():
+      self.add_field(field_name, schema.schema, name, PropagatedField(
+        field.schema, field.field, field_name, [field_name] + field.path))
 
 
 class SchemaDefinitionError(Exception):

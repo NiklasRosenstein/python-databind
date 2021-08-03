@@ -8,6 +8,7 @@ import typing as t
 from databind.core import annotations as A
 from databind.core.mapper import Context, ConversionError, Direction, Converter, Context
 from databind.core.types import ObjectType
+from databind.core.types.types import MapType
 
 
 class ObjectTypeConverter(Converter):
@@ -28,17 +29,25 @@ class ObjectTypeConverter(Converter):
       groups[field.name] = ctx.push(field.type, value, field.name, field).convert()
 
     result: t.Dict[str, t.Any] = {}
-    for flat_field in type_.schema.flat_fields():
-      alias = (flat_field.field.aliases or [flat_field.field.name])[0]
-      if flat_field.group == '$':
-        value = getattr(ctx.value, flat_field.field.name)
+    flattened = type_.schema.flattened()
+    for name, flat_field in flattened.fields.items():
+      alias = (flat_field.field.aliases or [name])[0]
+      if not flat_field.group:
+        value = getattr(ctx.value, name)
         if skip_default_values and value != flat_field.field.get_default():
-          result[alias] = ctx.push(flat_field.field.type, value, flat_field.field.name, flat_field.field).convert()
-      elif alias in groups[flat_field.group]:
+          result[alias] = ctx.push(flat_field.field.type, value, name, flat_field.field).convert()
+      elif alias in groups[flat_field.group or '$']:
         # May not be contained if we skipped default values.
-        result[alias] = groups[flat_field.group][alias]
+        result[alias] = groups[flat_field.group or '$'][alias]
 
-    # TODO (@NiklasRosenstein): Support flat MapType() field
+    # Explode values from the remainder field into the result.
+    if flattened.remainder_field:
+      assert isinstance(flattened.remainder_field.type, MapType)
+      for key, value in getattr(ctx.value, flattened.remainder_field.name).items():
+        if key in result:
+          raise ctx.error(f'key {key!r} of remainder field {flattened.remainder_field.name!r} cannot be exploded '
+            'into resulting JSON object because of a conflict.')
+        result[key] = value
 
     return result
 
@@ -53,13 +62,14 @@ class ObjectTypeConverter(Converter):
 
     # Collect keys into groups.
     used_keys: t.Set[str] = set()
-    for flat_field in type_.schema.flat_fields():
-      aliases = flat_field.field.aliases or [flat_field.field.name]
+    flattened = type_.schema.flattened()
+    for name, flat_field in flattened.fields.items():
+      aliases = flat_field.field.aliases or [name]
       for alias in aliases:
         if alias in ctx.value:
           value = ctx.value[alias]
-          groups.setdefault(flat_field.group, {})[flat_field.field.name] = \
-            ctx.push(flat_field.field.type, value, flat_field.field.name, flat_field.field).convert()
+          groups.setdefault(flat_field.group or '$', {})[name] = \
+            ctx.push(flat_field.field.type, value, name, flat_field.field).convert()
           used_keys.add(alias)
           break
 
@@ -69,14 +79,19 @@ class ObjectTypeConverter(Converter):
       field = type_.schema.fields[group]
       groups['$'][group] = ctx.push(field.type, values, group, field).convert()
 
+    # Collect unknown fields into the remainder field if there is one.
+    if flattened.remainder_field:
+      assert isinstance(flattened.remainder_field.type, MapType)
+      remanants = {k: ctx.value[k] for k in ctx.value.keys() - used_keys}
+      groups['$'][flattened.remainder_field.name] = ctx.push(flattened.remainder_field.type, remanants, None, flattened.remainder_field).convert()
+      used_keys.update(ctx.value.keys())
+
     if not enable_unknowns or (enable_unknowns and enable_unknowns.callback):
       unused_keys = ctx.value.keys() - used_keys
       if unused_keys and not enable_unknowns:
         raise ConversionError(f'unknown keys found while deserializing {ctx.type}: {unused_keys}', ctx.location)
       elif unused_keys and enable_unknowns and enable_unknowns.callback:
         enable_unknowns.callback(ctx, set(unused_keys))
-
-    # TODO (@NiklasRosenstein): Support flat MapType() field
 
     try:
       return ((typeinfo.deserialize_as if typeinfo else None) or type_.schema.python_type)(**groups['$'])

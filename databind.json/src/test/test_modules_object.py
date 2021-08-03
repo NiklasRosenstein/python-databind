@@ -2,8 +2,10 @@
 import dataclasses
 import typing as t
 import typing_extensions as te
-from databind.core.annotations.enable_unknowns import enable_unknowns
+
 import pytest
+
+from databind.core.annotations.enable_unknowns import enable_unknowns
 from databind.core import annotations as A
 from databind.core.mapper import ConversionError, ObjectMapper
 from databind.json import JsonModule
@@ -88,3 +90,20 @@ def test_deserialize_dataclass_field_as():
 
   assert mapper.deserialize({'one': {}}, Three) == Three(Two())
   assert mapper.serialize(Three(Two()), Three) == {'one': {}}
+
+
+def test_map_remainders():
+
+  @dataclasses.dataclass
+  class Config:
+    port: int
+    rest: te.Annotated[t.Dict[str, t.Union[str, int]], A.fieldinfo(flat=True)]
+
+  payload = {'port': 42, 'foo': 'bar', 'spam': 0}
+  cfg = mapper.deserialize(payload, Config)
+  assert cfg == Config(42, {'foo': 'bar', 'spam': 0})
+  assert mapper.serialize(cfg, Config) == payload
+
+  with pytest.raises(ConversionError) as excinfo:
+    mapper.serialize(Config(42, {'port': 'bar'}), Config)
+  assert str(excinfo.value) == "[None] ($ ObjectType(Config)): key 'port' of remainder field 'rest' cannot be exploded into resulting JSON object because of a conflict."

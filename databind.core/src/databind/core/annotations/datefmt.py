@@ -9,9 +9,8 @@ import typing as t
 from dataclasses import dataclass
 
 from nr.parsing.date import date_format, time_format, datetime_format, format_set
-from nr.stream import Stream
 
-from . import Annotation
+from databind.core.annotations.base import Annotation
 
 Dtype = t.Union[datetime.date, datetime.time, datetime.datetime]
 Formatter = t.Union[date_format, time_format, datetime_format]
@@ -49,7 +48,7 @@ class datefmt(Annotation):
         yield from getattr(fmt, type_.__name__ + 's')
       #else:
       #  raise RuntimeError(f'bad date format type: {type(fmt).__name__}')
-    
+
   def parse(self, type_: t.Type[T_Dtype], value: str) -> T_Dtype:
     format_t: t.Type[Formatter]
     format_t, method_name = {  # type: ignore

@@ -11,3 +11,7 @@ changes:
     module name changes, deprecated `ObjectMapper.default()`, remove `IObjectMapper`
     and replace `Context.mapper` with `Context.converters` and `Context.annotations`.
   fixes: []
+- type: breaking_change
+  component: general
+  description: replace `Schema.flat_fields()` with `Schema.flattened()`
+  fixes: []
