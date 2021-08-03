@@ -60,7 +60,7 @@ class Context:
   parent: t.Optional['Context']
 
   #: The type adapter used in this context.
-  type_converter: TypeHintAdapter
+  type_hint_adapter: TypeHintAdapter
 
   #: Provider for de-/serializers.
   converters: ConverterProvider
@@ -103,7 +103,7 @@ class Context:
     position: t.Optional[Position] = None
   ) -> 'Context':
     location = self.location.push(type_, key, filename, position)
-    return Context(self, self.type_converter, self.converters, self.annotations, self.settings, self.direction, value,
+    return Context(self, self.type_hint_adapter, self.converters, self.annotations, self.settings, self.direction, value,
       location, field or Field(str(key or '$'), type_, []))
 
   def convert(self) -> t.Any:

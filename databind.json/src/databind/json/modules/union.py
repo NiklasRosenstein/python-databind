@@ -19,12 +19,12 @@ class UnionConverter(Converter):
       if discriminator_key not in ctx.value:
         raise ConversionError(f'missing discriminator key {discriminator_key!r}', ctx.location)
       member_name = ctx.value[discriminator_key]
-      member_type = ctx.type.subtypes.get_type_by_name(member_name, ctx.type_converter)
+      member_type = ctx.type.subtypes.get_type_by_name(member_name, ctx.type_hint_adapter)
       assert isinstance(member_type, BaseType), f'"{type(ctx.type.subtypes).__name__}" returned member_type must '\
           f'be BaseType, got "{type(member_type).__name__}"'
     else:
-      member_type = ctx.type_converter.adapt_type_hint(type(ctx.value))
-      member_name = ctx.type.subtypes.get_type_name(member_type, ctx.type_converter)
+      member_type = ctx.type_hint_adapter.adapt_type_hint(type(ctx.value))
+      member_name = ctx.type.subtypes.get_type_name(member_type, ctx.type_hint_adapter)
 
     type_hint = member_type
 
