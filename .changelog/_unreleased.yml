@@ -6,3 +6,8 @@ changes:
     used from (ie. `databind.core`, `databind.core.annotations`, `databind.core.dataclasses`,
     `databind.json`)
   fixes: []
+- type: feature
+  component: general
+  description: add support for `fieldinfo(flat=True)` marked `MapType` fields
+  fixes:
+  - '#7'
