@@ -10,8 +10,7 @@ import typing as t
 
 from nr.parsing.date import duration
 
-from databind.core.mapper import ObjectMapper, SimpleModule
-from databind.core.types import ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
+from databind.core import ObjectMapper, SimpleModule, ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
 from .modules.any import AnyConverter
 from .modules.collection import CollectionConverter
 from .modules.datetime import DatetimeJsonConverter, DurationConverter
@@ -24,7 +23,15 @@ from .modules.optional import OptionalConverter
 from .modules.plain import PlainJsonConverter
 from .modules.union import UnionConverter
 
-__all__ = ['JsonModule']
+__all__ = [
+  'JsonModule',
+  'JsonType',
+  'mapper',
+  'load',
+  'loads',
+  'dump',
+  'dumps',
+]
 
 T = t.TypeVar('T')
 JsonType = t.Union[t.Mapping, t.Collection, str, int, float, bool, None]
@@ -58,8 +65,11 @@ class JsonModule(SimpleModule):
     self.add_converter_provider(EnumConverter())
 
 
-def new_mapper() -> ObjectMapper:
+def mapper() -> ObjectMapper:
   return ObjectMapper(JsonModule(), name=__name__)
+
+
+new_mapper = mapper  # backwards compatibility <=1.0.1
 
 
 def load(

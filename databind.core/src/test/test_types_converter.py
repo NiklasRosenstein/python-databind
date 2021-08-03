@@ -1,8 +1,8 @@
 
 import typing as t
 import typing_extensions as te
-from databind.core.types import *
-from databind.core.mapper import ObjectMapper
+from databind.core.types.types import *
+from databind.core.mapper.objectmapper import ObjectMapper
 
 T = t.TypeVar('T')
 mapper = ObjectMapper()

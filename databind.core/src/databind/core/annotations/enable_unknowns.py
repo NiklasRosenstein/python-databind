@@ -5,7 +5,7 @@ import typing as t
 from databind.core.mapper.location import Location
 
 if t.TYPE_CHECKING:
-  from databind.core.mapper import Context
+  from databind.core.mapper.converter import Context
 
 
 @dataclasses.dataclass

@@ -4,8 +4,8 @@ from databind.core.types.types import ConcreteType
 
 import nr.preconditions as preconditions
 
-from databind.core.types import BaseType
-from .converter import Converter, ConverterNotFound, ConverterProvider, Direction
+from databind.core.types.types import BaseType
+from databind.core.mapper.converter import Converter, ConverterNotFound, ConverterProvider, Direction
 
 
 class SimpleModule(ConverterProvider):

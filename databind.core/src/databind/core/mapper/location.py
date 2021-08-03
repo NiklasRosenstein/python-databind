@@ -2,7 +2,7 @@
 import enum
 import typing as t
 from dataclasses import dataclass
-from databind.core.types import BaseType, UnknownType
+from databind.core.types.types import BaseType, UnknownType
 
 
 def _get_location_chain(location: 'Location') -> t.List['Location']:
@@ -119,3 +119,4 @@ class Location:
     return self.push(UnknownType(), key)
 
   Format = Format
+  Position = Position

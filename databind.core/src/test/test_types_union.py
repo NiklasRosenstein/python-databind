@@ -2,9 +2,8 @@
 import typing as t
 import typing_extensions as te
 from dataclasses import dataclass
-from databind.core.mapper import ObjectMapper
-from databind.core.types import ConcreteType, ListType
-from databind.core.types.union import DynamicSubtypes, ImportSubtypes, UnionAdapter, UnionType, union
+from databind.core import ObjectMapper, ConcreteType, ListType, UnionAdapter, UnionType
+from databind.core.annotations import union
 
 mapper = ObjectMapper()
 from_typing = mapper.adapt_type_hint
@@ -14,8 +13,8 @@ class Foobar: pass
 
 
 def test_import_subtypes():
-  assert ImportSubtypes().get_type_name(Foobar, mapper) == f'{__name__}.Foobar'
-  assert ImportSubtypes().get_type_by_name(f'{__name__}.Foobar', mapper) == ConcreteType(Foobar)
+  assert union.Subtypes.import_().get_type_name(Foobar, mapper) == f'{__name__}.Foobar'
+  assert union.Subtypes.import_().get_type_by_name(f'{__name__}.Foobar', mapper) == ConcreteType(Foobar)
 
 
 def test_union_adapter():
@@ -27,7 +26,7 @@ def test_union_adapter():
 
   def _check(type_: UnionType):
     assert isinstance(type_, UnionType)
-    assert isinstance(type_.subtypes, DynamicSubtypes)
+    assert isinstance(type_.subtypes, union.Subtypes.dynamic)
     assert type_.style == None
     assert type_.discriminator_key == None
 
@@ -44,7 +43,7 @@ def test_union_annotated_adapter():
     'int': int,
     'str': str,
   })]]
-  assert from_typing(members) == ListType(UnionType(DynamicSubtypes({
+  assert from_typing(members) == ListType(UnionType(union.Subtypes.dynamic({
     'int': int,
     'str': str,
   }), python_type=t.Union[int, str]))

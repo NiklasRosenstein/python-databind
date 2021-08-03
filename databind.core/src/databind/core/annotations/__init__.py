@@ -31,7 +31,7 @@ __all__ = [
   'collect_unknowns',
   'fieldinfo',
   'precision',
+  'typeinfo',
   'union',
   'unionclass',
-  'typeinfo',
 ]

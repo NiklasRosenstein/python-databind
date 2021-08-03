@@ -9,7 +9,9 @@ import deprecated
 import nr.preconditions as preconditions
 
 from databind.core.annotations import Annotation
-from databind.core.types import BaseType, Field, UnionAdapter, DataclassAdapter
+from databind.core.types.types import BaseType
+from databind.core.types.schema import DataclassAdapter, Field
+from databind.core.types.union import UnionAdapter
 from .converter import Context, ConverterNotFound, ConverterProvider, Direction, Context
 from .module import SimpleModule
 from .location import Location, Position

@@ -1,7 +1,7 @@
 
 import typing as t
-from databind.core.mapper.location import Format, Location, Position
-from databind.core.mapper import ObjectMapper
+from databind.core import ObjectMapper
+from databind.core.mapper.location import Format, Position, Location
 
 
 def test_location_str():

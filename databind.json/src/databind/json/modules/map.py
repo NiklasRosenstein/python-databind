@@ -1,7 +1,6 @@
 
 import typing as t
-from databind.core.mapper import Context, Converter
-from databind.core.types import MapType
+from databind.core import Context, Converter, MapType
 
 
 class MapConverter(Converter):

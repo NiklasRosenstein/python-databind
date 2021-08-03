@@ -4,11 +4,8 @@ import typing as t
 import typing_extensions as te
 import pytest
 
-from databind.core.annotations import alias, fieldinfo
-from databind.core.dataclasses import dataclass as ddataclass, field as dfield
-from databind.core.mapper import ObjectMapper
-from databind.core.types import Field, Schema, ConcreteType, ListType, ObjectType, OptionalType
-from databind.core.types.schema import FlattenedSchema, PropagatedField, SchemaDefinitionError, ObjectType, DataclassAdapter, dataclass_to_schema
+from databind.core import annotations as A, dataclasses as D, ConcreteType, OptionalType, ListType, ObjectType
+from databind.core import ObjectMapper, SchemaDefinitionError, Schema, Field, FlattenedSchema, PropagatedField, dataclass_to_schema, DataclassAdapter
 
 mapper = ObjectMapper()
 from_typing = mapper.adapt_type_hint
@@ -17,19 +14,19 @@ from_typing = mapper.adapt_type_hint
 def test_schema_flat_fields_check():
 
   @dataclasses.dataclass
-  class A:
+  class Acls:
     foo: str
     bar: str
 
-  assert isinstance(from_typing(A), ObjectType)
+  assert isinstance(from_typing(Acls), ObjectType)
 
   @dataclasses.dataclass
-  class B:
+  class Bcls:
     foo: str
-    a: te.Annotated[A, fieldinfo(flat=True)]  # Field cannot be flat because of conflicting members "foo".
+    a: te.Annotated[Acls, A.fieldinfo(flat=True)]  # Field cannot be flat because of conflicting members "foo".
 
   with pytest.raises(SchemaDefinitionError) as excinfo:
-    assert isinstance(from_typing(B), ObjectType)
+    assert isinstance(from_typing(Bcls), ObjectType)
   assert '$.foo, $.a.foo' in str(excinfo.value)
 
 
@@ -53,7 +50,7 @@ def test_dataclass_to_schema_conversion():
   class MyDataclass:
     a: int
     b: t.Optional[str] = dataclasses.field(default=None, metadata={'alias': 'balias'})
-    c: te.Annotated[str, alias('calias')] = 42
+    c: te.Annotated[str, A.alias('calias')] = 42
     d: t.Optional[P] = None
     e: str = dataclasses.field(default='foobar', init=False)
 
@@ -64,8 +61,8 @@ def test_dataclass_to_schema_conversion():
     'MyDataclass',
     {
       'a': Field('a', ConcreteType(int)),
-      'b': Field('b', OptionalType(ConcreteType(str)), [alias('balias')], default=None),
-      'c': Field('c', ConcreteType(str, [alias('calias')]), [], default=42),
+      'b': Field('b', OptionalType(ConcreteType(str)), [A.alias('balias')], default=None),
+      'c': Field('c', ConcreteType(str, [A.alias('calias')]), [], default=42),
       'd': Field('d', OptionalType(ObjectType(dataclass_to_schema(P, mapper))), default=None),
     },
     [],
@@ -96,9 +93,9 @@ def test_dataclass_field_with_custom_generic_subclass():
 
 def test_databind_dataclass_field_annotations():
 
-  @ddataclass
+  @D.dataclass
   class MyClass:
-    f: int = dfield(annotations=['foobar'])
+    f: int = D.field(annotations=['foobar'])
 
   type_ = from_typing(MyClass)
   assert isinstance(type_, ObjectType)
@@ -135,18 +132,18 @@ def test_schema_from_generic_impl():
 
 def test_schema_multilevel_flat_fields():
   @dataclasses.dataclass
-  class C:
+  class Ccls:
     d: int
   @dataclasses.dataclass
-  class B:
-    c: te.Annotated[C, fieldinfo(flat=True)]
+  class Bcls:
+    c: te.Annotated[Ccls, A.fieldinfo(flat=True)]
   @dataclasses.dataclass
-  class A:
-    b: te.Annotated[B, fieldinfo(flat=True)]
+  class Acls:
+    b: te.Annotated[Bcls, A.fieldinfo(flat=True)]
 
-  schema = dataclass_to_schema(A, mapper)
+  schema = dataclass_to_schema(Acls, mapper)
   flattened = schema.flattened()
   assert flattened == FlattenedSchema(
     schema,
-    {'d': PropagatedField(dataclass_to_schema(C, mapper), Field('d', ConcreteType(int)), 'b', ['b', 'c', 'd'])},
+    {'d': PropagatedField(dataclass_to_schema(Ccls, mapper), Field('d', ConcreteType(int)), 'b', ['b', 'c', 'd'])},
     None)

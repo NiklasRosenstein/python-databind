@@ -1,7 +1,6 @@
 
 import typing as t
-from databind.core.mapper import Context, Converter
-from databind.core.types import OptionalType
+from databind.core import Context, Converter, OptionalType
 
 
 class OptionalConverter(Converter):

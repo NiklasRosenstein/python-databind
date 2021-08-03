@@ -1,0 +1,8 @@
+release_date: null
+changes:
+- type: change
+  component: general
+  description: only import members from sub-modules where they are expected to be
+    used from (ie. `databind.core`, `databind.core.annotations`, `databind.core.dataclasses`,
+    `databind.json`)
+  fixes: []

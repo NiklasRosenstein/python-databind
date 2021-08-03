@@ -6,7 +6,9 @@ from dataclasses import dataclass
 
 from databind.core.annotations import Annotation, get_annotation
 from databind.core.annotations.base import AnnotationsProvider
-from databind.core.types import BaseType, TypeHintAdapter, Field
+from databind.core.types.adapter import TypeHintAdapter
+from databind.core.types.types import BaseType
+from databind.core.types.schema import Field
 from .location import Location, Position
 from .settings import Settings
 

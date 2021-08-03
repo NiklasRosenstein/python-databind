@@ -5,10 +5,7 @@ schemas (see #databind.core.schema).
 """
 
 import typing as t
-from databind.core import annotations as A
-from databind.core.mapper import Context, ConversionError, Direction, Converter, Context
-from databind.core.types import ObjectType
-from databind.core.types.types import MapType
+from databind.core import annotations as A, Context, ConversionError, Direction, Converter, MapType, ObjectType
 
 
 class ObjectTypeConverter(Converter):

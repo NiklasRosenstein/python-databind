@@ -1,5 +1,5 @@
 
-from databind.core.types import ConcreteType, ListType, SetType
+from databind.core.types.types import ConcreteType, ListType, SetType
 
 
 def test_visit():
