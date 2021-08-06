@@ -61,3 +61,26 @@ class Ccls: pass
 def test_dynamic_subtypes():
   assert mapper().deserialize({'other': {'type': 'b', 'b': {}}}, Acls) == Acls(Bcls())
   assert mapper().deserialize({'other': {'type': 'c', 'c': {}}}, Acls) == Acls(Ccls())
+
+
+def test_file_content_api():
+
+  @dataclasses.dataclass
+  class FileContentMarkdown:
+    markdown: str
+
+  @dataclasses.dataclass
+  class FileContentMedia:
+    media: bytes
+
+  FileContent = te.Annotated[t.Union[
+    FileContentMarkdown,
+    FileContentMedia,
+  ], A.union({
+    'markdown': FileContentMarkdown,
+    'media': FileContentMedia,
+  }, style=A.union.Style.flat)]
+
+  assert mapper().serialize(FileContentMarkdown('Hello'), FileContent) == {'type': 'markdown', 'markdown': 'Hello'}
+  assert mapper().deserialize({'type': 'markdown', 'markdown': 'Hello'}, FileContent) == FileContentMarkdown('Hello')
+  #assert mapper().serialize(FileContentMedia(b'Hello'), FileContent) == {'type': 'markdown', 'media': 'SGVsbG8='}

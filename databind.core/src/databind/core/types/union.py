@@ -128,11 +128,10 @@ class DynamicSubtypes(UnionSubtypes):
   def get_type_name(self, type_: 'BaseType', type_hint_adapter: 'TypeHintAdapter') -> str:
     if not isinstance(type_, BaseType):
       raise RuntimeError(f'expected BaseType, got {type(type_).__name__}')
-    if isinstance(type_, ConcreteType):
-      for key in self._members:
-        value = self.get_type_by_name(key, type_hint_adapter)
-        if value == type_:
-          return key
+    for key in self._members:
+      value = self.get_type_by_name(key, type_hint_adapter)
+      if value == type_:
+        return key
     raise UnionTypeError(type_, self)
 
   def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
