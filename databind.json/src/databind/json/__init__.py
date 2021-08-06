@@ -51,6 +51,7 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(bool, PlainJsonConverter())
     self.add_converter_for_type(float, PlainJsonConverter())
     self.add_converter_for_type(int, PlainJsonConverter())
+    self.add_converter_for_type(bytes, PlainJsonConverter())
     self.add_converter_for_type(str, PlainJsonConverter())
     self.add_converter_for_type(decimal.Decimal, DecimalJsonConverter())
     self.add_converter_for_type(datetime.date, DatetimeJsonConverter())

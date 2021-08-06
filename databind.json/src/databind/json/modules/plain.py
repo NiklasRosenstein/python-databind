@@ -3,7 +3,7 @@
 Provides the #PlainDatatypeModule which contains converters for plain datatypes.
 """
 
-
+import base64
 import typing as t
 from databind.core import annotations as A, ConcreteType, Context, Direction, Converter
 from nr import preconditions
@@ -37,7 +37,10 @@ class PlainJsonConverter(Converter):
   deserialization but not during serialization.
   """
 
+  # Map for (source_type, target_type)
   _strict_adapters: t.Dict[t.Tuple[t.Type, t.Type], t.Callable[[t.Any], t.Any]] = {
+    (bytes, bytes): lambda d: base64.b64encode(d).decode('ascii'),
+    (str, bytes): base64.b64decode,
     (str, str): str,
     (int, int): int,
     (float, float): float,

@@ -1,0 +1,6 @@
+release_date: null
+changes:
+- type: feature
+  component: general
+  description: support de-/serializing `bytes` as base64
+  fixes: []

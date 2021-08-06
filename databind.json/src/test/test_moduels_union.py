@@ -83,4 +83,5 @@ def test_file_content_api():
 
   assert mapper().serialize(FileContentMarkdown('Hello'), FileContent) == {'type': 'markdown', 'markdown': 'Hello'}
   assert mapper().deserialize({'type': 'markdown', 'markdown': 'Hello'}, FileContent) == FileContentMarkdown('Hello')
-  #assert mapper().serialize(FileContentMedia(b'Hello'), FileContent) == {'type': 'markdown', 'media': 'SGVsbG8='}
+  assert mapper().serialize(FileContentMedia(b'Hello'), FileContent) == {'type': 'media', 'media': 'SGVsbG8='}
+  assert mapper().deserialize({'type': 'media', 'media': 'SGVsbG8='}, FileContent) == FileContentMedia(b'Hello')
