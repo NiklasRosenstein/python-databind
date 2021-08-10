@@ -10,6 +10,8 @@ import abc
 import dataclasses
 import typing as t
 
+from databind.core.types.utils import type_repr
+
 
 class BaseType(metaclass=abc.ABCMeta):
   """ Base class for an API representation of #typing type hints. """
@@ -38,7 +40,7 @@ class ConcreteType(BaseType):
   annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
-    return f'ConcreteType({self.type.__module__}.{self.type.__name__})'
+    return f'ConcreteType({type_repr(self.type)})'
 
   def to_typing(self) -> t.Any:
     return self.type

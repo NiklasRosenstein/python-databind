@@ -10,6 +10,7 @@ import dataclasses
 import sys
 import typing as t
 import warnings
+from databind.core.types.utils import type_repr
 
 import nr.preconditions as preconditions
 from nr.optional import Optional
@@ -249,8 +250,7 @@ class ObjectType(BaseType):
   annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
-    type_ = self.schema.python_type
-    return f'ObjectType({type_.__module__}.{type_.__name__})'
+    return f'ObjectType({type_repr(self.schema.python_type)})'
 
   def to_typing(self) -> t.Any:
     return self.schema.python_type
