@@ -10,15 +10,18 @@ import dataclasses
 import sys
 import typing as t
 import warnings
-from databind.core.types.utils import type_repr
+from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 
 import nr.preconditions as preconditions
 from nr.optional import Optional
 from nr.pylang.utils import NotSet
 
 import databind.core.annotations as A
+from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
+from databind.core.types.utils import type_repr
 from .adapter import TypeHintAdapter, TypeHintAdapterError
 from .types import BaseType, ConcreteType, MapType
+
 
 T = t.TypeVar('T')
 
@@ -266,11 +269,6 @@ def _get_type_hints(type_: t.Any) -> t.Any:
     return t.get_type_hints(type_)
 
 
-from databind.core.annotations import get_type_annotations
-from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
-from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
-
-
 def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: TypeHintAdapter) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
@@ -308,7 +306,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: TypeHintAdapt
   return Schema(
     dataclass_type.__name__,
     fields,
-    list(get_type_annotations(dataclass_type).values()),
+    list(A.get_type_annotations(dataclass_type).values()),
     dataclass_type,
   )
 
