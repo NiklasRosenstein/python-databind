@@ -249,7 +249,8 @@ class ObjectType(BaseType):
   annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
-    return f'ObjectType({self.schema.python_type.__name__})'
+    type_ = self.schema.python_type
+    return f'ObjectType({type_.__module__}.{type_.__name__})'
 
   def to_typing(self) -> t.Any:
     return self.schema.python_type

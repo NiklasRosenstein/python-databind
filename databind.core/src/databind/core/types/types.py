@@ -38,7 +38,7 @@ class ConcreteType(BaseType):
   annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
   def __repr__(self) -> str:
-    return f'ConcreteType({self.type.__name__})'
+    return f'ConcreteType({self.type.__module__}.{self.type.__name__})'
 
   def to_typing(self) -> t.Any:
     return self.type

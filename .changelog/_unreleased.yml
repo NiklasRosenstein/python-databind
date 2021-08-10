@@ -1,0 +1,5 @@
+changes:
+- type: change
+  component: general
+  description: '`ObjectType` and `ConcreteType` now show the class fqn on repr()'
+  fixes: []
