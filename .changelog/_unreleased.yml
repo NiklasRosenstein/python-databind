@@ -1,0 +1,6 @@
+changes:
+- type: fix
+  component: general
+  description: rerender `setup.py` files with `shut==0.16.0` with https://github.com/NiklasRosenstein/shut/issues/21
+    fixed, now the LICENSE.txt is again included in the `sdist`
+  fixes: []
