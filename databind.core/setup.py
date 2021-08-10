@@ -11,13 +11,12 @@ def _tempcopy(src, dst):
   import atexit, shutil
   if not os.path.isfile(dst):
     if not os.path.isfile(src):
-      print('warning: source file "{}" for destination "{}" does not exist'.format(src, dst))
-      return
+      raise RuntimeError('error: "{}" does not exist, and cannot copy it from "{}" either'.format(dst, src))
     shutil.copyfile(src, dst)
     atexit.register(lambda: os.remove(dst))
 
 
-_tempcopy('../../LICENSE.txt', 'LICENSE.txt')
+_tempcopy('../LICENSE.txt', 'LICENSE.txt')
 
 readme_file = 'README.md'
 if os.path.isfile(readme_file):
@@ -43,7 +42,7 @@ extras_require['test'] = test_requirements
 
 setuptools.setup(
   name = 'databind.core',
-  version = '1.1.3',
+  version = '1.1.4',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.7 and newer.',

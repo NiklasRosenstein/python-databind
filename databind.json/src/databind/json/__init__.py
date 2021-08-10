@@ -1,6 +1,6 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 import datetime
 import decimal

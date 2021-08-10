@@ -11,13 +11,12 @@ def _tempcopy(src, dst):
   import atexit, shutil
   if not os.path.isfile(dst):
     if not os.path.isfile(src):
-      print('warning: source file "{}" for destination "{}" does not exist'.format(src, dst))
-      return
+      raise RuntimeError('error: "{}" does not exist, and cannot copy it from "{}" either'.format(dst, src))
     shutil.copyfile(src, dst)
     atexit.register(lambda: os.remove(dst))
 
 
-_tempcopy('../../LICENSE.txt', 'LICENSE.txt')
+_tempcopy('../LICENSE.txt', 'LICENSE.txt')
 
 readme_file = 'README.md'
 if os.path.isfile(readme_file):
@@ -28,7 +27,7 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=1.1.3,<2.0.0',
+  'databind.core >=1.1.4,<2.0.0',
   'typing_extensions >=3.10.0,<4.0.0',
   'nr.parsing.date >=1.0.1,<2.0.0',
   'nr.preconditions >=0.0.4,<1.0.0',
@@ -41,7 +40,7 @@ extras_require['test'] = test_requirements
 
 setuptools.setup(
   name = 'databind.json',
-  version = '1.1.3',
+  version = '1.1.4',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.7 and newer.',
