@@ -17,7 +17,7 @@ def _tempcopy(src, dst):
     atexit.register(lambda: os.remove(dst))
 
 
-_tempcopy('../LICENSE.txt', 'LICENSE.txt')
+_tempcopy('../../LICENSE.txt', 'LICENSE.txt')
 
 readme_file = 'README.md'
 if os.path.isfile(readme_file):
@@ -38,10 +38,12 @@ requirements = [
 test_requirements = [
   'pytest',
 ]
+extras_require = {}
+extras_require['test'] = test_requirements
 
 setuptools.setup(
   name = 'databind.core',
-  version = '1.1.2',
+  version = '1.1.3',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.7 and newer.',
@@ -53,7 +55,7 @@ setuptools.setup(
   package_dir = {'': 'src'},
   include_package_data = True,
   install_requires = requirements,
-  extras_require = {},
+  extras_require = extras_require,
   tests_require = test_requirements,
   python_requires = '>=3.7.0,<4.0.0',
   data_files = [],

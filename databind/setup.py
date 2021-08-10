@@ -17,7 +17,7 @@ def _tempcopy(src, dst):
     atexit.register(lambda: os.remove(dst))
 
 
-_tempcopy('../LICENSE.txt', 'LICENSE.txt')
+_tempcopy('../../LICENSE.txt', 'LICENSE.txt')
 
 readme_file = 'README.md'
 _tempcopy('../README.md', readme_file)
@@ -29,13 +29,13 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=1.1.2,<2.0.0',
-  'databind.json >=1.1.2,<2.0.0',
+  'databind.core >=1.1.3,<2.0.0',
+  'databind.json >=1.1.3,<2.0.0',
 ]
 
 setuptools.setup(
   name = 'databind',
-  version = '1.1.2',
+  version = '1.1.3',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package will install the full suite of databind packages. Compatible with Python 3.7 and newer.',
