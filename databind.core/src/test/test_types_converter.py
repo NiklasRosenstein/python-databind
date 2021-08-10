@@ -36,6 +36,10 @@ def test_from_typing():
 
 
 def test_custom_generic_subclass():
+  """
+  Tests if custom generic subclasses of for example #t.List are understood as such.
+  """
+
   class MyList(t.List[int]):
     pass
   assert from_typing(MyList) == ListType(ConcreteType(int), MyList)
@@ -44,6 +48,12 @@ def test_custom_generic_subclass():
   class AnotherList(t.List[T]):
     pass
   assert from_typing(AnotherList[int]) == ListType(ConcreteType(int), AnotherList)
+
+  class GenericBase(t.Generic[T]):
+    pass
+  class Subclass(GenericBase[int], t.List[int]):
+    pass
+  assert from_typing(Subclass) == ListType(ConcreteType(int), Subclass)
 
 
 def test_any():

@@ -34,7 +34,6 @@ def test_union_adapter():
   _check(type_)
 
   type_ = from_typing(MyUnionType)
-  print(type_)
   _check(type_)
 
 

@@ -6,9 +6,10 @@ import dataclasses
 import textwrap
 import typing as t
 import typing_extensions as te
+import warnings
 
 from .types import BaseType, ConcreteType, ListType, SetType, MapType, OptionalType, ImplicitUnionType
-from .utils import unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
+from .utils import type_repr, unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
 
 
 @dataclasses.dataclass
@@ -42,9 +43,14 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
     # NOTE (@NiklasRosenstein): We only support a single generic base.
     python_type: t.Optional[t.Type] = None
     generic_bases = find_generic_bases(type_hint)
+    # Filter down to supported generic bases.
+    generic_bases = [b for b in generic_bases if b.__origin__ in _ORIGIN_CONVERSION]
     if len(generic_bases) == 1:
       python_type = generic
       generic, args = unpack_type_hint(generic_bases[0])
+    elif len(generic_bases) > 1:
+      warnings.warn(f'Found multiple supported generic bases for `{type_repr(type_hint)}`, '
+        f'can not decide which to pick. Generic bases found: {generic_bases}', UserWarning)
 
     if generic is not None:
       generic = _ORIGIN_CONVERSION.get(generic, generic)

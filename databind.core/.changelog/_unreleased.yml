@@ -3,3 +3,8 @@ changes:
   component: general
   description: '`ObjectType` and `ConcreteType` now show the class fqn on repr()'
   fixes: []
+- type: fix
+  component: general
+  description: fix support for special generic subclasses (like `List` or `Dict`)
+    with another generic base class (eg. `Generic`)
+  fixes: []
