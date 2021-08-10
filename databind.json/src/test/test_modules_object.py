@@ -65,7 +65,8 @@ def test_unknown_keys():
 
   with pytest.raises(ConversionError) as excinfo:
     mapper.deserialize({'name': 'John', 'age': 22}, Person)
-  assert str(excinfo.value) == "[None] ($ ObjectType(Person)): unknown keys found while deserializing ObjectType(Person): {'age'}"
+  assert str(excinfo.value) == "[None] ($ ObjectType(test_modules_object.test_unknown_keys.<locals>.Person)): "\
+      "unknown keys found while deserializing ObjectType(test_modules_object.test_unknown_keys.<locals>.Person): {'age'}"
 
   unknown_keys = []
   unknowns = A.enable_unknowns(callback=lambda ctx, keys: unknown_keys.extend(keys))
@@ -108,4 +109,4 @@ def test_map_remainders():
 
   with pytest.raises(ConversionError) as excinfo:
     mapper.serialize(Config(42, {'port': 'bar'}), Config)
-  assert str(excinfo.value) == "[None] ($ ObjectType(Config)): key 'port' of remainder field 'rest' cannot be exploded into resulting JSON object because of a conflict."
+  assert str(excinfo.value) == "[None] ($ ObjectType(test_modules_object.test_map_remainders.<locals>.Config)): key 'port' of remainder field 'rest' cannot be exploded into resulting JSON object because of a conflict."
