@@ -7,7 +7,7 @@ the standard library `dataclasses` module, for that check out the section at the
 
 ### Known implementations
 
-* [databind.json](https://pypi.org/projects/databind.json)
+* [databind.json](https://pypi.org/project/databind.json)
 
 ### Dataclass extension
 

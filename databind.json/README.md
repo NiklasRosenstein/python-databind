@@ -19,7 +19,7 @@ class MainConfig:
   server: ServerConfig
 
 payload = { 'server': { 'host': '127.0.0.1' } }
-config = databind.json.load(MainConfig, payload)
+config = databind.json.load(payload, MainConfig)
 assert config == MainConfig(ServerConfig('127.0.0.1'))
 ```
 
