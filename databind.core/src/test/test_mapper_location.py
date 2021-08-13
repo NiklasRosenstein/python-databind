@@ -1,3 +1,4 @@
+# type: ignore
 
 import typing as t
 from databind.core import ObjectMapper

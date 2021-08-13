@@ -1,3 +1,4 @@
+# type: ignore
 
 import pytest
 from dataclasses import dataclass as orig_dataclass

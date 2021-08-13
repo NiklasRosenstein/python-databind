@@ -1,3 +1,4 @@
+# type: ignore
 
 import abc
 import dataclasses

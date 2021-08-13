@@ -16,11 +16,9 @@ requirements:
 - nr.stream ^0.1.1
 - Deprecated ^1.2.12
 test-requirements:
-- pytest
-dev-requirements:
-- mypy
 - types-dataclasses
 - types-deprecated
 - types-pkg_resources
-test-driver:
-  type: pytest
+test-drivers:
+  - type: pytest
+  - type: mypy
