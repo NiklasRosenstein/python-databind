@@ -1,0 +1,7 @@
+changes:
+- type: fix
+  component: general
+  description: '`str`, `bytes`, `bytearray` and `memoryview` are no longer accepted
+    when deserializing `CollectionType` values'
+  fixes:
+  - '#13'

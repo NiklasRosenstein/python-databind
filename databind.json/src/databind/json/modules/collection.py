@@ -17,7 +17,7 @@ class CollectionConverter(Converter):
       python_type = self.json_type
 
     elif ctx.direction == Direction.deserialize:
-      if not isinstance(ctx.value, t.Collection):
+      if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
         raise ctx.type_error(expected=t.Collection)
       python_type = ctx.type.python_type
 
