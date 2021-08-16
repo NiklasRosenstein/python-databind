@@ -418,12 +418,13 @@ class UnionAdapter(TypeHintAdapter):
   def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
     if not isinstance(type_hint, BaseType):
       raise TypeHintAdapterError(self, str(type_hint))
-    if isinstance(type_hint, ConcreteType):
+
+    union_ann = get_annotation(type_hint.annotations, union, None)
+    if union_ann is None and isinstance(type_hint, ConcreteType):
       union_ann = get_annotation(type_hint.type, union, None)
-    elif isinstance(type_hint, ObjectType) and type_hint.schema.union:
+    elif union_ann is None and isinstance(type_hint, ObjectType):
       union_ann = type_hint.schema.union
-    else:
-      union_ann = get_annotation(type_hint.annotations, union, None)
+
     if union_ann:
       if union_ann.subtypes.owner:
         result_type = union_ann.subtypes.owner()

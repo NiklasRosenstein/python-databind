@@ -79,7 +79,7 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
       elif hasattr(te, 'Annotated') and generic == te.Annotated and len(args) >= 2:  # type: ignore
         type_ = from_typing(args[0])
         type_.annotations += args[1:]
-        return type_
+        return from_typing(type_)
 
     if isinstance(type_hint, type):
       return ConcreteType(type_hint)

@@ -47,3 +47,16 @@ def test_union_annotated_adapter():
     'int': int,
     'str': str,
   }), python_type=t.Union[int, str]))
+
+
+def test_non_dataclass_union_annotated_type():
+  class Strategy:
+    pass
+
+  class PriceChangeStrategy(Strategy):
+    pass
+
+  ann = union({ 'pc': PriceChangeStrategy }, style=union.Style.flat)
+  type_ = from_typing(te.Annotated[Strategy, ann])
+  assert type_.annotations == []
+  assert isinstance(type_, UnionType)
