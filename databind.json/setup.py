@@ -35,7 +35,7 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=1.1.5,<2.0.0',
+  'databind.core >=1.1.6,<2.0.0',
   'typing_extensions >=3.10.0,<4.0.0',
   'nr.parsing.date >=1.0.1,<2.0.0',
   'nr.preconditions >=0.0.4,<1.0.0',
@@ -43,7 +43,7 @@ requirements = [
 
 setuptools.setup(
   name = 'databind.json',
-  version = '1.1.5',
+  version = '1.1.6',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.7 and newer.',
