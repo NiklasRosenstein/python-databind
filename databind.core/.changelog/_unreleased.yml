@@ -1,0 +1,6 @@
+changes:
+- type: fix
+  component: general
+  description: fix case where DefaultTypeHintAdapter does not continue adaptation
+    dynamically upon encountering a fixed type object
+  fixes: []

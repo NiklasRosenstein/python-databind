@@ -82,7 +82,7 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
         return from_typing(type_)
 
     if isinstance(type_hint, type):
-      return ConcreteType(type_hint)
+      return from_typing(ConcreteType(type_hint))
 
     raise TypeHintAdapterError(self, f'unsupported type hint {type_hint!r}')
 
