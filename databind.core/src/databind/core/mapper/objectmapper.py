@@ -1,6 +1,6 @@
 
 import typing as t
-from databind.core.annotations.base import AnnotationsRegistry
+from databind.core.annotations.base import AnnotationsRegistry, DefaultAnnotationsProvider
 from databind.core.types.adapter import ChainTypeHintAdapter, DefaultTypeHintAdapter
 from databind.core.types.schema import DataclassAdapter
 from databind.core.types.types import ConcreteType
@@ -37,6 +37,7 @@ class ObjectMapper(AnnotationsRegistry, ChainTypeHintAdapter, SimpleModule):
     for module in converters:
       self.add_converter_provider(module)
 
+    self.add_annotations_provider(DefaultAnnotationsProvider())
     self.add_type_hint_adapter(DefaultTypeHintAdapter())
     self.add_type_hint_adapter(UnionAdapter())
     self.add_type_hint_adapter(DataclassAdapter())

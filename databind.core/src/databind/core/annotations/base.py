@@ -2,8 +2,12 @@
 import abc
 import collections
 import dataclasses
+import enum
 import typing as t
+import typing_extensions as te
 import weakref
+
+from databind.core.types.utils import unpack_type_hint
 
 T = t.TypeVar('T')
 U = t.TypeVar('U')
@@ -172,7 +176,9 @@ class AnnotationsRegistry(AnnotationsProvider):
   ) -> t.Optional[T_Annotation]:
     overrides = self.__overrides.get(type)
     if overrides:
-      return get_annotation(overrides.fields.get(field_name, []), annotation_cls, None)
+      annotation = get_annotation(overrides.fields.get(field_name, []), annotation_cls, None)
+      if annotation is not None:
+        return annotation
     for provider in reversed(self.__subproviders):
       result = provider.get_field_annotation(type, field_name, annotation_cls)
       if result is not None:
@@ -203,7 +209,14 @@ class DefaultAnnotationsProvider(AnnotationsProvider):
       annotation_cls: t.Type[T_Annotation]
   ) -> t.Optional[T_Annotation]:
 
-    # Look for annoations on the metadata of the dataclass fields.
+    # Support te.Annotated on enum values.
+    if issubclass(type, enum.Enum):
+      ann = t.get_type_hints(type).get(field_name)
+      generic, args = unpack_type_hint(ann)
+      if generic == te.Annotated:
+        return get_annotation(args[1:], annotation_cls, None)
+
+    # Look for annotations on the metadata of the dataclass fields.
     fields: t.Dict[str, dataclasses.Field] = getattr(type, '__dataclass_fields__', {})
     field = fields.get(field_name)
     if not field:
