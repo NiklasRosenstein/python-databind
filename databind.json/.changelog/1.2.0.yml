@@ -15,3 +15,4 @@ changes:
   description: support aliases on enum values
   fixes:
   - '#1'
+release_date: '2021-08-20'

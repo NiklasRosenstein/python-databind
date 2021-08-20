@@ -13,3 +13,4 @@ changes:
     members when annotated with `te.Annotated`, `DefaultAnnotationsProvider` is now
     registered to an `ObjectMapper` by default'
   fixes: []
+release_date: '2021-08-20'
