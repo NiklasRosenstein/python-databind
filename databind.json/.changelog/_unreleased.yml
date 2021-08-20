@@ -5,3 +5,8 @@ changes:
     by default
   fixes:
   - '#14'
+- type: feature
+  component: general
+  description: add converter for `uuid.UUID` to `JsonModule`
+  fixes:
+  - '#15'

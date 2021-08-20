@@ -8,6 +8,7 @@ import io
 import json
 import pathlib
 import typing as t
+import uuid
 
 from nr.parsing.date import duration
 
@@ -55,6 +56,7 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(int, PlainJsonConverter())
     self.add_converter_for_type(bytes, PlainJsonConverter())
     self.add_converter_for_type(str, PlainJsonConverter())
+    self.add_converter_for_type(uuid.UUID, StringConverter(lambda t, v: uuid.UUID(v)))
     self.add_converter_for_type(decimal.Decimal, DecimalJsonConverter())
     self.add_converter_for_type(datetime.date, DatetimeJsonConverter())
     self.add_converter_for_type(datetime.time, DatetimeJsonConverter())
@@ -66,10 +68,7 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(SetType, CollectionConverter())
     self.add_converter_for_type(ImplicitUnionType, ImplicitUnionConverter())
     self.add_converter_provider(EnumConverter())
-    self.add_converter_provider(StringConverter(
-      from_string=lambda t, v: t(v),
-      matches=lambda t: issubclass(t, pathlib.PurePath)
-    ))
+    self.add_converter_provider(StringConverter(lambda t, v: t(v), matches=lambda t: issubclass(t, pathlib.PurePath)))
 
 
 def mapper() -> ObjectMapper:
