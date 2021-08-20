@@ -1,0 +1,7 @@
+changes:
+- type: feature
+  component: general
+  description: add converter for `pathlib.PurePath` subclasses, enabled in the `JsonModule`
+    by default
+  fixes:
+  - '#14'

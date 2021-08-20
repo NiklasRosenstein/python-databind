@@ -6,6 +6,7 @@ import datetime
 import decimal
 import io
 import json
+import pathlib
 import typing as t
 
 from nr.parsing.date import duration
@@ -21,6 +22,7 @@ from .modules.map import MapConverter
 from .modules.object import ObjectTypeConverter
 from .modules.optional import OptionalConverter
 from .modules.plain import PlainJsonConverter
+from .modules.pathlib import PathlibConverter
 from .modules.union import UnionConverter
 
 __all__ = [
@@ -64,6 +66,7 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(SetType, CollectionConverter())
     self.add_converter_for_type(ImplicitUnionType, ImplicitUnionConverter())
     self.add_converter_provider(EnumConverter())
+    self.add_converter_provider(PathlibConverter())
 
 
 def mapper() -> ObjectMapper:
