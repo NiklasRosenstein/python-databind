@@ -28,7 +28,10 @@ class StringConverter(Converter, ConverterProvider):
     if ctx.direction.is_deserialize():
       if not isinstance(ctx.value, str):
         raise ctx.type_error(expected=str)
-      return self.from_string(ctx.type.type, ctx.value)
+      try:
+        return self.from_string(ctx.type.type, ctx.value)
+      except (TypeError, ValueError) as exc:
+        raise ctx.error(str(exc))
 
     else:
       if not isinstance(ctx.value, ctx.type.type):
