@@ -137,6 +137,12 @@ class AnnotationsRegistry(AnnotationsProvider):
   def add_global_annotation(self, annotation: t.Any) -> None:
     self.__global_annotations.append(annotation)
 
+  def add_type_annotation(self, type_: t.Type, annotation: t.Any) -> None:
+    self.__overrides.setdefault(type_, self._TypeOverrides()).annotations.append(annotation)
+
+  def add_field_annotation(self, type_: t.Type, field: str, annotation: t.Any) -> None:
+    self.__overrides.setdefault(type_, self._TypeOverrides()).fields.setdefault(field, []).append(annotation)
+
   def add_annotations_provider(self, provider: AnnotationsProvider) -> None:
     self.__subproviders.append(provider)
 

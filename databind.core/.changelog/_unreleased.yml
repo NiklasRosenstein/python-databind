@@ -3,3 +3,7 @@ changes:
   component: general
   description: add `Direction.is_serialize()` and `Direction.is_deserialize()`
   fixes: []
+- type: feature
+  component: general
+  description: add `AnnotationsRegistry.add_type_annotation()` and `AnnotationsRegistry.add_field_annotation()`
+  fixes: []
