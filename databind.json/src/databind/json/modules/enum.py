@@ -1,7 +1,9 @@
 
 import enum
 import typing as t
+
 from databind.core import BaseType, ConcreteType, Context, ConverterNotFound, Converter, ConverterProvider,  Direction
+from databind.core import annotations as A
 
 
 class EnumConverter(Converter, ConverterProvider):
@@ -27,7 +29,11 @@ class EnumConverter(Converter, ConverterProvider):
       if issubclass(ctx.type.type, enum.IntEnum):
         return ctx.value.value
       if issubclass(ctx.type.type, enum.Enum):
-        return ctx.value.name
+        name = ctx.value.name
+        alias = ctx.annotations.get_field_annotation(ctx.type.type, name, A.alias)
+        if alias and alias.aliases:
+          return alias.aliases[0]
+        return name
 
     elif ctx.direction == Direction.deserialize:
       if issubclass(ctx.type.type, enum.IntEnum):
@@ -37,6 +43,10 @@ class EnumConverter(Converter, ConverterProvider):
       if issubclass(ctx.type.type, enum.Enum):
         if not isinstance(ctx.value, str):
           raise ctx.type_error(expected=str)
+        for enum_value in ctx.type.type:
+          alias = ctx.annotations.get_field_annotation(ctx.type.type, enum_value.name, A.alias)
+          if alias and ctx.value in alias.aliases:
+            return enum_value
         try:
           return ctx.type.type[ctx.value]
         except KeyError:

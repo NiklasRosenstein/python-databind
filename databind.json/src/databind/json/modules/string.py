@@ -35,7 +35,7 @@ class StringConverter(Converter, ConverterProvider):
 
     else:
       if not isinstance(ctx.value, ctx.type.type):
-        raise ctx.type_error(expected=ctx.type)
+        raise ctx.type_error(expected=ctx.type.type)
       if self.to_string is None:
         return str(ctx.value)
       else:

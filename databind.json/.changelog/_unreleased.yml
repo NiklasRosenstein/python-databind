@@ -10,3 +10,8 @@ changes:
   description: add converter for `uuid.UUID` to `JsonModule`
   fixes:
   - '#15'
+- type: feature
+  component: general
+  description: support aliases on enum values
+  fixes:
+  - '#1'
