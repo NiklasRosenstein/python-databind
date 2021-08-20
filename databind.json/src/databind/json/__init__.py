@@ -22,7 +22,7 @@ from .modules.map import MapConverter
 from .modules.object import ObjectTypeConverter
 from .modules.optional import OptionalConverter
 from .modules.plain import PlainJsonConverter
-from .modules.pathlib import PathlibConverter
+from .modules.string import StringConverter
 from .modules.union import UnionConverter
 
 __all__ = [
@@ -66,7 +66,10 @@ class JsonModule(SimpleModule):
     self.add_converter_for_type(SetType, CollectionConverter())
     self.add_converter_for_type(ImplicitUnionType, ImplicitUnionConverter())
     self.add_converter_provider(EnumConverter())
-    self.add_converter_provider(PathlibConverter())
+    self.add_converter_provider(StringConverter(
+      from_string=lambda t, v: t(v),
+      matches=lambda t: issubclass(t, pathlib.PurePath)
+    ))
 
 
 def mapper() -> ObjectMapper:
