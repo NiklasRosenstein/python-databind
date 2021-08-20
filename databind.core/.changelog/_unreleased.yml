@@ -1,0 +1,5 @@
+changes:
+- type: feature
+  component: general
+  description: add `Direction.is_serialize()` and `Direction.is_deserialize()`
+  fixes: []

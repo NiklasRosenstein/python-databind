@@ -27,6 +27,12 @@ class Direction(enum.Enum):
   #: Conversion takes place from a Python object to another data format.
   serialize = enum.auto()
 
+  def is_serialize(self) -> bool:
+    return self == Direction.serialize
+
+  def is_deserialize(self) -> bool:
+    return self == Direction.deserialize
+
 
 class Converter(metaclass=abc.ABCMeta):
   """

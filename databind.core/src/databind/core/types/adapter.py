@@ -28,6 +28,7 @@ class TypeHintAdapter(abc.ABC):
   @abc.abstractmethod
   def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> BaseType: ...
 
+
 class DefaultTypeHintAdapter(TypeHintAdapter):
   """
   Adapter for all the supported standard #typing type hints.
