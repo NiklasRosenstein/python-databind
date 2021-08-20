@@ -9,8 +9,6 @@ requirements:
 - typing_extensions ^3.10.0
 - nr.parsing.date ^1.0.1
 - nr.preconditions ^0.0.4
-dev-requirements:
-- mypy
 test-drivers:
-  - type: pytest
-  - type: mypy
+- type: pytest
+- type: mypy
