@@ -4,3 +4,4 @@ changes:
   description: fix interpreting `alias()` annotations on enumeration values in Python3.9+
     by including extras when looking up field annotations in `DefaultAnnotationsProvider`
   fixes: []
+release_date: '2021-08-31'
