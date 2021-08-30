@@ -7,7 +7,7 @@ import typing as t
 import typing_extensions as te
 import weakref
 
-from databind.core.types.utils import unpack_type_hint
+from databind.core.types.utils import get_type_hints, unpack_type_hint
 
 T = t.TypeVar('T')
 U = t.TypeVar('U')
@@ -211,7 +211,7 @@ class DefaultAnnotationsProvider(AnnotationsProvider):
 
     # Support te.Annotated on enum values.
     if issubclass(type, enum.Enum):
-      ann = t.get_type_hints(type).get(field_name)
+      ann = get_type_hints(type).get(field_name)
       generic, args = unpack_type_hint(ann)
       if generic == te.Annotated:
         return get_annotation(args[1:], annotation_cls, None)

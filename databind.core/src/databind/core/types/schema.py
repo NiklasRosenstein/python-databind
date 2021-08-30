@@ -18,7 +18,7 @@ from nr.pylang.utils import NotSet
 
 import databind.core.annotations as A
 from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
-from databind.core.types.utils import type_repr
+from databind.core.types.utils import get_type_hints, type_repr
 from .adapter import TypeHintAdapter, TypeHintAdapterError
 from .types import BaseType, ConcreteType, MapType
 
@@ -262,19 +262,12 @@ class ObjectType(BaseType):
     return func(self)
 
 
-def _get_type_hints(type_: t.Any) -> t.Any:
-  if sys.version_info >= (3, 9):
-    return t.get_type_hints(type_, include_extras=True)
-  else:
-    return t.get_type_hints(type_)
-
-
 def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: TypeHintAdapter) -> Schema:
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
 
   fields: t.Dict[str, Field] = {}
-  annotations = _get_type_hints(dataclass_type)
+  annotations = get_type_hints(dataclass_type)
 
   for field in _get_fields(dataclass_type):
     if not field.init:

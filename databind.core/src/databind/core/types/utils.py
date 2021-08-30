@@ -120,3 +120,15 @@ def populate_type_parameters(
     else:
       new_args.append(type_arg)
   return generic_type[tuple(new_args)]
+
+
+def get_type_hints(type_: t.Any) -> t.Dict[str, t.Any]:
+  """
+  Like #typing.get_type_hints(), but always includes extras. This is important when we want to inspect
+  #typing_extensions.Annotated hints (without extras the annotations are removed).
+  """
+
+  if sys.version_info >= (3, 9):
+    return t.get_type_hints(type_, include_extras=True)
+  else:
+    return t.get_type_hints(type_)
