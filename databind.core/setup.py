@@ -51,7 +51,7 @@ extras_require['test'] = test_requirements
 
 setuptools.setup(
   name = 'databind.core',
-  version = '1.2.1',
+  version = '1.2.2',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.7 and newer.',
