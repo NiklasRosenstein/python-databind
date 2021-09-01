@@ -19,7 +19,7 @@ from nr.pylang.utils import NotSet
 import databind.core.annotations as A
 from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from databind.core.types.utils import get_type_hints, type_repr
-from .adapter import TypeHintAdapter, TypeHintAdapterError
+from .adapter import DefaultTypeHintAdapter, TypeHintAdapter, TypeHintAdapterError
 from .types import BaseType, ConcreteType, MapType
 
 
@@ -262,9 +262,18 @@ class ObjectType(BaseType):
     return func(self)
 
 
-def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: TypeHintAdapter) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: t.Optional[TypeHintAdapter] = None) -> Schema:
+  """
+  Converts the given *dataclass_type* to a #Schema. The dataclass fields are converted to #BaseType#s
+  via the given *type_hint_adapter*. If no adapter is specified, the #DefaultTypeHintAdapter will be
+  used (note that this adapter does _not_ expand #ConcreteType#s of dataclasses to #ObjectType#s).
+  """
+
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
+
+  if type_hint_adapter is None:
+    type_hint_adapter = DefaultTypeHintAdapter()
 
   fields: t.Dict[str, Field] = {}
   annotations = get_type_hints(dataclass_type)

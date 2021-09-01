@@ -1,6 +1,11 @@
 changes:
 - type: fix
   component: general
-  description: DefaultTypeHintAdapter no longer raises an exception upon receiving
-    a BaseType instance
+  description: '`DefaultTypeHintAdapter` no longer raises an exception upon receiving
+    a BaseType instance'
+  fixes: []
+- type: change
+  component: general
+  description: '`dataclass_to_schema(type_adapter)` argument is now optional and defaults
+    to a `DefaultTypeHintAdapter` instance'
   fixes: []
