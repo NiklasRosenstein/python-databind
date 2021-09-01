@@ -85,6 +85,9 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
     if isinstance(type_hint, type):
       return from_typing(ConcreteType(type_hint))
 
+    if isinstance(type_hint, BaseType):
+      return type_hint
+
     raise TypeHintAdapterError(self, f'unsupported type hint {type_hint!r}')
 
 
