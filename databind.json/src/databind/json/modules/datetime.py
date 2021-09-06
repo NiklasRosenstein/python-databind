@@ -33,11 +33,13 @@ class DatetimeJsonConverter(Converter):
     assert datefmt is not None
 
     if ctx.direction == Direction.deserialize:
-      if not isinstance(ctx.value, str):
-        raise ctx.type_error(expected='str')
-      dt = datefmt.parse(type_, ctx.value)  # TODO(NiklasRosenstein): Rethrow as ConversionError
-      assert isinstance(dt, type_)
-      return dt
+      if isinstance(ctx.value, type_):
+        return ctx.value
+      elif isinstance(ctx.value, str):
+        dt = datefmt.parse(type_, ctx.value)  # TODO(NiklasRosenstein): Rethrow as ConversionError
+        assert isinstance(dt, type_)
+        return dt
+      raise ctx.type_error(expected=f'str|{type_.__name__}')
 
     else:
       if not isinstance(ctx.value, type_):

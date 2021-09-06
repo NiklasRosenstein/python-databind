@@ -1,0 +1,6 @@
+changes:
+- type: fix
+  component: general
+  description: allow datetime objects as value during deserialization
+  fixes:
+  - '#19'
