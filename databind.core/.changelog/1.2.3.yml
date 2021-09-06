@@ -4,3 +4,4 @@ changes:
   description: allow datetime objects as value during deserialization
   fixes:
   - '#19'
+release_date: '2021-09-06'

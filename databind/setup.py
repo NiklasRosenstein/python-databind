@@ -35,13 +35,13 @@ else:
   long_description = None
 
 requirements = [
-  'databind.core >=1.2.2,<2.0.0',
-  'databind.json >=1.2.2,<2.0.0',
+  'databind.core >=1.2.3,<2.0.0',
+  'databind.json >=1.2.3,<2.0.0',
 ]
 
 setuptools.setup(
   name = 'databind',
-  version = '1.2.2',
+  version = '1.2.3',
   author = 'Niklas Rosenstein',
   author_email = 'rosensteinniklas@gmail.com',
   description = 'Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package will install the full suite of databind packages. Compatible with Python 3.7 and newer.',
