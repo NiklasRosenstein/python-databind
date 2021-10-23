@@ -1,0 +1,5 @@
+changes:
+- type: fix
+  component: general
+  description: declare missing `nr.optional` dependency (was not an actual bug because
+    the dependency was introduced transitively anyway)
