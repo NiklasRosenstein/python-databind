@@ -1,6 +1,6 @@
 
 __author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.2.3'
+__version__ = '1.2.4'
 
 # Export public APIs
 
