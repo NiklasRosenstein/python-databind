@@ -38,6 +38,7 @@ requirements = [
   'nr.optional >=0.1.1,<1.0.0',
   'nr.parsing.date >=1.0.1,<2.0.0',
   'nr.preconditions >=0.0.4,<1.0.0',
+  'nr.pylang.utils >=0.1.3,<1.0.0',
   'nr.stream >=0.1.1,<1.0.0',
   'Deprecated >=1.2.12,<2.0.0',
 ]
