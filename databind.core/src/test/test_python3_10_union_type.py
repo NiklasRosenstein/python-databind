@@ -23,4 +23,4 @@ class Person2:
 @pytest.mark.skipif(not hasattr(types, 'UnionType'), reason='need types.UnionType (Python >= 3.10)')
 def test_person1():
   mapper = ObjectMapper()
-  assert dataclass_to_schema(Person1, mapper).fields == dataclass_to_schema(Person2, mapper).fields
+  assert dataclass_to_schema(Person1, mapper).fields == dataclass_to_schema(Person2, mapper).fields  # type: ignore
