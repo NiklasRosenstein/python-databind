@@ -1,5 +1,6 @@
 
 import sys
+import types
 import typing as t
 import typing_extensions as te
 from collections.abc import Mapping as _Mapping, MutableMapping as _MutableMapping
@@ -40,6 +41,9 @@ def unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
 
   if isinstance(hint, t._SpecialForm):
     return hint, []
+
+  if hasattr(types, 'UnionType') and isinstance(hint, types.UnionType):
+    return t.Union, hint.__args__
 
   return None, []
 

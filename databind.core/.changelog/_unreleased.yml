@@ -1,0 +1,4 @@
+changes:
+- type: fix
+  component: general
+  description: correctly support Python 3.10 `types.UnionType`
