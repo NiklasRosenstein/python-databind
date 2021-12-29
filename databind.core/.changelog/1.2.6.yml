@@ -2,3 +2,4 @@ changes:
 - type: fix
   component: general
   description: correctly support Python 3.10 `types.UnionType`
+release_date: '2021-12-29'
