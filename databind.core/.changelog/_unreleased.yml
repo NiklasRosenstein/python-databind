@@ -1,0 +1,4 @@
+changes:
+- type: change
+  component: general
+  description: improve readability of `ConversionError` by changing `Location.format()`

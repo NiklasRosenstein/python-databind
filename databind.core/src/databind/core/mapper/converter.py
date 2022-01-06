@@ -145,7 +145,7 @@ class ConversionError(Exception):
   location: Location
 
   def __str__(self) -> str:
-    return f'{self.location}: {self.message}'
+    return f'{self.message}\n  Conversion trace:\n{self.location.format(indent="    ")}'
 
 
 class _ConverterProviderWrapper(ConverterProvider):

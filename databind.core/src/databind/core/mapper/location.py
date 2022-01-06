@@ -1,8 +1,17 @@
 
-import enum
+import sys
 import typing as t
 from dataclasses import dataclass
 from databind.core.types.types import BaseType, UnknownType
+
+
+def _no_colored(s, *a, **kw) -> str:
+  return s
+
+try:
+  from termcolor import colored
+except ImportError:
+  colored = _no_colored  # type: ignore
 
 
 def _get_location_chain(location: 'Location') -> t.List['Location']:
@@ -20,21 +29,6 @@ def _get_filename_and_pos_string(filename: t.Optional[str], pos: t.Optional['Pos
   if pos is not None:
     result = f'{result}:{pos.line}:{pos.col}'
   return f'[{result}]'
-
-
-class Format(enum.IntEnum):
-  #: Do not show type information.
-  NO_TYPE = (1 << 0)
-  #: Do not show filenames.
-  NO_FILENAME = (1 << 1)
-  #: Compact format (concatenate keys rather than using arrows).
-  COMPACT = (1 << 2)
-  #: Collapse root locations in the same file (e.g. "(.val OptionalType(ConcreteType(int))) -> ($ ConcreteType(int))"
-  #: will become just "(.val ConcreteType(int))".
-  COLLAPSE = (1 << 3)
-
-  DEFAULT = 0
-  PLAIN = NO_TYPE | NO_FILENAME | COMPACT | COLLAPSE
 
 
 class Position(t.NamedTuple):
@@ -74,36 +68,48 @@ class Location:
   def __str__(self) -> str:
     return self.format()
 
-  def format(self, mode: Format = Format.DEFAULT) -> str:
+  def format(
+    self,
+    indent: str = '  ',
+    list_item: str = '-',
+    filenames: bool = True,
+    sparse_filenames: bool = True,
+    collapse: bool = False,
+    colors: bool | None = None,
+  ) -> str:
     """
     Converts the location to a string representation of the form
 
-        [filename:line:col] ($ type) -> (key type) -> ...
+      - $ (type) [filename:line:col]
+      - key (type) [filename:line:col]
+      ...
     """
 
+    if colors is None and sys.stdout.isatty():
+      colors = True
+
+    c = colored if colors else _no_colored
     parts: t.List[str] = []
     prev_filename: t.Optional[str] = None
-    filenames = not (mode & Format.NO_FILENAME)
 
     for loc in _get_location_chain(self):
-      source_changed = filenames and bool(not prev_filename or loc.filename and loc.filename != prev_filename)
-      if source_changed:
-        parts.append(_get_filename_and_pos_string(loc.filename, loc.pos))
-        parts.append(' ')
+      if collapse and parts and not source_changed and not loc.key:
+        continue
 
       name = '$' if loc.key is None else f'.{loc.key}'
-      if (mode & Format.COLLAPSE) and parts and not source_changed and not loc.key:
-        continue
-      if mode & Format.NO_TYPE:
-        parts.append(f'{name}')
-      else:
-        parts.append(f'({name} {loc.type})')
-      parts.append('' if mode & Format.COMPACT else ' -> ')
+      parts.append(f'{indent}{list_item} {c(name, "cyan")} {c("(" + str(loc.type) + ")", "green")}')
+
+      source_changed = filenames and bool(not prev_filename or loc.filename and loc.filename != prev_filename)
+      if not sparse_filenames or source_changed:
+        parts.append(' ')
+        parts.append(c(_get_filename_and_pos_string(loc.filename, loc.pos), 'magenta'))
+
+      parts.append('\n')
 
       if loc.filename:
         prev_filename = loc.filename
 
-    parts.pop()  # Remove the last '->'
+    parts.pop()  # Remove the last newline
     return ''.join(parts)
 
   def push(
@@ -118,5 +124,4 @@ class Location:
   def push_unknown(self, key: t.Union[str, int, None]) -> 'Location':
     return self.push(UnknownType(), key)
 
-  Format = Format
   Position = Position
