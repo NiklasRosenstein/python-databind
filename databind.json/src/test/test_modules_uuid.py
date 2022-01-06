@@ -14,4 +14,6 @@ def test_pathlib_converter():
 
   with pytest.raises(ConversionError) as excinfo:
     mapper().deserialize('foobar!', uuid.UUID)
-  assert str(excinfo.value) == '[None] ($ ConcreteType(uuid.UUID)): badly formed hexadecimal UUID string'
+  assert str(excinfo.value) == """badly formed hexadecimal UUID string
+  Conversion trace:
+    - $ (ConcreteType(uuid.UUID)) [None]"""

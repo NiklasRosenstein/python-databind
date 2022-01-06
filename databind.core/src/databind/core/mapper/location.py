@@ -75,7 +75,7 @@ class Location:
     filenames: bool = True,
     sparse_filenames: bool = True,
     collapse: bool = False,
-    colors: bool | None = None,
+    colors: t.Optional[bool] = None,
   ) -> str:
     """
     Converts the location to a string representation of the form
