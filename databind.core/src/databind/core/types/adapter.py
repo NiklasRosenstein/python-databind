@@ -17,6 +17,9 @@ class TypeHintAdapterError(Exception):
   adapter: 'TypeHintAdapter'
   message: str
 
+  def __str__(self) -> None:
+    return self.message
+
 
 class TypeHintAdapter(abc.ABC):
 
