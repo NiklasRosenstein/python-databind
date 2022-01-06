@@ -9,7 +9,7 @@ def _no_colored(s, *a, **kw) -> str:
   return s
 
 try:
-  from termcolor import colored
+  from termcolor import colored  # type: ignore
 except ImportError:
   colored = _no_colored  # type: ignore
 
@@ -93,13 +93,13 @@ class Location:
     prev_filename: t.Optional[str] = None
 
     for loc in _get_location_chain(self):
+      source_changed = filenames and bool(not prev_filename or loc.filename and loc.filename != prev_filename)
       if collapse and parts and not source_changed and not loc.key:
         continue
 
       name = '$' if loc.key is None else f'.{loc.key}'
       parts.append(f'{indent}{list_item} {c(name, "cyan")} {c("(" + str(loc.type) + ")", "green")}')
 
-      source_changed = filenames and bool(not prev_filename or loc.filename and loc.filename != prev_filename)
       if not sparse_filenames or source_changed:
         parts.append(' ')
         parts.append(c(_get_filename_and_pos_string(loc.filename, loc.pos), 'magenta'))

@@ -42,7 +42,7 @@ def unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
   if isinstance(hint, t._SpecialForm):
     return hint, []
 
-  if hasattr(types, 'UnionType') and isinstance(hint, types.UnionType):
+  if hasattr(types, 'UnionType') and isinstance(hint, types.UnionType):  # type: ignore
     return t.Union, list(hint.__args__)
 
   return None, []
