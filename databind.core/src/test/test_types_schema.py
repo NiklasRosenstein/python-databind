@@ -1,6 +1,7 @@
 # type: ignore
 
 import dataclasses
+import sys
 import typing as t
 import typing_extensions as te
 import pytest
@@ -148,3 +149,24 @@ def test_schema_multilevel_flat_fields():
     schema,
     {'d': PropagatedField(dataclass_to_schema(Ccls, mapper), Field('d', ConcreteType(int)), 'b', ['b', 'c', 'd'])},
     None)
+
+
+if not sys.version_info < (3, 9):
+  @dataclasses.dataclass
+  class ATypeWithPEP585AndForwardRef:
+    items: list['BType']
+  @dataclasses.dataclass
+  class BType:
+    pass
+
+
+@pytest.mark.skipif(sys.version_info < (3, 9), reason='PEP585 requires Python 3.9 or higher')
+def test_dataclass_with_pep585_generic_and_forward_references():
+  assert from_typing(ATypeWithPEP585AndForwardRef) == ObjectType(Schema(
+    name='ATypeWithPEP585AndForwardRef',
+    fields={
+      'items': Field('items', ListType(ObjectType(Schema('BType', {}, [], BType))), []),
+    },
+    annotations=[],
+    python_type=ATypeWithPEP585AndForwardRef,
+  ))

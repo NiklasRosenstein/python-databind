@@ -5,3 +5,8 @@ changes:
     be adapted
   fixes:
   - '#23'
+- type: feature
+  component: general
+  description: support resolving forward references in PEP585 generic aliases
+  fixes:
+  - '#24'

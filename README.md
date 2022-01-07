@@ -13,6 +13,13 @@ __Not yet migrated to 1.x__
 * [databind.tagline](https://pypi.org/project/databind.tagline/)
 * [databind.yaml](https://pypi.org/project/databind.yaml/)
 
+## Supported features
+
+| Feature | Python version | Databind version |
+| ------- | -------------- | ---------------- |
+| [PEP585](https://www.python.org/dev/peps/pep-0585/) | 3.9 | 1.2.0 &ndash; *current* |
+| [PEP585](https://www.python.org/dev/peps/pep-0585/) (forward references) | 3.9 | 1.3.1? &ndash; *current* |
+
 ---
 
 <p align="center">Copyright &copy; 2020 &ndash; Niklas Rosenstein</p>

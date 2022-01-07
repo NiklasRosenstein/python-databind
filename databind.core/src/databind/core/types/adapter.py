@@ -3,13 +3,18 @@ import abc
 import bisect
 import collections
 import dataclasses
+import sys
 import textwrap
+import types
 import typing as t
 import typing_extensions as te
 import warnings
 
 from .types import BaseType, ConcreteType, ListType, SetType, MapType, OptionalType, ImplicitUnionType
 from .utils import type_repr, unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
+
+has_pep585_generics = not (sys.version_info < (3, 9))
+#has_pep604_union_types = not (sys.version_info < (3, 10))
 
 
 @dataclasses.dataclass
@@ -21,15 +26,38 @@ class TypeHintAdapterError(Exception):
     return self.message
 
 
+class ForwardReferenceResolver(abc.ABC):
+
+  @abc.abstractmethod
+  def get_type(self, forward_ref: str) -> t.Union[t.Any, t.Type]:
+    ...
+
+
+class ModuleForwardReferenceResolver(ForwardReferenceResolver):
+
+  def __init__(self, module: types.ModuleType) -> None:
+    self._module = module
+
+  def get_type(self, forward_ref: str) -> t.Union[t.Any, t.Type]:
+    parts = forward_ref.split('.')
+    current = self._module
+    for part in parts:
+      try:
+        current = getattr(current, part)
+      except AttributeError:
+        raise KeyError(forward_ref)
+    return current
+
+
 class TypeHintAdapter(abc.ABC):
 
   Error = TypeHintAdapterError
 
-  def adapt_type_hint(self, type_hint: t.Any, recurse: t.Optional['TypeHintAdapter'] = None) -> BaseType:
-    return self._adapt_type_hint_impl(type_hint, recurse or self)
+  def adapt_type_hint(self, type_hint: t.Any, recurse: t.Optional['TypeHintAdapter'] = None, resolver: t.Optional[ForwardReferenceResolver] = None) -> BaseType:
+    return self._adapt_type_hint_impl(type_hint, recurse or self, resolver)
 
   @abc.abstractmethod
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter') -> BaseType: ...
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter', resolver: t.Optional[ForwardReferenceResolver]) -> BaseType: ...
 
 
 class DefaultTypeHintAdapter(TypeHintAdapter):
@@ -37,9 +65,15 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
   Adapter for all the supported standard #typing type hints.
   """
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter, resolver: t.Optional[ForwardReferenceResolver]) -> BaseType:
     generic, args = unpack_type_hint(type_hint)
-    from_typing = lambda th: recurse._adapt_type_hint_impl(th, recurse)
+    from_typing = lambda th: recurse._adapt_type_hint_impl(th, recurse, resolver)
+
+    if has_pep585_generics and isinstance(type_hint, types.GenericAlias):
+      if not resolver and any(isinstance(x, str) for x in type_hint.__args__):
+        raise ValueError(
+          f'encountered forward reference in PEP585 generic `{type_hint}` but no ForwardReferenceResolver is supplied'
+        )
 
     # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
     # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
@@ -84,6 +118,14 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
         type_ = from_typing(args[0])
         type_.annotations += args[1:]
         return from_typing(type_)
+
+    if isinstance(type_hint, str):
+      if resolver:
+        try:
+          return from_typing(resolver.get_type(type_hint))
+        except KeyError:
+          pass
+      raise TypeHintAdapterError(self, 'cannot resolve forward reference {type_hint!r}')
 
     if isinstance(type_hint, type):
       return from_typing(ConcreteType(type_hint))
@@ -130,12 +172,12 @@ class ChainTypeHintAdapter(TypeHintAdapter):
       item = (priority, self._priorities[priority])
       self._ordered.insert(bisect.bisect(self._ordered, item), item)
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter, resolver: t.Optional[ForwardReferenceResolver]) -> BaseType:
     errors = []
     for _priority_group, adapters in self._ordered:
       for adapter in adapters:
         try:
-          type_hint = adapter.adapt_type_hint(type_hint, recurse)
+          type_hint = adapter.adapt_type_hint(type_hint, recurse, resolver)
         except TypeHintAdapterError as exc:
           errors.append(exc)
         if isinstance(type_hint, BaseType) and any(x(type_hint) for x in self._stop_conditions):

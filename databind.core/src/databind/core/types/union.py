@@ -15,7 +15,7 @@ from nr.pylang.utils.funcdef import except_format
 
 from databind.core.annotations.base import Annotation, get_annotation
 from databind.core.annotations.typeinfo import typeinfo
-from .adapter import TypeHintAdapter, TypeHintAdapterError
+from .adapter import ForwardReferenceResolver, TypeHintAdapter, TypeHintAdapterError
 from .schema import ObjectType
 from .types import BaseType, ConcreteType
 from .utils import type_repr
@@ -415,7 +415,7 @@ class UnionAdapter(TypeHintAdapter):
   Adapter for classes decorated with #@union().
   """
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter) -> BaseType:
+  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter, resolver: t.Optional[ForwardReferenceResolver]) -> BaseType:
     if not isinstance(type_hint, BaseType):
       raise TypeHintAdapterError(self, str(type_hint))
 
