@@ -329,6 +329,10 @@ class DataclassAdapter(TypeHintAdapter):
         return ObjectType(self._cache[type_hint.type], type_hint.annotations)
       schema = Schema(type_hint.type.__name__, {}, [], type_hint.type)
       self._cache[type_hint.type] = schema
-      vars(schema).update(vars(dataclass_to_schema(type_hint.type, recurse)))
+      try:
+        vars(schema).update(vars(dataclass_to_schema(type_hint.type, recurse)))
+      except:
+        del self._cache[type_hint.type]
+        raise
       return ObjectType(schema, type_hint.annotations)
     raise TypeHintAdapterError(self, str(type_hint))

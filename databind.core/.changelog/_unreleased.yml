@@ -1,0 +1,7 @@
+changes:
+- type: fix
+  component: general
+  description: Dataclass adapted to ObjectType with no schema fields if a field cannot
+    be adapted
+  fixes:
+  - '#23'

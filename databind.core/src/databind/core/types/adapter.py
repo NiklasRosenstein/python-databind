@@ -135,7 +135,7 @@ class ChainTypeHintAdapter(TypeHintAdapter):
     for _priority_group, adapters in self._ordered:
       for adapter in adapters:
         try:
-          type_hint = adapter._adapt_type_hint_impl(type_hint, recurse)
+          type_hint = adapter.adapt_type_hint(type_hint, recurse)
         except TypeHintAdapterError as exc:
           errors.append(exc)
         if isinstance(type_hint, BaseType) and any(x(type_hint) for x in self._stop_conditions):
