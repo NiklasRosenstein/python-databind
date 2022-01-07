@@ -17,7 +17,7 @@ class TypeHintAdapterError(Exception):
   adapter: 'TypeHintAdapter'
   message: str
 
-  def __str__(self) -> None:
+  def __str__(self) -> str:
     return self.message
 
 
@@ -77,7 +77,7 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
         if len(args) == 1:
           return from_typing(args[0])
         elif type(None) in args:
-          return OptionalType(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))
+          return OptionalType(from_typing(t.Union[tuple(x for x in args if x is not type(None))]))  # type: ignore
         else:
           return ImplicitUnionType(tuple(from_typing(a) for a in args))
       elif hasattr(te, 'Annotated') and generic == te.Annotated and len(args) >= 2:  # type: ignore
