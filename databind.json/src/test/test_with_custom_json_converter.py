@@ -12,7 +12,7 @@ from databind.json import load, mapper
 @with_custom_json_converter()
 class FieldConfig:
   type: str
-  docs: str | None
+  docs: t.Optional[str] = None
 
   @classmethod
   def _convert_json(cls, ctx: 'Context') -> t.Any:
