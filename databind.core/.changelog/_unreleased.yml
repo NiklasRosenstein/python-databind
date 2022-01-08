@@ -10,3 +10,8 @@ changes:
   description: support resolving forward references in PEP585 generic aliases
   fixes:
   - '#24'
+- type: change
+  component: general
+  description: change `ConverterProvider.get_converter()` to `ConverterProvider.get_converters()`
+    and `ConversionNotApplicable` error type, allowing to test multiple converters
+    for a type

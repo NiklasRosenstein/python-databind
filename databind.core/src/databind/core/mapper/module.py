@@ -38,15 +38,11 @@ class SimpleModule(ConverterProvider):
       self.__converters_by_type[Direction.deserialize][type_] = converter
       self.__converters_by_type[Direction.serialize][type_] = converter
 
-  def get_converter(self, type_: BaseType, direction: Direction) -> Converter:
+  def get_converters(self, type_: BaseType, direction: Direction) -> t.Iterable[Converter]:
     preconditions.check_instance_of(type_, BaseType)  # type: ignore
     if isinstance(type_, ConcreteType) and type_.type in self.__converters_by_type[direction]:
-      return self.__converters_by_type[direction][type_.type]
+      yield self.__converters_by_type[direction][type_.type]
     elif type(type_) in self.__converters_by_type[direction]:
-      return self.__converters_by_type[direction][type(type_)]
+      yield self.__converters_by_type[direction][type(type_)]
     for module in reversed(self.__converter_providers):
-      try:
-        return module.get_converter(type_, direction)
-      except ConverterNotFound:
-        pass  # intentional
-    raise ConverterNotFound(type_, direction)
+      yield from module.get_converters(type_, direction)

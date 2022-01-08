@@ -4,6 +4,7 @@ import enum
 import typing as t
 from dataclasses import dataclass
 
+from deprecated import deprecated
 from databind.core.annotations import Annotation, get_annotation
 from databind.core.annotations.base import AnnotationsProvider
 from databind.core.types.adapter import TypeHintAdapter
@@ -43,15 +44,13 @@ class Converter(metaclass=abc.ABCMeta):
   def convert(self, ctx: 'Context') -> t.Any: ...
 
 
-class ConverterProvider(metaclass=abc.ABCMeta):
+class ConverterProvider(abc.ABC):
   """
-  Provider for an #IConverter for a #TypeHint.
+  Provider for applicable #IConverter implementations for a #TypeHint.
   """
 
   @abc.abstractmethod
-  def get_converter(self, type_: BaseType, direction: 'Direction') -> Converter: ...
-
-  Wrapper: t.Type['_ConverterProviderWrapper']
+  def get_converters(self, type_: BaseType, direction: 'Direction') -> t.Iterable[Converter]: ...
 
 
 @dataclass
@@ -113,7 +112,15 @@ class Context:
       location, field or Field(str(key or '$'), type_, []))
 
   def convert(self) -> t.Any:
-    return self.converters.get_converter(self.location.type, self.direction).convert(self)
+    converters = list(self.converters.get_converters(self.type, self.direction))
+    if not converters:
+      raise ConverterNotFound(self.type, self.direction)
+    for converter in converters:
+      try:
+        return converter.convert(self)
+      except ConversionNotApplicable:
+        pass
+    raise ConversionError('no applicable converter found', self.location, converters)
 
   def get_annotation(self, annotation_cls: t.Type[T_Annotation]) -> t.Optional[T_Annotation]:
     return self.field.get_annotation(annotation_cls) or \
@@ -134,6 +141,11 @@ class Context:
 
 
 @dataclass
+class ConversionNotApplicable(Exception):
+  pass
+
+
+@dataclass
 class ConverterNotFound(Exception):
   type_: BaseType
   direction: Direction
@@ -143,21 +155,13 @@ class ConverterNotFound(Exception):
 class ConversionError(Exception):
   message: t.Union[str, Exception]
   location: Location
+  tried: t.Optional[t.List[Converter]] = None
 
   def __str__(self) -> str:
-    return f'{self.message}\n  Conversion trace:\n{self.location.format(indent="    ")}'
-
-
-class _ConverterProviderWrapper(ConverterProvider):
-
-  def __init__(self, func: t.Callable[[BaseType], Converter]) -> None:
-    self._func = func
-
-  def get_converter(self, type_: BaseType, direction: 'Direction') -> Converter:
-    return self._func(type_, direction)  # type: ignore
-
-
-ConverterProvider.Wrapper = _ConverterProviderWrapper
+    message = f'{self.message}\n  Conversion trace:\n{self.location.format(indent="    ")}'
+    if self.tried:
+      message += '\n  Tried converters:\n' + '\n'.join(f'    - {c}' for c in self.tried)
+    return message
 
 
 def _trunc(s: str, l: int) -> str:

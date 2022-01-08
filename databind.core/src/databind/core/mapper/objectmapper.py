@@ -41,19 +41,23 @@ class ObjectMapper(AnnotationsRegistry, ChainTypeHintAdapter, SimpleModule):
     self.add_type_hint_adapter(DefaultTypeHintAdapter())
     self.add_type_hint_adapter(UnionAdapter())
     self.add_type_hint_adapter(DataclassAdapter())
-    self.add_type_hint_adapter_stop_condition(lambda t: isinstance(t, ConcreteType) and self._has_converter_for_conrete_type(t))
+    self.add_type_hint_adapter_stop_condition(lambda t: isinstance(t, ConcreteType) and self._has_converter_for_concrete_type(t))
 
-  def _has_converter_for_conrete_type(self, type_: ConcreteType) -> bool:
+  def _has_converter_for_concrete_type(self, type_: ConcreteType) -> bool:
     # Type's for which we have a serializer or deserializer do not require adaptation.
     # The background here is that there can be #ConcreteType's that wrap a @dataclass
     # which would be adapter to an #ObjectType by the #DataclassAdapter unless we catch
     # that there is an explicit converter registered to handle that special case.
-    try: self.get_converter(type_, Direction.deserialize)
+    try: converters = next(iter(self.get_converters(type_, Direction.deserialize)), None)
     except ConverterNotFound: pass
-    else: return True
-    try: self.get_converter(type_, Direction.serialize)
+    else:
+      if converters is not None:
+        return True
+    try: converters = next(iter(self.get_converters(type_, Direction.serialize)), None)
     except ConverterNotFound: pass
-    else: return True
+    else:
+      if converters is not None:
+        return True
     return False
 
   @classmethod
