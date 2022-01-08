@@ -37,7 +37,7 @@ __all__ = [
 ]
 
 T = t.TypeVar('T')
-JsonType = t.Union[t.Mapping, t.Collection, str, int, float, bool, None]
+JsonType = t.Union[dict, list, str, int, float, bool, None]
 
 
 class JsonModule(SimpleModule):

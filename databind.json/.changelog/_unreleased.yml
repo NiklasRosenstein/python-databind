@@ -3,3 +3,9 @@ changes:
   component: general
   description: add `databind.json.annotations.with_custom_json_converter()` annotation
     to allow implementing a custom converter for dataclasses
+- type: fix
+  component: general
+  description: narrow `JsonType` union type to use `dict` and `list` instead of `t.Mapping`
+    and `t.Collection`
+  fixes:
+  - '#22'
