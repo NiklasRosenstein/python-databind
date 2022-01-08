@@ -69,7 +69,7 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
     generic, args = unpack_type_hint(type_hint)
     from_typing = lambda th: recurse._adapt_type_hint_impl(th, recurse, resolver)
 
-    if has_pep585_generics and isinstance(type_hint, types.GenericAlias):
+    if has_pep585_generics and isinstance(type_hint, types.GenericAlias):  # type: ignore
       if not resolver and any(isinstance(x, str) for x in type_hint.__args__):
         raise ValueError(
           f'encountered forward reference in PEP585 generic `{type_hint}` but no ForwardReferenceResolver is supplied'

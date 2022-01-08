@@ -1,8 +1,8 @@
+# type: ignore
 
 import sys
 import typing as t
 import typing_extensions as te
-from databind.core.types.schema import ObjectType
 import pytest
 from databind.core.types.types import *
 from databind.core.mapper.objectmapper import ObjectMapper
