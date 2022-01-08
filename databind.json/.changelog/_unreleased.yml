@@ -1,0 +1,5 @@
+changes:
+- type: feature
+  component: general
+  description: add `databind.json.annotations.with_custom_json_converter()` annotation
+    to allow implementing a custom converter for dataclasses

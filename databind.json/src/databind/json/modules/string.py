@@ -15,12 +15,11 @@ class StringConverter(Converter, ConverterProvider):
   to_string: t.Optional[t.Callable[[t.Type, t.Any], str]] = None
   matches: t.Optional[t.Callable[[t.Type], bool]] = None
 
-  def get_converter(self, type_: BaseType, direction: Direction) -> Converter:
+  def get_converters(self, type_: BaseType, direction: Direction) -> t.Iterable[Converter]:
     if self.matches is None:
       raise RuntimeError('StringConverter cannot be as a ConverterProvider unless StringConverter.matches is set')
     if isinstance(type_, ConcreteType) and self.matches(type_.type):
-      return self
-    raise ConverterNotFound(type_, direction)
+      yield self
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ConcreteType)

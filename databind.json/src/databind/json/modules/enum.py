@@ -14,10 +14,9 @@ class EnumConverter(Converter, ConverterProvider):
   * #enum.Enum subclasses are serialized to strings (from the enum value name).
   """
 
-  def get_converter(self, type_: BaseType, direction: Direction) -> Converter:
+  def get_converters(self, type_: BaseType, direction: Direction) -> t.Iterable[Converter]:
     if isinstance(type_, ConcreteType) and issubclass(type_.type, enum.Enum):
-      return self
-    raise ConverterNotFound(type_, direction)
+      yield self
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ConcreteType)

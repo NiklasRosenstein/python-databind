@@ -6,6 +6,8 @@ schemas (see #databind.core.schema).
 
 import typing as t
 from databind.core import annotations as A, Context, ConversionError, Direction, Converter, MapType, ObjectType
+from databind.core.mapper.converter import ConversionNotApplicable
+from ..annotations import with_custom_json_converter
 
 
 class ObjectTypeConverter(Converter):
@@ -98,6 +100,12 @@ class ObjectTypeConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     assert isinstance(ctx.type, ObjectType)
+
+    try:
+      return with_custom_json_converter.apply_converter(ctx.type.schema.python_type, ctx)
+    except ConversionNotApplicable:
+      pass
+
     if ctx.direction == Direction.serialize:
       return self._serialize(ctx, ctx.type)
     elif ctx.direction == Direction.deserialize:
