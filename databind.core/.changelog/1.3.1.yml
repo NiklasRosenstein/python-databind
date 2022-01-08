@@ -15,3 +15,4 @@ changes:
   description: change `ConverterProvider.get_converter()` to `ConverterProvider.get_converters()`
     and `ConversionNotApplicable` error type, allowing to test multiple converters
     for a type
+release_date: '2022-01-08'
