@@ -360,6 +360,12 @@ class union(Annotation):
     self.name = name
     self.decorated_type = None
 
+  def __hash__(self) -> int:
+    # NOTE (@NiklasRosenstein): We make the class hashable to support use cases where it is used in `typing.Annotated`
+    #   and that type hint is subsequently further combined into other types. The typing module expects arguments
+    #   to annotated types to be hashable.
+    return id(self)
+
   @staticmethod
   def subtype(extends: t.Type, name: str = None) -> t.Callable[[T_Type], T_Type]:
     """

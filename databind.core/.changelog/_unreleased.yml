@@ -1,0 +1,4 @@
+changes:
+- type: fix
+  component: general
+  description: make `databind.core.annotations` hashable for use in `typing.Annotations`
