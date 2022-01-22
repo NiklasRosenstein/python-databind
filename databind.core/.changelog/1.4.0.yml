@@ -4,3 +4,4 @@ changes:
   description: add `union.Style.keyed`
   fixes:
   - '#21'
+release_date: '2022-01-22'
