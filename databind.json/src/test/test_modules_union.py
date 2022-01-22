@@ -53,8 +53,9 @@ def test_union_keyed():
   @A.union.subtype(Person)
   @dataclasses.dataclass
   class Student(Person):
+    name: str
     def say_hello(self) -> str:
-      return 'Hi I study'
+      return f'Hi I study and my name is {self.name}'
 
   @A.union.subtype(Person)
   @dataclasses.dataclass
@@ -63,7 +64,7 @@ def test_union_keyed():
     def say_hello(self) -> str:
       return 'Hi I teach'
 
-  assert mapper().deserialize({'Student': {}}, Person).say_hello() == 'Hi I study'
+  assert mapper().deserialize({'Student': {'name': 'John'}}, Person).say_hello() == 'Hi I study and my name is John'
   assert mapper().deserialize({'teacher': {}}, Person).say_hello() == 'Hi I teach'
 
 # ====
