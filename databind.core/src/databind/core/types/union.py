@@ -250,6 +250,9 @@ class UnionStyle(enum.Enum):
   #: The flat style places the fields of a union value on the same level.
   flat = enum.auto()
 
+  #: The "keyed" style expects a mapping with a single key that acts as the discriminator.
+  keyed = enum.auto()
+
 
 @dataclasses.dataclass
 class UnionType(BaseType):
@@ -323,8 +326,8 @@ class union(Annotation):
   ```
   """
 
-  Subtypes = _Subtypes
-  Style = UnionStyle
+  Subtypes: t.ClassVar = _Subtypes
+  Style: t.ClassVar = UnionStyle
 
   subtypes: UnionSubtypes
   style: t.Optional[UnionStyle]
