@@ -43,6 +43,29 @@ def test_unionclass_object_type():
   assert mapper().deserialize({'type': 'teacher'}, Person).say_hello() == 'Hi I teach'
 
 
+def test_union_keyed():
+
+  @A.union(style = A.union.Style.keyed)
+  class Person(abc.ABC):
+    @abc.abstractmethod
+    def say_hello(self) -> str: ...
+
+  @A.union.subtype(Person)
+  @dataclasses.dataclass
+  class Student(Person):
+    def say_hello(self) -> str:
+      return 'Hi I study'
+
+  @A.union.subtype(Person)
+  @dataclasses.dataclass
+  @A.typeinfo(name = 'teacher')
+  class Teacher(Person):
+    def say_hello(self) -> str:
+      return 'Hi I teach'
+
+  assert mapper().deserialize({'Student': {}}, Person).say_hello() == 'Hi I study'
+  assert mapper().deserialize({'teacher': {}}, Person).say_hello() == 'Hi I teach'
+
 # ====
 # Test that DyamicSubtypes/A.union accepts a lambda function for lazy evaluation.
 

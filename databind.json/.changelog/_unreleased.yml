@@ -1,0 +1,6 @@
+changes:
+- type: feature
+  component: general
+  description: support `union.Style.keyed`
+  fixes:
+  - '#21'
