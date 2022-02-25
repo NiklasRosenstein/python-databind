@@ -16,4 +16,4 @@ will install the full suite of databind packages. Compatible with Python 3.7 and
 
 ---
 
-<p align="center">Copyright &copy; 2020 &ndash; Niklas Rosenstein</p>
+<p align="center">Copyright &copy; 2022 &ndash; Niklas Rosenstein</p>
