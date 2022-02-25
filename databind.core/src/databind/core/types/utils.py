@@ -28,8 +28,7 @@ def unpack_type_hint(hint: t.Any) -> t.Tuple[t.Optional[t.Any], t.List[t.Any]]:
     return te.Annotated, list((hint.__origin__,) + hint.__metadata__)  # type: ignore
 
   if ((hasattr(t, '_SpecialGenericAlias') and isinstance(hint, t._SpecialGenericAlias))  # type: ignore
-      or (isinstance(hint, t._GenericAlias) and hint._special)):  # type: ignore
-    print('@@ is special', hint)
+      or (isinstance(hint, t._GenericAlias) and getattr(hint, '_special', False))):  # type: ignore
     return hint.__origin__, []
 
   if isinstance(hint, t._GenericAlias) or (sys.version_info >= (3, 9) and isinstance(hint, t.GenericAlias)):  # type: ignore
