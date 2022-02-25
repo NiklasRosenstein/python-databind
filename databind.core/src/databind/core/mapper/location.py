@@ -88,7 +88,7 @@ class Location:
     if colors is None and sys.stdout.isatty():
       colors = True
 
-    c = colored if colors else _no_colored
+    c = t.cast(t.Callable, colored if colors else _no_colored)
     parts: t.List[str] = []
     prev_filename: t.Optional[str] = None
 

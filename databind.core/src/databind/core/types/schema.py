@@ -272,7 +272,7 @@ def dataclass_to_schema(dataclass_type: t.Type, context: t.Optional[TypeContext]
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
 
   if context is None:
-    context = TypeContext.of(DefaultTypeHintAdapter(), dataclass_type)
+    context = TypeContext(DefaultTypeHintAdapter()).with_scope_of(dataclass_type)
   else:
     assert isinstance(context, TypeContext), type(context)
 

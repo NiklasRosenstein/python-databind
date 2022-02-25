@@ -21,7 +21,7 @@ from .utils import type_repr, unpack_type_hint, find_generic_bases, _ORIGIN_CONV
 class TypeHintAdapterError(Exception):
   adapter: 'TypeHintAdapter'
   message: str
-  causes: t.List['TypeHintAdapter'] = dataclasses.field(default_factory=list)
+  causes: t.List['TypeHintAdapterError'] = dataclasses.field(default_factory=list)
 
   def __str__(self) -> str:
     parts = [self.message] + [str(c) for c in self.causes]
@@ -43,7 +43,7 @@ class TypeContext:
 
   def resolve_forward_reference(self, forward_ref: str) -> t.Any:
     # FIXME (@NiklasRosenstein): Relying on internal typing API here.
-    return t.ForwardRef(forward_ref)._evaluate(self.globals_, self.locals, frozenset())
+    return t.ForwardRef(forward_ref)._evaluate(self.globals_, self.locals, frozenset())  # type: ignore
 
   def resolve_type_var(self, type_variable: t.TypeVar) -> t.Any:
     try:
@@ -103,7 +103,7 @@ class TypeContext:
       if isinstance(a, t.TypeVar):
         return _resolve_type_var(a)
       elif isinstance(a, t.ForwardRef):
-        return a._evaluate(self.globals_, self.locals, frozenset())
+        return a._evaluate(self.globals_, self.locals, frozenset())  # type: ignore
       return a
 
     if hasattr(type_hint, '__origin__') and hasattr(type_hint.__origin__, '__parameters__'):
@@ -121,7 +121,7 @@ class TypeContext:
     if hasattr(type_hint, '__orig_bases__'):
       scoped = self.with_scope_of(type_hint)
       for base in type_hint.__orig_bases__:
-        type_vars = {**scoped.with_type_vars_of(base).type_vars, **type_vars}
+        type_vars = {**(scoped.with_type_vars_of(base).type_vars or {}), **type_vars}
 
     return TypeContext(
       root_adapter=self.root_adapter,
