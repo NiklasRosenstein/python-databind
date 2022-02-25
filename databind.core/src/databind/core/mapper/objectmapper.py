@@ -1,7 +1,7 @@
 
 import typing as t
 from databind.core.annotations.base import AnnotationsRegistry, DefaultAnnotationsProvider
-from databind.core.types.adapter import ChainTypeHintAdapter, DefaultTypeHintAdapter
+from databind.core.types.adapter import ChainTypeHintAdapter, DefaultTypeHintAdapter, TypeContext
 from databind.core.types.schema import DataclassAdapter
 from databind.core.types.types import ConcreteType
 
@@ -76,7 +76,7 @@ class ObjectMapper(AnnotationsRegistry, ChainTypeHintAdapter, SimpleModule):
     settings: t.Optional[t.List[t.Any]] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
-    type_ = self.adapt_type_hint(type_hint)
+    type_ = TypeContext(self).adapt_type_hint(type_hint)
     field = Field('$', type_, annotations or [])
     loc = Location(None, type_, key, filename, position)
     ctx = Context(None, self, self, self,

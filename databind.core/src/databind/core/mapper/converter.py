@@ -2,7 +2,7 @@
 import abc
 import enum
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from deprecated import deprecated
 from databind.core.annotations import Annotation, get_annotation

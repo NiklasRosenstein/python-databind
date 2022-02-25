@@ -2,12 +2,13 @@
 
 import typing as t
 import typing_extensions as te
+from databind.core.types.adapter import TypeContext
 from dataclasses import dataclass
 from databind.core import ObjectMapper, ConcreteType, ListType, UnionAdapter, UnionType
 from databind.core.annotations import union
 
 mapper = ObjectMapper()
-from_typing = mapper.adapt_type_hint
+from_typing = TypeContext(mapper).adapt_type_hint
 
 
 class Foobar: pass
@@ -31,7 +32,7 @@ def test_union_adapter():
     assert type_.style == None
     assert type_.discriminator_key == None
 
-  type_ = UnionAdapter().adapt_type_hint(ConcreteType(MyUnionType))
+  type_ = TypeContext(UnionAdapter()).adapt_type_hint(ConcreteType(MyUnionType))
   _check(type_)
 
   type_ = from_typing(MyUnionType)

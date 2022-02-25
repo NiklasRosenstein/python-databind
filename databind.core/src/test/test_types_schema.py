@@ -8,9 +8,11 @@ import pytest
 
 from databind.core import annotations as A, dataclasses as D, ConcreteType, OptionalType, ListType, ObjectType
 from databind.core import ObjectMapper, SchemaDefinitionError, Schema, Field, FlattenedSchema, PropagatedField, dataclass_to_schema, DataclassAdapter
+from databind.core.types.adapter import TypeContext
 
+T = t.TypeVar('T')
 mapper = ObjectMapper()
-from_typing = mapper.adapt_type_hint
+from_typing = TypeContext(mapper).adapt_type_hint
 
 
 def test_schema_flat_fields_check():
@@ -37,8 +39,8 @@ def test_dataclass_adapter():
   class MyDataclass:
     f: te.Annotated[int, 'foo']
 
-  typ = DataclassAdapter().adapt_type_hint(ConcreteType(MyDataclass, ['foobar']), mapper)
-  assert typ == ObjectType(dataclass_to_schema(MyDataclass, mapper), ['foobar'])
+  typ = DataclassAdapter().adapt_type_hint(ConcreteType(MyDataclass, ['foobar']), TypeContext(mapper))
+  assert typ == ObjectType(dataclass_to_schema(MyDataclass, TypeContext(mapper)), ['foobar'])
   assert typ.schema.fields['f'].type.annotations == ['foo']
 
 
@@ -65,7 +67,7 @@ def test_dataclass_to_schema_conversion():
       'a': Field('a', ConcreteType(int)),
       'b': Field('b', OptionalType(ConcreteType(str)), [A.alias('balias')], default=None),
       'c': Field('c', ConcreteType(str, [A.alias('calias')]), [], default=42),
-      'd': Field('d', OptionalType(ObjectType(dataclass_to_schema(P, mapper))), default=None),
+      'd': Field('d', OptionalType(ObjectType(dataclass_to_schema(P, TypeContext(mapper)))), default=None),
     },
     [],
     MyDataclass,
@@ -143,11 +145,11 @@ def test_schema_multilevel_flat_fields():
   class Acls:
     b: te.Annotated[Bcls, A.fieldinfo(flat=True)]
 
-  schema = dataclass_to_schema(Acls, mapper)
+  schema = dataclass_to_schema(Acls, TypeContext(mapper))
   flattened = schema.flattened()
   assert flattened == FlattenedSchema(
     schema,
-    {'d': PropagatedField(dataclass_to_schema(Ccls, mapper), Field('d', ConcreteType(int)), 'b', ['b', 'c', 'd'])},
+    {'d': PropagatedField(dataclass_to_schema(Ccls, TypeContext(mapper)), Field('d', ConcreteType(int)), 'b', ['b', 'c', 'd'])},
     None)
 
 
@@ -170,3 +172,34 @@ def test_dataclass_with_pep585_generic_and_forward_references():
     annotations=[],
     python_type=ATypeWithPEP585AndForwardRef,
   ))
+
+
+@dataclasses.dataclass
+class AGeneric(t.Generic[T]):
+  values: t.List[T]
+
+
+def test_type_variable_resolution():
+  assert from_typing(AGeneric) == ObjectType(
+    Schema(
+      name='AGeneric',
+      fields={
+        'values': Field('values', ListType(ConcreteType(object, []), list, [])),
+      },
+      annotations=[],
+      python_type=AGeneric
+    ),
+    []
+  )
+
+  assert from_typing(AGeneric[int]) == ObjectType(
+    Schema(
+      name='AGeneric',
+      fields={
+        'values': Field('values', ListType(ConcreteType(int, []), list, [])),
+      },
+      annotations=[],
+      python_type=AGeneric
+    ),
+    []
+  )

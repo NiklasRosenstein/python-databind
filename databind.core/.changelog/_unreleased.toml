@@ -1,0 +1,8 @@
+[[entries]]
+id = "85ad77f0-4c11-4f16-a37d-46e7e5241e86"
+type = "feature"
+description = "support resolution of type variables as they are encountered in unspecialized form"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/25",
+]

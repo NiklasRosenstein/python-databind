@@ -19,9 +19,8 @@ from nr.pylang.utils import NotSet
 import databind.core.annotations as A
 from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
 from databind.core.types.utils import get_type_hints, type_repr
-from .adapter import DefaultTypeHintAdapter, ForwardReferenceResolver, ModuleForwardReferenceResolver, TypeHintAdapter, TypeHintAdapterError
+from .adapter import DefaultTypeHintAdapter, TypeContext, TypeHintAdapter, TypeHintAdapterError
 from .types import BaseType, ConcreteType, MapType
-
 
 T = t.TypeVar('T')
 
@@ -262,7 +261,7 @@ class ObjectType(BaseType):
     return func(self)
 
 
-def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: t.Optional[TypeHintAdapter] = None) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, context: t.Optional[TypeContext] = None) -> Schema:
   """
   Converts the given *dataclass_type* to a #Schema. The dataclass fields are converted to #BaseType#s
   via the given *type_hint_adapter*. If no adapter is specified, the #DefaultTypeHintAdapter will be
@@ -272,12 +271,13 @@ def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: t.Optional[Ty
   preconditions.check_instance_of(dataclass_type, type)
   preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
 
-  if type_hint_adapter is None:
-    type_hint_adapter = DefaultTypeHintAdapter()
+  if context is None:
+    context = TypeContext.of(DefaultTypeHintAdapter(), dataclass_type)
+  else:
+    assert isinstance(context, TypeContext), type(context)
 
   fields: t.Dict[str, Field] = {}
   annotations = get_type_hints(dataclass_type)
-  resolver = ModuleForwardReferenceResolver(sys.modules[dataclass_type.__module__])
 
   for field in _get_fields(dataclass_type):
     if not field.init:
@@ -287,7 +287,7 @@ def dataclass_to_schema(dataclass_type: t.Type, type_hint_adapter: t.Optional[Ty
 
     # NOTE (NiklasRosenstein): We do not use #field.type because if it contains a #t.ForwardRef,
     #   it will not be resolved and we can't convert that to our type representation.
-    field_type_hint = type_hint_adapter.adapt_type_hint(annotations[field.name], None, resolver)
+    field_type_hint = context.adapt_type_hint(annotations[field.name])
     field_annotations = list(field.metadata.get(ANNOTATIONS_METADATA_KEY, []))
 
     # Handle field(metadata={'alias': ...}). The value can be a string or list of strings.
@@ -323,15 +323,16 @@ class DataclassAdapter(TypeHintAdapter):
   def __init__(self) -> None:
     self._cache: t.Dict[t.Type, Schema] = {}
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter', resolver: t.Optional[ForwardReferenceResolver]) -> 'BaseType':
+  def adapt_type_hint(self, type_hint: t.Any, context: TypeContext) -> BaseType:
     if isinstance(type_hint, ConcreteType) and is_dataclass(type_hint.type):
       # TODO (@NiklasRosenstein): This is a hack to get around recursive type definitions.
-      if type_hint.type in self._cache:
-        return ObjectType(self._cache[type_hint.type], type_hint.annotations)
+      cache_key = context.apply_type_vars(type_hint.type)
+      if cache_key in self._cache:
+        return ObjectType(self._cache[cache_key], type_hint.annotations)
       schema = Schema(type_hint.type.__name__, {}, [], type_hint.type)
-      self._cache[type_hint.type] = schema
+      self._cache[cache_key] = schema
       try:
-        vars(schema).update(vars(dataclass_to_schema(type_hint.type, recurse)))
+        vars(schema).update(vars(dataclass_to_schema(type_hint.type, context)))
       except:
         del self._cache[type_hint.type]
         raise

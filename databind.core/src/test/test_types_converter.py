@@ -5,11 +5,13 @@ import typing as t
 import typing_extensions as te
 import pytest
 from databind.core.types.types import *
+from databind.core.types.adapter import TypeContext
 from databind.core.mapper.objectmapper import ObjectMapper
 
 T = t.TypeVar('T')
 mapper = ObjectMapper()
-from_typing = mapper.adapt_type_hint
+from_typing = TypeContext(mapper).adapt_type_hint
+
 
 def test_from_typing():
   assert from_typing(int) == ConcreteType(int)
@@ -73,9 +75,7 @@ def test_pep585_generic_aliases():
 
 @pytest.mark.skipif(sys.version_info < (3, 9), reason='PEP585 requires Python 3.9 or higher')
 def test_pep585_generic_aliases_with_forward_references():
-  with pytest.raises(ValueError) as excinfo:
-    from_typing(dict['str', set[int]])
-  assert str(excinfo.value) == "encountered forward reference in PEP585 generic `dict['str', set[int]]` but no ForwardReferenceResolver is supplied"
+  from_typing(dict['str', set[int]])
 
 
 @pytest.mark.skipif(sys.version_info < (3, 10), reason='PEP604 requires Python 3.10 or higher')

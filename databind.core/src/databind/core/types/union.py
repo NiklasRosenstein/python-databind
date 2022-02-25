@@ -15,7 +15,7 @@ from nr.pylang.utils.funcdef import except_format
 
 from databind.core.annotations.base import Annotation, get_annotation
 from databind.core.annotations.typeinfo import typeinfo
-from .adapter import ForwardReferenceResolver, TypeHintAdapter, TypeHintAdapterError
+from .adapter import TypeContext, TypeHintAdapter, TypeHintAdapterError
 from .schema import ObjectType
 from .types import BaseType, ConcreteType
 from .utils import type_repr
@@ -104,7 +104,7 @@ class EntrypointSubtypes(UnionSubtypes):
 
   def get_type_by_name(self, name: str, type_hint_adapter: 'TypeHintAdapter') -> 'BaseType':
     try:
-      return type_hint_adapter.adapt_type_hint(self._entrypoints[name].load())
+      return TypeContext(type_hint_adapter).adapt_type_hint(self._entrypoints[name].load())
     except KeyError:
       raise UnionTypeError(name, self)
 
@@ -144,7 +144,7 @@ class DynamicSubtypes(UnionSubtypes):
       if isinstance(member, types.FunctionType):
         member = member()
       if not isinstance(member, BaseType):
-        member = type_hint_adapter.adapt_type_hint(member)
+        member = TypeContext(type_hint_adapter).adapt_type_hint(member)
       self._members[name] = member
       assert isinstance(member, BaseType), (member, type(member))
       return member
@@ -229,7 +229,7 @@ class ImportSubtypes(UnionSubtypes):
     if not isinstance(target, type):
       raise ValueError(f'{name!r} does not point to a type (got {type(target).__name__} instead)')
 
-    return type_hint_adapter.adapt_type_hint(target)
+    return TypeContext(type_hint_adapter).adapt_type_hint(target)
 
   def get_type_names(self) -> t.List[str]:
     raise NotImplementedError
@@ -424,7 +424,7 @@ class UnionAdapter(TypeHintAdapter):
   Adapter for classes decorated with #@union().
   """
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter, resolver: t.Optional[ForwardReferenceResolver]) -> BaseType:
+  def adapt_type_hint(self, type_hint: t.Any, context: TypeContext) -> BaseType:
     if not isinstance(type_hint, BaseType):
       raise TypeHintAdapterError(self, str(type_hint))
 
@@ -447,6 +447,7 @@ class UnionAdapter(TypeHintAdapter):
         type_hint.to_typing())
       result_type.subtypes.owner = weakref.ref(result_type)
       return result_type
+
     return type_hint
 
 

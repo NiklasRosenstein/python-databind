@@ -13,51 +13,89 @@ import warnings
 from .types import BaseType, ConcreteType, ListType, SetType, MapType, OptionalType, ImplicitUnionType
 from .utils import type_repr, unpack_type_hint, find_generic_bases, _ORIGIN_CONVERSION
 
-has_pep585_generics = not (sys.version_info < (3, 9))
-#has_pep604_union_types = not (sys.version_info < (3, 10))
+# has_pep585_generics = not (sys.version_info < (3, 9))
+# has_pep604_union_types = not (sys.version_info < (3, 10))
 
 
 @dataclasses.dataclass
 class TypeHintAdapterError(Exception):
   adapter: 'TypeHintAdapter'
   message: str
+  causes: t.List['TypeHintAdapter'] = dataclasses.field(default_factory=list)
 
   def __str__(self) -> str:
-    return self.message
+    parts = [self.message] + [str(c) for c in self.causes]
+    return '\n'.join(parts)
 
 
-class ForwardReferenceResolver(abc.ABC):
+@dataclasses.dataclass
+class TypeContext:
+  """ Tracking context for type adaptation. """
 
-  @abc.abstractmethod
-  def get_type(self, forward_ref: str) -> t.Union[t.Any, t.Type]:
-    ...
+  root_adapter: 'TypeHintAdapter'
+  globals_: t.Optional[t.Mapping[str, t.Any]] = None
+  locals: t.Optional[t.Mapping[str, t.Any]] = None
+  type_vars: t.Optional[t.Mapping[t.TypeVar, t.Any]] = None
+  _source: t.Any = None
 
+  def adapt_type_hint(self, type_hint: t.Any) -> BaseType:
+    return self.root_adapter.adapt_type_hint(type_hint, self.next_context(type_hint))
 
-class ModuleForwardReferenceResolver(ForwardReferenceResolver):
+  def resolve_forward_reference(self, forward_ref: str) -> t.Any:
+    # FIXME (@NiklasRosenstein): Relying on internal typing API here.
+    return t.ForwardRef(forward_ref)._evaluate(self.globals_, self.locals, frozenset())
 
-  def __init__(self, module: types.ModuleType) -> None:
-    self._module = module
+  def resolve_type_var(self, type_variable: t.TypeVar) -> t.Any:
+    try:
+      return (self.type_vars or {})[type_variable]
+    except KeyError:
+      raise RuntimeError(f'cannot resolve {type_variable!r} in {self._source!r}')
 
-  def get_type(self, forward_ref: str) -> t.Union[t.Any, t.Type]:
-    parts = forward_ref.split('.')
-    current = self._module
-    for part in parts:
-      try:
-        current = getattr(current, part)
-      except AttributeError:
-        raise KeyError(forward_ref)
-    return current
+  def apply_type_vars(self, type_hint: t.Any) -> t.Any:
+    if self.type_vars is None:
+      return type_hint
+    if not hasattr(type_hint, '__origin__') and hasattr(type_hint, '__parameters__'):
+      args = tuple(self.type_vars.get(k) for k in type_hint.__parameters__)
+      if args:
+        return type_hint[args]
+    return type_hint
+
+  def next_context(self, type_hint: t.Any) -> 'TypeContext':
+    # TODO (@NiklasRosenstein): Might have to carry over assignments of type variables
+
+    if hasattr(type_hint, '__origin__'):
+      args = list(type_hint.__args__)
+      for index, arg in enumerate(args):
+        if isinstance(arg, t.TypeVar):
+          args[index] = self.resolve_type_var(arg)
+      type_hint = type_hint.__origin__
+      parameters = getattr(type_hint, '__parameters__', tuple(t.TypeVar(f'T{i}') for i in range(len(args))))
+      type_vars = dict(zip(parameters, args))
+    elif hasattr(type_hint, '__parameters__'):
+      type_vars = {p: t.Any for p in type_hint.__parameters__}
+    else:
+      type_vars = {}
+
+    if isinstance(type_hint, type) and self.globals_ is None:
+      module = sys.modules.get(type_hint.__module__)
+    else:
+      module = None
+
+    return TypeContext(
+      root_adapter=self.root_adapter,
+      globals_=vars(module) if module else self.globals_,
+      locals=self.locals,
+      type_vars={**(self.type_vars or {}), **type_vars},
+      _source=type_hint,
+    )
 
 
 class TypeHintAdapter(abc.ABC):
 
   Error = TypeHintAdapterError
 
-  def adapt_type_hint(self, type_hint: t.Any, recurse: t.Optional['TypeHintAdapter'] = None, resolver: t.Optional[ForwardReferenceResolver] = None) -> BaseType:
-    return self._adapt_type_hint_impl(type_hint, recurse or self, resolver)
-
   @abc.abstractmethod
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: 'TypeHintAdapter', resolver: t.Optional[ForwardReferenceResolver]) -> BaseType: ...
+  def adapt_type_hint(self, type_hint: t.Any, context: TypeContext) -> BaseType: ...
 
 
 class DefaultTypeHintAdapter(TypeHintAdapter):
@@ -65,15 +103,9 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
   Adapter for all the supported standard #typing type hints.
   """
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter, resolver: t.Optional[ForwardReferenceResolver]) -> BaseType:
+  def adapt_type_hint(self, type_hint: t.Any, context: TypeContext) -> BaseType:
     generic, args = unpack_type_hint(type_hint)
-    from_typing = lambda th: recurse._adapt_type_hint_impl(th, recurse, resolver)
-
-    if has_pep585_generics and isinstance(type_hint, types.GenericAlias):  # type: ignore
-      if not resolver and any(isinstance(x, str) for x in type_hint.__args__):
-        raise ValueError(
-          f'encountered forward reference in PEP585 generic `{type_hint}` but no ForwardReferenceResolver is supplied'
-        )
+    from_typing = context.adapt_type_hint
 
     # Support custom subclasses of typing generic aliases (e.g. class MyList(t.List[int])
     # or class MyDict(t.Mapping[K, V])). If we find a type like that, we keep a reference
@@ -120,18 +152,19 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
         return from_typing(type_)
 
     if isinstance(type_hint, str):
-      if resolver:
-        try:
-          return from_typing(resolver.get_type(type_hint))
-        except KeyError:
-          pass
-      raise TypeHintAdapterError(self, 'cannot resolve forward reference {type_hint!r}')
+      return from_typing(context.resolve_forward_reference(type_hint))
 
     if isinstance(type_hint, type):
       return from_typing(ConcreteType(type_hint))
 
     if isinstance(type_hint, BaseType):
       return type_hint
+
+    if isinstance(type_hint, t.TypeVar):
+      return from_typing(context.resolve_type_var(type_hint))
+
+    if generic is not None and isinstance(generic, type):  # Probably a subclass of typing.Generic
+      return context.root_adapter.adapt_type_hint(generic, context)
 
     raise TypeHintAdapterError(self, f'unsupported type hint {type_hint!r}')
 
@@ -172,12 +205,12 @@ class ChainTypeHintAdapter(TypeHintAdapter):
       item = (priority, self._priorities[priority])
       self._ordered.insert(bisect.bisect(self._ordered, item), item)
 
-  def _adapt_type_hint_impl(self, type_hint: t.Any, recurse: TypeHintAdapter, resolver: t.Optional[ForwardReferenceResolver]) -> BaseType:
+  def adapt_type_hint(self, type_hint: t.Any, context: TypeContext) -> BaseType:
     errors = []
     for _priority_group, adapters in self._ordered:
       for adapter in adapters:
         try:
-          type_hint = adapter.adapt_type_hint(type_hint, recurse, resolver)
+          type_hint = adapter.adapt_type_hint(type_hint, context)
         except TypeHintAdapterError as exc:
           errors.append(exc)
         if isinstance(type_hint, BaseType) and any(x(type_hint) for x in self._stop_conditions):
@@ -188,4 +221,4 @@ class ChainTypeHintAdapter(TypeHintAdapter):
       raise TypeHintAdapterError(self, 'no adapters registered')
     summary = '\n'.join(f'{str(exc.adapter)}: {exc.message}' for exc in errors)
     summary = textwrap.indent(summary, '  ')
-    raise TypeHintAdapterError(self, 'no available adapter matched\n' + summary)
+    raise TypeHintAdapterError(self, 'no available adapter matched\n' + summary, errors)
