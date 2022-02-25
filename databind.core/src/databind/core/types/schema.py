@@ -334,7 +334,7 @@ class DataclassAdapter(TypeHintAdapter):
       try:
         vars(schema).update(vars(dataclass_to_schema(type_hint.type, context.with_scope_of(cache_key))))
       except:
-        del self._cache[type_hint.type]
+        del self._cache[cache_key]
         raise
       return ObjectType(schema, type_hint.annotations)
     raise TypeHintAdapterError(self, str(type_hint))
