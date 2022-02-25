@@ -6,3 +6,9 @@ author = "@NiklasRosenstein"
 issues = [
     "https://github.com/NiklasRosenstein/databind/issues/25",
 ]
+
+[[entries]]
+id = "8ee5d13b-d721-461d-bacd-3cdb6e199a1d"
+type = "fix"
+description = "fix `unpack_type_hints()` to return args for a parametrized special generic alias (like `typing.List[T]` returning `(list, (T,))`)"
+author = "@NiklasRosenstein"
