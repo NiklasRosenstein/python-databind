@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "databind-json"
+name = "databind.json"
 version = "1.4.0"
 description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.7 and newer."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
