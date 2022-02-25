@@ -332,7 +332,7 @@ class DataclassAdapter(TypeHintAdapter):
       schema = Schema(type_hint.type.__name__, {}, [], type_hint.type)
       self._cache[cache_key] = schema
       try:
-        vars(schema).update(vars(dataclass_to_schema(type_hint.type, context)))
+        vars(schema).update(vars(dataclass_to_schema(type_hint.type, context.with_scope_of(cache_key))))
       except:
         del self._cache[type_hint.type]
         raise

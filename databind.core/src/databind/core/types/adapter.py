@@ -39,7 +39,7 @@ class TypeContext:
   _source: t.Any = None
 
   def adapt_type_hint(self, type_hint: t.Any) -> BaseType:
-    return self.root_adapter.adapt_type_hint(type_hint, self.next_context(type_hint))
+    return self.root_adapter.adapt_type_hint(type_hint, self.with_type_vars_of(type_hint))
 
   def resolve_forward_reference(self, forward_ref: str) -> t.Any:
     # FIXME (@NiklasRosenstein): Relying on internal typing API here.
@@ -60,23 +60,17 @@ class TypeContext:
         return type_hint[args]
     return type_hint
 
-  def next_context(self, type_hint: t.Any) -> 'TypeContext':
-    # TODO (@NiklasRosenstein): Might have to carry over assignments of type variables
+  def with_scope_of(self, type_hint: t.Any) -> 'TypeContext':
+    """ Tries to assume the scope (i.e. globals and locals) of the type given with *type_hint* and returns a new
+    type context. If no scope can be identified for the type hint, the returned context will not contain a scope.
+    """
+
+    original = type_hint
 
     if hasattr(type_hint, '__origin__'):
-      args = list(type_hint.__args__)
-      for index, arg in enumerate(args):
-        if isinstance(arg, t.TypeVar):
-          args[index] = self.resolve_type_var(arg)
       type_hint = type_hint.__origin__
-      parameters = getattr(type_hint, '__parameters__', tuple(t.TypeVar(f'T{i}') for i in range(len(args))))
-      type_vars = dict(zip(parameters, args))
-    elif hasattr(type_hint, '__parameters__'):
-      type_vars = {p: t.Any for p in type_hint.__parameters__}
-    else:
-      type_vars = {}
 
-    if isinstance(type_hint, type) and self.globals_ is None:
+    if isinstance(type_hint, type):
       module = sys.modules.get(type_hint.__module__)
     else:
       module = None
@@ -84,6 +78,54 @@ class TypeContext:
     return TypeContext(
       root_adapter=self.root_adapter,
       globals_=vars(module) if module else self.globals_,
+      locals=None,
+      type_vars=self.type_vars,#self.with_type_vars_of(original).type_vars,
+      _source=type_hint,
+    )
+
+  def with_type_vars_of(self, type_hint: t.Any, l: bool = False) -> 'TypeContext':
+    """ Extracts assigned type paremtrizations and carries them forward in a new type context returned by this
+    function. """
+
+    def _resolve_type_var(tv: t.TypeVar) -> t.Any:
+      if self.type_vars and tv in self.type_vars:
+        return self.type_vars[tv]
+      elif isinstance(tv.__bound__, t.ForwardRef):
+        return _evaluate(tv.__bound__)
+      elif isinstance(tv.__bound__, str):
+        return self.resolve_forward_reference(tv.__bound__)
+      elif tv.__bound__:
+        return tv.__bound__
+      else:
+        return t.Any
+
+    def _evaluate(a: t.Any) -> t.Any:
+      if isinstance(a, t.TypeVar):
+        return _resolve_type_var(a)
+      elif isinstance(a, t.ForwardRef):
+        return a._evaluate(self.globals_, self.locals, frozenset())
+      return a
+
+    if hasattr(type_hint, '__origin__') and hasattr(type_hint.__origin__, '__parameters__'):
+      args = [_evaluate(a) for a in type_hint.__args__]
+      type_hint = type_hint.__origin__
+      type_vars = dict(zip(type_hint.__parameters__, args))
+
+    elif hasattr(type_hint, '__parameters__'):
+
+      type_vars = {p: _resolve_type_var(p) for p in type_hint.__parameters__}
+
+    else:
+      type_vars = {}
+
+    if hasattr(type_hint, '__orig_bases__'):
+      scoped = self.with_scope_of(type_hint)
+      for base in type_hint.__orig_bases__:
+        type_vars = {**scoped.with_type_vars_of(base).type_vars, **type_vars}
+
+    return TypeContext(
+      root_adapter=self.root_adapter,
+      globals_=self.globals_,
       locals=self.locals,
       type_vars={**(self.type_vars or {}), **type_vars},
       _source=type_hint,
@@ -161,7 +203,8 @@ class DefaultTypeHintAdapter(TypeHintAdapter):
       return type_hint
 
     if isinstance(type_hint, t.TypeVar):
-      return from_typing(context.resolve_type_var(type_hint))
+      resolved = context.resolve_type_var(type_hint)
+      return context.with_scope_of(resolved).adapt_type_hint(resolved)
 
     if generic is not None and isinstance(generic, type):  # Probably a subclass of typing.Generic
       return context.root_adapter.adapt_type_hint(generic, context)

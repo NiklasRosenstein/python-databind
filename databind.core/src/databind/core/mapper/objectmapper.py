@@ -76,7 +76,7 @@ class ObjectMapper(AnnotationsRegistry, ChainTypeHintAdapter, SimpleModule):
     settings: t.Optional[t.List[t.Any]] = None,
   ) -> T:
     preconditions.check_instance_of(direction, Direction)
-    type_ = TypeContext(self).adapt_type_hint(type_hint)
+    type_ = TypeContext(self).with_scope_of(type_hint).adapt_type_hint(type_hint)
     field = Field('$', type_, annotations or [])
     loc = Location(None, type_, key, filename, position)
     ctx = Context(None, self, self, self,
