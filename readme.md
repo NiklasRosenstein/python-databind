@@ -19,6 +19,7 @@ __Not yet migrated to 1.x__
 | ------- | -------------- | ---------------- |
 | [PEP585](https://www.python.org/dev/peps/pep-0585/) | 3.9 | 1.2.0 &ndash; *current* |
 | [PEP585](https://www.python.org/dev/peps/pep-0585/) (forward references) | 3.9 | 1.3.1? &ndash; *current* |
+| Resolve type parameters of specialized generic types | 3.x | 1.5.0 &ndash; *current* |
 
 ---
 
