@@ -5,9 +5,12 @@ description = "Databind is a library inspired by jackson-databind to de-/seriali
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
 readme = "../readme.md"
+packages = []
 
   [tool.poetry.dependencies]
   python = "^3.7"
+  "databind.core" = "^1.4.0"
+  "databind.json" = "^1.4.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -261,7 +261,7 @@ class ObjectType(BaseType):
     return func(self)
 
 
-def dataclass_to_schema(dataclass_type: t.Type, context: t.Optional[TypeContext] = None) -> Schema:
+def dataclass_to_schema(dataclass_type: t.Type, context: t.Union[TypeContext, TypeHintAdapter, None] = None) -> Schema:
   """
   Converts the given *dataclass_type* to a #Schema. The dataclass fields are converted to #BaseType#s
   via the given *type_hint_adapter*. If no adapter is specified, the #DefaultTypeHintAdapter will be
@@ -273,6 +273,8 @@ def dataclass_to_schema(dataclass_type: t.Type, context: t.Optional[TypeContext]
 
   if context is None:
     context = TypeContext(DefaultTypeHintAdapter()).with_scope_of(dataclass_type)
+  elif isinstance(context, TypeHintAdapter):
+    context = TypeContext(context).with_scope_of(dataclass_type)
   else:
     assert isinstance(context, TypeContext), type(context)
 

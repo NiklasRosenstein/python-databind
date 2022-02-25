@@ -24,7 +24,6 @@ packages = [{include = "databind/core", from = "src"}]
   types-deprecated = "*"
   types-pkg_resources = "*"
 
-
 [tool.slam]
 typed = true
 

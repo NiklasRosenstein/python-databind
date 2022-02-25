@@ -5,3 +5,4 @@ build/
 *.py[cod]
 *.egg-info
 *.egg
+/.python-version
