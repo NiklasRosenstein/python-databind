@@ -41,9 +41,14 @@ class TypeContext:
   def adapt_type_hint(self, type_hint: t.Any) -> BaseType:
     return self.root_adapter.adapt_type_hint(type_hint, self.with_type_vars_of(type_hint))
 
-  def resolve_forward_reference(self, forward_ref: str) -> t.Any:
+  def resolve_forward_reference(self, forward_ref: t.Union[str, t.ForwardRef]) -> t.Any:
+    if isinstance(forward_ref, str):
+      forward_ref = t.ForwardRef(forward_ref)
     # FIXME (@NiklasRosenstein): Relying on internal typing API here.
-    return t.ForwardRef(forward_ref)._evaluate(self.globals_, self.locals, frozenset())  # type: ignore
+    if sys.version_info < (3, 9):
+      return forward_ref._evaluate(self.globals_, self.locals)  # type: ignore
+    else:
+      return forward_ref._evaluate(self.globals_, self.locals, frozenset())  # type: ignore
 
   def resolve_type_var(self, type_variable: t.TypeVar) -> t.Any:
     try:
@@ -65,8 +70,6 @@ class TypeContext:
     type context. If no scope can be identified for the type hint, the returned context will not contain a scope.
     """
 
-    original = type_hint
-
     if hasattr(type_hint, '__origin__'):
       type_hint = type_hint.__origin__
 
@@ -79,7 +82,7 @@ class TypeContext:
       root_adapter=self.root_adapter,
       globals_=vars(module) if module else self.globals_,
       locals=None,
-      type_vars=self.type_vars,#self.with_type_vars_of(original).type_vars,
+      type_vars=self.type_vars,
       _source=type_hint,
     )
 
@@ -90,8 +93,8 @@ class TypeContext:
     def _resolve_type_var(tv: t.TypeVar) -> t.Any:
       if self.type_vars and tv in self.type_vars:
         return self.type_vars[tv]
-      elif isinstance(tv.__bound__, t.ForwardRef):
-        return _evaluate(tv.__bound__)
+      elif isinstance(tv.__bound__, (str, t.ForwardRef)):
+        return self.resolve_forward_reference(tv.__bound__)
       elif isinstance(tv.__bound__, str):
         return self.resolve_forward_reference(tv.__bound__)
       elif tv.__bound__:
@@ -103,7 +106,7 @@ class TypeContext:
       if isinstance(a, t.TypeVar):
         return _resolve_type_var(a)
       elif isinstance(a, t.ForwardRef):
-        return a._evaluate(self.globals_, self.locals, frozenset())  # type: ignore
+        return self.resolve_forward_reference(a)
       return a
 
     if hasattr(type_hint, '__origin__') and hasattr(type_hint.__origin__, '__parameters__'):
@@ -112,7 +115,6 @@ class TypeContext:
       type_vars = dict(zip(type_hint.__parameters__, args))
 
     elif hasattr(type_hint, '__parameters__'):
-
       type_vars = {p: _resolve_type_var(p) for p in type_hint.__parameters__}
 
     else:
@@ -123,11 +125,14 @@ class TypeContext:
       for base in type_hint.__orig_bases__:
         type_vars = {**(scoped.with_type_vars_of(base).type_vars or {}), **type_vars}
 
+    if self.type_vars:
+      type_vars = {**self.type_vars, **type_vars}
+
     return TypeContext(
       root_adapter=self.root_adapter,
       globals_=self.globals_,
       locals=self.locals,
-      type_vars={**(self.type_vars or {}), **type_vars},
+      type_vars=type_vars,
       _source=type_hint,
     )
 
