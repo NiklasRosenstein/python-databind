@@ -1,6 +1,0 @@
-release_date: '2020-11-07'
-changes:
-- type: fix
-  component: general
-  description: fix right-hand side of assigning a field() without a default or default_fact_factory
-  fixes: []

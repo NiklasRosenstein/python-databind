@@ -1,6 +1,0 @@
-release_date: '2021-02-15'
-changes:
-- type: fix
-  component: general
-  description: Fix DataclassAttribute constructor call in Mypy >= 0.800
-  fixes: []

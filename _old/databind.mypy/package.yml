@@ -1,6 +1,0 @@
-name: databind.mypy
-version: 0.0.3
-description: MyPy plugin for the "databind" module.
-requirements:
-- python ^3.6
-- mypy ^0.800
