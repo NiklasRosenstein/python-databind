@@ -1,0 +1,13 @@
+release-date = "2020-12-30"
+
+[[entries]]
+id = "0cb46581-98b5-40ad-82f1-eba64a2d498a"
+type = "fix"
+description = "add missing `to_stream` and `from_stream` to `__all__`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "b65cd60e-3b8f-42c0-b4d8-37e5257bc269"
+type = "feature"
+description = "add `cast()` function"
+author = "@NiklasRosenstein"

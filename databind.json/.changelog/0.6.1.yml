@@ -1,6 +1,0 @@
-release_date: '2020-09-10'
-changes:
-- type: fix
-  component: general
-  description: Fix `NameError` in `ObjectConverter`
-  fixes: []

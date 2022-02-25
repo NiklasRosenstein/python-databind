@@ -1,7 +1,0 @@
-release_date: '2020-11-24'
-changes:
-- type: feature
-  component: general
-  description: add converter for `typing.Any`, which by the way does not actually
-    convert anything
-  fixes: []

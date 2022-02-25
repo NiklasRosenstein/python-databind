@@ -1,5 +1,0 @@
-changes:
-- type: change
-  component: general
-  description: improve readability of `ConversionError` by changing `Location.format()`
-release_date: '2022-01-06'

@@ -1,0 +1,13 @@
+release-date = "2021-03-05"
+
+[[entries]]
+id = "65f5c1ef-ae7f-4802-af8c-c5e5460f602d"
+type = "improvement"
+description = "Update union construction during deserialization"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "779fedda-841f-4e00-bed0-e3ccab1ad836"
+type = "improvement"
+description = "minimum version of `databind.core` is `^0.10.0`"
+author = "@NiklasRosenstein"

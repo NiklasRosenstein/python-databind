@@ -1,0 +1,37 @@
+release-date = "2021-04-08"
+
+[[entries]]
+id = "f718e1bd-f235-4a48-81c4-379f5469c9de"
+type = "feature"
+description = "Add `uniontype(single_key_discriminator)` argument"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "6349c88c-cedf-4d8f-95f5-441ae9c96486"
+type = "fix"
+description = "Generated `__eq__()` method for `uniontype(container=True)` is now injective to avoid issue when `type(other)` is `object`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "db67c3d6-80a9-4a61-af10-fc46bd505d6e"
+type = "feature"
+description = "add support for aliasing with `field(altname)` in `@uniontype` container declarations"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "8373fb43-05e2-469a-88df-76f7d6d0b083"
+type = "feature"
+description = "`StringConverter` can now also be relaxed, `FieldMetadata.relaxed` is now inherited from the closest metadata in the context for POD data types"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "55862c13-5599-4bb0-9f1d-d60300584e12"
+type = "fix"
+description = "deserializing a `List[str]` from a `str` object now results in an error"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "1ff62e50-8b99-4ee7-813b-f740870638a1"
+type = "improvement"
+description = "bump dependency on databind.core to ^0.11.0"
+author = "@NiklasRosenstein"

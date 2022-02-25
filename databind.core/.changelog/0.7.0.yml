@@ -1,7 +1,0 @@
-release_date: '2020-10-02'
-changes:
-- type: feature
-  component: general
-  description: '`@dataclasses.dataclass()` classes can now be converted as a data
-    model automatically, `BaseMetadata.for_type()` now returns an optional'
-  fixes: []

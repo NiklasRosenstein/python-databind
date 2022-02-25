@@ -1,0 +1,13 @@
+release-date = "2021-09-01"
+
+[[entries]]
+id = "2a888a18-5c19-4857-9818-3fbf0d304472"
+type = "fix"
+description = "`DefaultTypeHintAdapter` no longer raises an exception upon receiving a BaseType instance"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "0f969c4c-29db-453c-b748-5ce5ad5e8fe2"
+type = "improvement"
+description = "`dataclass_to_schema(type_adapter)` argument is now optional and defaults to a `DefaultTypeHintAdapter` instance"
+author = "@NiklasRosenstein"

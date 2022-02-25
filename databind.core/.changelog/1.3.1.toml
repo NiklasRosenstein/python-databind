@@ -1,0 +1,25 @@
+release-date = "2022-01-08"
+
+[[entries]]
+id = "18a0d099-5539-451e-94ef-52e9453ca20a"
+type = "fix"
+description = "Dataclass adapted to ObjectType with no schema fields if a field cannot be adapted"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/23",
+]
+
+[[entries]]
+id = "aefb76ba-5f30-4589-a5bd-e482851e9351"
+type = "feature"
+description = "support resolving forward references in PEP585 generic aliases"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/24",
+]
+
+[[entries]]
+id = "cc443d45-6490-4291-890f-ef6ed1555c90"
+type = "improvement"
+description = "change `ConverterProvider.get_converter()` to `ConverterProvider.get_converters()` and `ConversionNotApplicable` error type, allowing to test multiple converters for a type"
+author = "@NiklasRosenstein"

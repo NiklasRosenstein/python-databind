@@ -1,0 +1,7 @@
+release-date = "2020-09-06"
+
+[[entries]]
+id = "bc123b73-f4d0-44a4-9e43-de56b776a7b6"
+type = "feature"
+description = "Add `strict` argument to `register_json_converters()` which will allow converters for plain-old-datatypes to accept string representations as well"
+author = "@NiklasRosenstein"

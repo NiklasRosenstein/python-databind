@@ -1,5 +1,0 @@
-changes:
-- type: fix
-  component: general
-  description: make `databind.core.annotations` hashable for use in `typing.Annotations`
-release_date: '2022-01-10'

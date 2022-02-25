@@ -1,0 +1,13 @@
+release-date = "2020-09-10"
+
+[[entries]]
+id = "cc7ad2d7-1ba6-428a-8f49-b7407ccdc505"
+type = "feature"
+description = "Add `to_stream()` and `from_stream()` functions"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "bc0a165d-7868-415c-9b52-8f9ad9040cb9"
+type = "feature"
+description = "Add support for `typing.Dict` subclasses"
+author = "@NiklasRosenstein"

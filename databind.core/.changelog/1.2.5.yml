@@ -1,6 +1,0 @@
-changes:
-- type: fix
-  component: general
-  description: add missing nr.pylang.utils dependency (was introduced transtively
-    before so it was no crucial bug)
-release_date: '2021-10-24'

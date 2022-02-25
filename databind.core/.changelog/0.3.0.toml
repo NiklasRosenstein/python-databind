@@ -1,0 +1,13 @@
+release-date = "2020-08-29"
+
+[[entries]]
+id = "27920260-c47e-4191-9f3a-5249584d28a3"
+type = "improvement"
+description = "ensure that non-default arguments do not have a class attribute of type `object` (which is used as a workaround to support non-default fields following default fields in `dataclasses`)"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "0d15905e-4810-4c08-a4d8-70aaa72ad4f0"
+type = "fix"
+description = "raise for uninitialized fields inherited from parent datamodels"
+author = "@NiklasRosenstein"

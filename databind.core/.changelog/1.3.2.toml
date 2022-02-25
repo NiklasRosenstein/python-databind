@@ -1,0 +1,7 @@
+release-date = "2022-01-10"
+
+[[entries]]
+id = "7cb94b0f-5f69-4595-a38f-c2f532626082"
+type = "fix"
+description = "make `databind.core.annotations` hashable for use in `typing.Annotations`"
+author = "@NiklasRosenstein"

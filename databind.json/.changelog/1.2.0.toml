@@ -1,0 +1,28 @@
+release-date = "2021-08-20"
+
+[[entries]]
+id = "c09f08bb-ce01-49f8-b3bc-94fb8d27a2e5"
+type = "feature"
+description = "add converter for `pathlib.PurePath` subclasses, enabled in the `JsonModule` by default"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/14",
+]
+
+[[entries]]
+id = "6b4a28ad-478a-4ae8-bfb8-58e3730bfee5"
+type = "feature"
+description = "add converter for `uuid.UUID` to `JsonModule`"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/15",
+]
+
+[[entries]]
+id = "c067911a-cee5-416a-b05d-19801bccbb27"
+type = "feature"
+description = "support aliases on enum values"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/1",
+]

@@ -1,0 +1,16 @@
+release-date = "2022-01-08"
+
+[[entries]]
+id = "d192ebd0-f643-4823-bbbe-ec20b878d8b2"
+type = "feature"
+description = "add `databind.json.annotations.with_custom_json_converter()` annotation to allow implementing a custom converter for dataclasses"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "f5a426e0-21c1-415f-b7b3-c975d357f5a4"
+type = "fix"
+description = "narrow `JsonType` union type to use `dict` and `list` instead of `t.Mapping` and `t.Collection`"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/22",
+]

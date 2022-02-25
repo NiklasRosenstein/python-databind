@@ -1,0 +1,25 @@
+release-date = "2021-04-08"
+
+[[entries]]
+id = "5fdfb706-e8fd-4277-a4fa-8bc9fd894336"
+type = "feature"
+description = "`enumerate_fields()` now works with uniontype instances and classes"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "58571d4d-65a2-46c7-949d-60f8eb219e56"
+type = "improvement"
+description = "update `@uniontype` generated `__repr__()` method"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "8585b0f1-6d33-4f1c-8637-c4186e456786"
+type = "feature"
+description = "add support for member aliasing in `UnionResolver`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "9a23ae46-60fd-4f4f-950b-bb6966aa0003"
+type = "feature"
+description = "add `Context.closed_field_metadata()` function"
+author = "@NiklasRosenstein"

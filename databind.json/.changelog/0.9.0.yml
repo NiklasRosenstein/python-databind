@@ -1,7 +1,0 @@
-release_date: '2020-11-24'
-changes:
-- type: feature
-  component: general
-  description: handle `FieldMetadata.relaxed` and `FieldMetadata.strict` in Bool,
-    Integer and String converters
-  fixes: []

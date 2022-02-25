@@ -1,0 +1,19 @@
+release-date = "2020-09-14"
+
+[[entries]]
+id = "da1141be-ec57-4d28-a50a-1158dca6107b"
+type = "fix"
+description = "`Registry.get_converter()` now looks for a converter in the base classes only if it could not find it for the normalized version of the current type, making converter resolution more predictable"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "df476ea6-934c-440c-92be-d41f4bc8422c"
+type = "feature"
+description = "Add `ClassUnionResolver` which evaluates type hints dynamically, allowing to use forward references in the type hints of a `@uniontype()`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "65bd22be-4505-4b45-ad8a-b0f7f6307312"
+type = "feature"
+description = "Add `@interface()` and `@implementation()` decorators"
+author = "@NiklasRosenstein"

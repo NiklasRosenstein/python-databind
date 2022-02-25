@@ -1,0 +1,10 @@
+release-date = "2021-08-16"
+
+[[entries]]
+id = "02e75fd1-7555-42de-bb36-e9c88b65b680"
+type = "fix"
+description = "`str`, `bytes`, `bytearray` and `memoryview` are no longer accepted when deserializing `CollectionType` values"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/13",
+]

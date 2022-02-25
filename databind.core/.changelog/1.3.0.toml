@@ -1,0 +1,7 @@
+release-date = "2022-01-06"
+
+[[entries]]
+id = "11e63e15-6b96-4c99-b096-70d4230288c6"
+type = "improvement"
+description = "improve readability of `ConversionError` by changing `Location.format()`"
+author = "@NiklasRosenstein"

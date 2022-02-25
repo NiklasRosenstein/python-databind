@@ -1,0 +1,19 @@
+release-date = "2020-12-30"
+
+[[entries]]
+id = "b52ab6b6-b481-4bb7-9883-71adc813408e"
+type = "feature"
+description = "add `ImportingUnionResolver` and `EntrypointUnionResolver`, both which can also be used with the `@interface` decorator. The `resolver` argument now accepts a string which will be converted into a `UnionResolver` (supported formats are `import` and `entrypoint:<group-name>`)"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "3c1737e4-fe26-46e8-9b0c-6560cc9041bd"
+type = "fix"
+description = "`@implementation()` can now be used without explicitly specifying the `for_` parameter when decorating a class with multiple bases where only one base is a `@uniontype`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "896fee89-6413-4f92-8ffd-130e27bc27de"
+type = "fix"
+description = "fix inheritance of fields from `@dataclass` parent classes"
+author = "@NiklasRosenstein"

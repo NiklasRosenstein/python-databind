@@ -1,0 +1,7 @@
+release-date = "2020-09-06"
+
+[[entries]]
+id = "7abbb43c-0eab-4009-9353-9de48aebc5b7"
+type = "fix"
+description = "conversion of values of a `List` subtype *from Python* are now converted to a built-in `list` instead of the same `List` subtype"
+author = "@NiklasRosenstein"

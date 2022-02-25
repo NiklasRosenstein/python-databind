@@ -1,0 +1,7 @@
+release-date = "2020-09-10"
+
+[[entries]]
+id = "b5991aa2-b0ba-4243-8529-5cb061c17cc4"
+type = "fix"
+description = "Fix `NameError` in `ObjectConverter`"
+author = "@NiklasRosenstein"

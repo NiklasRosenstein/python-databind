@@ -1,7 +1,0 @@
-changes:
-- type: fix
-  component: general
-  description: normal type with `Annotated[MyType, union(...)]` is now correctly interpreted
-    as `UnionType`
-  fixes: []
-release_date: '2021-08-16'

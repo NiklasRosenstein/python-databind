@@ -1,7 +1,0 @@
-release_date: '2021-08-03'
-changes:
-- type: fix
-  component: general
-  description: fix `EntrypointSubtypes()` constructor which used to accidentally accept
-    a `TypeHintAdapter` argument
-  fixes: []

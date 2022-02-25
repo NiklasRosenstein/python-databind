@@ -1,0 +1,7 @@
+release-date = "2021-12-29"
+
+[[entries]]
+id = "b33b4453-c0ff-4abd-bebe-57b643a47f6b"
+type = "fix"
+description = "correctly support Python 3.10 `types.UnionType`"
+author = "@NiklasRosenstein"

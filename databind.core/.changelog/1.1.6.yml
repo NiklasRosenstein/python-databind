@@ -1,7 +1,0 @@
-changes:
-- type: fix
-  component: general
-  description: fix case where DefaultTypeHintAdapter does not continue adaptation
-    dynamically upon encountering a fixed type object
-  fixes: []
-release_date: '2021-08-18'

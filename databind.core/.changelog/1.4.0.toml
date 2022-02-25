@@ -1,0 +1,10 @@
+release-date = "2022-01-22"
+
+[[entries]]
+id = "b5ebc00a-ea8d-425b-931e-773840e22073"
+type = "feature"
+description = "add `union.Style.keyed`"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/21",
+]

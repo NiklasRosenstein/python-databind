@@ -1,0 +1,19 @@
+release-date = "2020-09-06"
+
+[[entries]]
+id = "0522b7f0-4bc4-48c3-aa0a-fe3d3f96e5c5"
+type = "feature"
+description = "add `ModelMetadata.serialize_as` (which translates into a keyword argument for `@datamodel()`) to specify a type hint that should be used instead of the type itself when serializing/deserializing it"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "771ef7cd-2020-4504-b949-2cb0bfc08e35"
+type = "feature"
+description = "add `Context.coerce_errors()` context manager"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "30501a59-9860-4f3c-8ccb-d5883449f940"
+type = "feature"
+description = "add `TypeHint` variable which should be used in places where a type hint is expected"
+author = "@NiklasRosenstein"

@@ -1,9 +1,0 @@
-release_date: '2021-03-05'
-changes:
-- type: change
-  component: general
-  description: 'classes decorated with `@uniontype(container=True)` must now be constructed
-    using a single keyword argument as in `MyUnion(member1=Member1Value())`
-
-    '
-  fixes: []

@@ -1,7 +1,0 @@
-release_date: '2020-09-08'
-changes:
-- type: fix
-  component: general
-  description: Re-render setup file, materializing missing dependency on `dataclasses`.
-    This fixes using the module in Python 3.6.
-  fixes: []

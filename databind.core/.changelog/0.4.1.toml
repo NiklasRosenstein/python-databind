@@ -1,0 +1,7 @@
+release-date = "2020-09-08"
+
+[[entries]]
+id = "8bc4f7c3-1a29-41f1-9f5d-f3f8a99897ca"
+type = "fix"
+description = "Re-render setup file, materializing missing dependency on `dataclasses`. This fixes using the module in Python 3.6."
+author = "@NiklasRosenstein"

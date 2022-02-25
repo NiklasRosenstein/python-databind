@@ -1,0 +1,7 @@
+release-date = "2020-10-02"
+
+[[entries]]
+id = "b6a90864-ebc9-43fd-a909-4a88139eb2b7"
+type = "feature"
+description = "Now supports converting Sets"
+author = "@NiklasRosenstein"

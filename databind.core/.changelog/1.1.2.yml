@@ -1,6 +1,0 @@
-release_date: '2021-08-06'
-changes:
-- type: fix
-  component: general
-  description: fix `@A.union` types to accept `ObjectType`s
-  fixes: []

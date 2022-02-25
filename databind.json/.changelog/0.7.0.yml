@@ -1,6 +1,0 @@
-release_date: '2020-10-02'
-changes:
-- type: feature
-  component: general
-  description: Now supports converting Sets
-  fixes: []
