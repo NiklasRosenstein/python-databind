@@ -1,5 +1,7 @@
+release-date = "2022-02-26"
+
 [[entries]]
-id = "968be339-8a28-4cce-bdc6-61eb838fb803"
+id = "2b6514ea-b84b-4c94-8b65-71f78ea8114e"
 type = "refactor"
 description = "migrate to `nr.util` package"
 author = "@NiklasRosenstein"
