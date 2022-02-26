@@ -4,7 +4,7 @@ Implements de/serialization of the #datetime types #datetime.date, #datetime.dat
 #datetime.time to/from strings. The date/time format can be specified using the #A.datefmt()
 annotation.
 
-The date is parsed using the #nr.parsing.date module.
+The date is parsed using the #nr.util.date module.
 """
 
 import datetime
@@ -12,7 +12,7 @@ import typing as t
 from databind.core import annotations as A
 from databind.core import  Context, Converter, ConcreteType, Direction
 from nr import preconditions
-from nr.parsing.date import ISO_8601, duration
+from nr.util.date import ISO_8601, duration
 
 T_DateTypes = t.TypeVar('T_DateTypes', bound=t.Union[datetime.date, datetime.time, datetime.datetime])
 

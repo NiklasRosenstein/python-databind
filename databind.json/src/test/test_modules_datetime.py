@@ -2,7 +2,7 @@
 import typing_extensions as te
 from datetime import date, datetime, time, timezone
 
-from nr.parsing.date.duration import duration
+from nr.util.date.duration import duration
 
 from databind.core import annotations as A, ObjectMapper
 from databind.json import JsonModule
@@ -12,7 +12,7 @@ mapper = ObjectMapper(JsonModule())
 
 def test_datetime():
   assert mapper.deserialize('2021-03-28', date) == date(2021, 3, 28)
-  assert mapper.deserialize('21:01:54Z', time) == time(21, 1, 54)  # TODO(NiklasRosenstein): Missing timezone, fix in nr.parsing.date
+  assert mapper.deserialize('21:01:54Z', time) == time(21, 1, 54)  # TODO(NiklasRosenstein): Missing timezone, fix in nr.util.date
   assert mapper.deserialize('2021-03-28T21:01:54Z', datetime) == datetime(2021, 3, 28, 21, 1, 54, 0, timezone.utc)
   assert mapper.serialize(date(2021, 3, 28), date) == '2021-03-28'
   assert mapper.serialize(time(21, 1, 54, tzinfo=timezone.utc), time) == '21:01:54.0Z'

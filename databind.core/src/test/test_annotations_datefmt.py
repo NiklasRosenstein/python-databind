@@ -1,7 +1,7 @@
 
 from datetime import date, time, datetime
-from nr.parsing.date import date_format, time_format, datetime_format
-from nr.parsing.date.format_sets import ISO_8601
+from nr.util.date import date_format, time_format, datetime_format
+from nr.util.date.format_sets import ISO_8601
 from databind.core.annotations.datefmt import datefmt
 
 

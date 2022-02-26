@@ -8,7 +8,7 @@ import datetime
 import typing as t
 from dataclasses import dataclass
 
-from nr.parsing.date import date_format, time_format, datetime_format, format_set
+from nr.util.date import date_format, time_format, datetime_format, format_set
 
 from databind.core.annotations.base import Annotation
 

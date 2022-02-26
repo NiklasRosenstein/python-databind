@@ -10,7 +10,7 @@ import pathlib
 import typing as t
 import uuid
 
-from nr.parsing.date import duration
+from nr.util.date import duration
 
 from databind.core import ObjectMapper, SimpleModule, ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
 from .modules.any import AnyConverter
