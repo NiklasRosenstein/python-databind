@@ -6,12 +6,11 @@ Provides the #PlainDatatypeModule which contains converters for plain datatypes.
 import base64
 import typing as t
 from databind.core import annotations as A, ConcreteType, Context, Direction, Converter
-from nr import preconditions
 
 
 def _int_lossless(v: float) -> int:
   """ Convert *v* to an integer only if the conversion is lossless, otherwise raise an error. """
-  preconditions.check_argument(v % 1.0 == 0.0, lambda: f'expected int, got {v!r}')
+  assert v % 1.0 == 0.0, f'expected int, got {v!r}'
   return int(v)
 
 
@@ -62,7 +61,8 @@ class PlainJsonConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
     source_type = type(ctx.value)
-    target_type = preconditions.check_instance_of(ctx.location.type, ConcreteType).type
+    assert isinstance(ctx.location.type, ConcreteType)
+    target_type = ctx.location.type.type
     fieldinfo = ctx.get_annotation(A.fieldinfo) or A.fieldinfo()
     strict = ctx.direction == Direction.serialize or fieldinfo.strict
     func = (self._strict_adapters if strict else self._nonstrict_adapters)\
