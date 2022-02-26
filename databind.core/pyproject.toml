@@ -10,7 +10,7 @@ packages = [{include = "databind/core", from = "src"}]
   [tool.poetry.dependencies]
   python = "^3.7"
   Deprecated = "^1.2.12"
-  "nr.util" = "^0.8.0"
+  "nr.util" = ">=0.8.2,<1.0.0"
   typing-extensions = "^3.10.0"
 
   [tool.poetry.dev-dependencies]
