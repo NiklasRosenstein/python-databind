@@ -14,7 +14,7 @@ following default arguments.
 import dataclasses
 import typing as t
 from dataclasses import Field, FrozenInstanceError, InitVar, MISSING, fields, asdict, astuple, make_dataclass, replace, is_dataclass
-from nr.pylang.utils import NotSet
+from nr.util.singleton import NotSet
 
 __all__ = [
   'ANNOTATIONS_METADATA_KEY',

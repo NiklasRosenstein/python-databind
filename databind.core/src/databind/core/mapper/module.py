@@ -2,10 +2,8 @@
 import typing as t
 from databind.core.types.types import ConcreteType
 
-import nr.preconditions as preconditions
-
 from databind.core.types.types import BaseType
-from databind.core.mapper.converter import Converter, ConverterNotFound, ConverterProvider, Direction
+from databind.core.mapper.converter import Converter, ConverterProvider, Direction
 
 
 class SimpleModule(ConverterProvider):
@@ -25,21 +23,23 @@ class SimpleModule(ConverterProvider):
     return f"<{type(self).__name__} {self.__name + ' ' if self.__name else ''}at {hex(id(self))}>"
 
   def add_converter_provider(self, provider: ConverterProvider) -> None:
-    preconditions.check_instance_of(provider, ConverterProvider)  # type: ignore
+    assert isinstance(provider, ConverterProvider), provider
     self.__converter_providers.append(provider)
 
   def add_converter_for_type(self, type_: t.Type, converter: Converter, direction: Direction = None) -> None:
-    preconditions.check_instance_of(type_, type)
-    preconditions.check_instance_of(converter, Converter)  # type: ignore
+    assert isinstance(type_, type), type_
+    assert isinstance(converter, Converter), converter
+
     if direction is not None:
-      preconditions.check_instance_of(direction, Direction)
+      assert isinstance(direction, Direction)
       self.__converters_by_type[direction][type_] = converter
     else:
       self.__converters_by_type[Direction.deserialize][type_] = converter
       self.__converters_by_type[Direction.serialize][type_] = converter
 
   def get_converters(self, type_: BaseType, direction: Direction) -> t.Iterable[Converter]:
-    preconditions.check_instance_of(type_, BaseType)  # type: ignore
+    assert isinstance(type_, BaseType), type_
+
     if isinstance(type_, ConcreteType) and type_.type in self.__converters_by_type[direction]:
       yield self.__converters_by_type[direction][type_.type]
     elif type(type_) in self.__converters_by_type[direction]:

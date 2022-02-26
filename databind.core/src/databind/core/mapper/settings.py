@@ -1,7 +1,6 @@
 
 import enum
 import typing as t
-import nr.preconditions as preconditions
 
 _T = t.TypeVar('_T')
 _T_Enum = t.TypeVar('_T_Enum', bound=enum.Enum)
@@ -40,7 +39,7 @@ class Settings:
   def get(self, of: t.Type[_T]) -> t.Optional[_T]: ...
 
   def get(self, of):
-    preconditions.check_instance_of(of, (type, enum.Enum))
+    assert isinstance(of, (type, enum.Enum)), of
     if isinstance(of, enum.Enum):
       return of if of in self._enums.get(type(of), set()) else None
     result = self._objects.get(of)
@@ -49,7 +48,7 @@ class Settings:
     return result
 
   def unset(self, of: t.Union[_T_Enum, t.Type[_T]]) -> None:
-    preconditions.check_instance_of(of, (type, enum.Enum))
+    assert isinstance(of, (type, enum.Enum)), of
     if isinstance(of, enum.Enum):
       self._enums.get(type(of), set()).discard(of)
     else:

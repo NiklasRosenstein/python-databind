@@ -7,14 +7,12 @@ and to open it up for the possibility to extend it to other ways of describing t
 """
 
 import dataclasses
-import sys
 import typing as t
 import warnings
 from dataclasses import is_dataclass, fields as _get_fields, MISSING as _MISSING
 
-import nr.preconditions as preconditions
-from nr.optional import Optional
-from nr.pylang.utils import NotSet
+from nr.util.optional import Optional
+from nr.util.singleton import NotSet
 
 import databind.core.annotations as A
 from databind.core.dataclasses import ANNOTATIONS_METADATA_KEY
@@ -268,8 +266,8 @@ def dataclass_to_schema(dataclass_type: t.Type, context: t.Union[TypeContext, Ty
   used (note that this adapter does _not_ expand #ConcreteType#s of dataclasses to #ObjectType#s).
   """
 
-  preconditions.check_instance_of(dataclass_type, type)
-  preconditions.check_argument(is_dataclass(dataclass_type), 'expected @dataclass type')
+  assert isinstance(dataclass_type, type), repr(dataclass_type)
+  assert is_dataclass(dataclass_type), 'expected @dataclass type'
 
   if context is None:
     context = TypeContext(DefaultTypeHintAdapter()).with_scope_of(dataclass_type)

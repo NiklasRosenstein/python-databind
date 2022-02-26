@@ -6,7 +6,6 @@ from databind.core.types.schema import DataclassAdapter
 from databind.core.types.types import ConcreteType
 
 import deprecated
-import nr.preconditions as preconditions
 
 from databind.core.annotations import Annotation
 from databind.core.types.types import BaseType
@@ -75,7 +74,7 @@ class ObjectMapper(AnnotationsRegistry, ChainTypeHintAdapter, SimpleModule):
     annotations: t.Optional[t.List[t.Any]] = None,
     settings: t.Optional[t.List[t.Any]] = None,
   ) -> T:
-    preconditions.check_instance_of(direction, Direction)
+    assert isinstance(direction, Direction), direction
     type_ = TypeContext(self).with_scope_of(type_hint).adapt_type_hint(type_hint)
     field = Field('$', type_, annotations or [])
     loc = Location(None, type_, key, filename, position)

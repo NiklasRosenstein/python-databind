@@ -1,0 +1,5 @@
+[[entries]]
+id = "2b6514ea-b84b-4c94-8b65-71f78ea8114e"
+type = "refactor"
+description = "migrate to `nr.util` package"
+author = "@NiklasRosenstein"

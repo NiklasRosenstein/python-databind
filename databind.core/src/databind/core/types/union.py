@@ -9,9 +9,8 @@ import typing as t
 import typing_extensions as te
 import weakref
 
-import nr.preconditions as preconditions
-from nr.stream import Stream
-from nr.pylang.utils.funcdef import except_format
+from nr.util.functional import assure
+from nr.util.stream import Stream
 
 from databind.core.annotations.base import Annotation, get_annotation
 from databind.core.annotations.typeinfo import typeinfo
@@ -28,7 +27,6 @@ class UnionTypeError(Exception):
   type: t.Union[str, t.Type, 'BaseType']
   subtypes: 'UnionSubtypes'
 
-  @except_format
   def __str__(self) -> str:
     typ = self.type.__name__ if isinstance(self.type, type) else str(self.type)
     owner = self.subtypes.owner() if self.subtypes.owner else None
@@ -389,13 +387,14 @@ class union(Annotation):
     ```
     """
 
-    preconditions.check_instance_of(extends, type)
-    inst = preconditions.check_not_none(get_annotation(extends, union, None),
-      lambda: f'{extends.__name__} is not annotated with @union')
-    subtypes = preconditions.check_instance_of(inst.subtypes, DynamicSubtypes,
-      lambda: f'{extends.__name__} is not using union.Subtypes.Dynamic')
+    assert isinstance(extends, type), extends
+    inst = assure(get_annotation(extends, union, None), lambda: f'{extends.__name__} is not annotated with @union')
+    assert isinstance(inst.subtypes, DynamicSubtypes), f'{extends.__name__} is not using union.Subtypes.Dynamic'
+    subtypes = inst.subtypes
+
     def decorator(subtype: T_Type) -> T_Type:
-      preconditions.check_subclass_of(subtype, extends)
+      assert isinstance(subtype, type), subtype
+      assert issubclass(subtype, extends), f'{subtype} is not a subclass of {extends}'
       if name is not None:
         subtype = typeinfo(name)(subtype)
       subtypes.add_type(typeinfo.get_name(subtype), subtype)
