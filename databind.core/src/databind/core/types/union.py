@@ -264,6 +264,7 @@ class UnionType(BaseType):
   subtypes: 'UnionSubtypes'
   style: t.Optional['UnionStyle'] = None
   discriminator_key: t.Optional[str] = None
+  nesting_key: t.Optional[str] = None
   name: t.Optional[str] = None
   python_type: t.Optional[t.Any] = None  # Can be a Python type or an actual type hint
   annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
@@ -339,6 +340,7 @@ class union(Annotation):
     *,
     style: t.Optional[UnionStyle] = None,
     discriminator_key: t.Optional[str] = None,
+    nesting_key: t.Optional[str] = None,
     constructible: bool = False,
     name: str = None,
   ) -> None:
@@ -357,6 +359,7 @@ class union(Annotation):
 
     self.style = style
     self.discriminator_key = discriminator_key
+    self.nesting_key = nesting_key
     self.constructible = constructible
     self.name = name
     self.decorated_type = None
@@ -442,6 +445,7 @@ class UnionAdapter(TypeHintAdapter):
         union_ann.subtypes,
         union_ann.style,
         union_ann.discriminator_key,
+        union_ann.nesting_key,
         union_ann.name,
         type_hint.to_typing())
       result_type.subtypes.owner = weakref.ref(result_type)

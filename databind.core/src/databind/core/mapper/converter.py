@@ -2,9 +2,8 @@
 import abc
 import enum
 import typing as t
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from deprecated import deprecated
 from databind.core.annotations import Annotation, get_annotation
 from databind.core.annotations.base import AnnotationsProvider
 from databind.core.types.adapter import TypeHintAdapter

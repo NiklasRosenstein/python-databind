@@ -43,13 +43,14 @@ class UnionConverter(Converter):
       member_type = TypeContext(ctx.type_hint_adapter).adapt_type_hint(type(ctx.value))
       member_name = ctx.type.subtypes.get_type_name(member_type, ctx.type_hint_adapter)
 
+    nesting_key = ctx.type.nesting_key or member_name
     type_hint = member_type
 
     if is_deserialize:
       if style == A.union.Style.nested:
-        if member_name not in ctx.value:
-          raise ConversionError(f'missing union value key {member_name!r}', ctx.location)
-        child_context = ctx.push(type_hint, ctx.value[member_name], member_name, ctx.field)
+        if nesting_key not in ctx.value:
+          raise ConversionError(f'missing union value key {nesting_key!r}', ctx.location)
+        child_context = ctx.push(type_hint, ctx.value[nesting_key], nesting_key, ctx.field)
       elif style == A.union.Style.flat:
         child_context = ctx.push(type_hint, dict(ctx.value), None, ctx.field)
         t.cast(t.Dict, child_context.value).pop(discriminator_key)

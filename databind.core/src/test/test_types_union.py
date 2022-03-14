@@ -31,6 +31,7 @@ def test_union_adapter():
     assert isinstance(type_.subtypes, union.Subtypes.dynamic)
     assert type_.style == None
     assert type_.discriminator_key == None
+    assert type_.nesting_key == None
 
   type_ = TypeContext(UnionAdapter()).adapt_type_hint(ConcreteType(MyUnionType))
   _check(type_)
