@@ -101,10 +101,6 @@ class Context:
 
     return self.convert_func(self)
 
-  def error(self, message: str) -> ConversionError:
-    from databind.core.converter import ConversionError
-    return ConversionError(message, self)
-
   def iter_hierarchy_up(self) -> t.Iterable[Context]:
     current: t.Optional[Context] = self
     while current:

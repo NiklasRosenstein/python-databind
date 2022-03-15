@@ -1,12 +1,12 @@
 
-from ast import And
 import base64
+import enum
 import typing as t
 
 import typeapi
 from databind.core.context import Context
-from databind.core.converter import Converter
-from databind.core.settings import Strict
+from databind.core.converter import Converter, ConversionError
+from databind.core.settings import Alias, Strict, get_highest_setting
 from databind.json.direction import Direction
 
 
@@ -95,8 +95,67 @@ class PlainDatatypeConverter(Converter):
     adapter = adapters.get((source_type, target_type))
 
     if adapter is None:
-      raise ctx.error(f'unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}')
+      msg = f'unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}'
+      raise ConversionError(ctx, msg)
+
     try:
       return adapter(ctx.value)
     except ValueError as exc:
-      raise ctx.error(str(exc)) from exc
+      raise ConversionError(ctx, str(exc)) from exc
+
+
+class EnumConverter(Converter):
+  """ JSON converter for enum values.
+
+  Converts #enum.IntEnum values to integers and #enum.Enum values to strings.
+
+  #Alias settings on
+  """
+
+  def __init__(self, direction: Direction) -> None:
+    self.direction = direction
+
+  def _discover_alias(self, enum_type: t.Type[enum.Enum], member_name: str) -> t.Optional[Alias]:
+    hint = typeapi.of(typeapi.get_type_hints(enum_type).get(member_name))
+    if isinstance(hint, typeapi.Annotated):
+      return get_highest_setting(s for s in hint.metadata if isinstance(s, Alias))
+    return None
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type):
+      raise NotImplementedError
+    if not issubclass(ctx.datatype.type, enum.Enum):
+      raise NotImplementedError
+
+    value = ctx.value
+    enum_type = ctx.datatype.type
+
+    if self.direction == Direction.SERIALIZE:
+      if type(value) is not enum_type:
+        raise ConversionError(ctx, f'expected {ctx.datatype} but found {value.__class__.__name__}')
+      if issubclass(enum_type, enum.IntEnum):
+        return value.value
+      if issubclass(enum_type, enum.Enum):
+        alias = self._discover_alias(enum_type, value.name)
+        if alias and alias.aliases:
+          return alias.aliases[0]
+        return value.name
+
+    elif self.direction == Direction.DESERIALIZE:
+      if issubclass(enum_type, enum.IntEnum):
+        if not isinstance(value, int):
+          raise ConversionError(ctx, f'expected int but found {value.__class__.__name__}')
+        return enum_type(value)
+      if issubclass(enum_type, enum.Enum):
+        if not isinstance(value, str):
+          raise ConversionError(ctx, f'expected string but found {value.__class__.__name__}')
+        for enum_value in enum_type:
+          alias = self._discover_alias(enum_type, enum_value.name)
+          if alias and value in alias.aliases:
+            return enum_value
+        try:
+          return enum_type[value]
+        except KeyError:
+          raise ConversionError(ctx, f'{value!r} is not a member of enumeration {ctx.datatype}')
+
+    assert False, self.direction
