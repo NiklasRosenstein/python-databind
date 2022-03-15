@@ -46,8 +46,9 @@ class Settings(SettingsProvider):
   ```
   """
 
-  def __init__(self) -> None:
-    self.global_settings: t.List[Setting] = []
+  def __init__(self, parent: t.Optional[SettingsProvider] = None, global_settings: t.Optional[t.List[Setting]] = None) -> None:
+    self.parent = parent
+    self.global_settings: t.List[Setting] = list(global_settings) if global_settings else []
     self.local_settings: t.Dict[t.Type, t.List[Setting]] = {}
     self.providers: t.List[t.Callable[[Context], t.List[Setting]]] = []
 
@@ -85,6 +86,10 @@ class Settings(SettingsProvider):
     from nr.util.stream import Stream
 
     def _all_settings():
+      if self.parent:
+        setting = self.parent.get_setting(context, setting_type)
+        if setting is not None:
+          return setting
       if isinstance(context.datatype, typeapi.Type):
         yield from get_class_settings(context.datatype.type, setting_type)
         yield from self.local_settings.get(context.datatype.type, [])
@@ -92,7 +97,7 @@ class Settings(SettingsProvider):
         yield from provider(context)
       yield from self.global_settings
 
-    return get_highest_setting(Stream(_all_settings).of_type(setting_type))
+    return get_highest_setting(Stream(_all_settings()).of_type(setting_type))
 
 
 class Priority(enum.IntEnum):

@@ -21,18 +21,22 @@ def make_mapper(converters: t.List[Converter]) -> ObjectMapper:
 
 def test_any_converter():
   mapper = make_mapper([AnyConverter()])
-  assert mapper.convert_value('foobar', t.Any) == 'foobar'
-  assert mapper.convert_value(42, t.Any) == 42
-  assert mapper.convert_value(t.Any, t.Any) == t.Any
+  assert mapper.convert('foobar', t.Any) == 'foobar'
+  assert mapper.convert(42, t.Any) == 42
+  assert mapper.convert(t.Any, t.Any) == t.Any
 
 
-def test_plain_datatype_converter_serialize():
-  mapper = make_mapper([PlainDatatypeConverter(Direction.SERIALIZE)])
-  assert mapper.convert_value('foobar', str) == 'foobar'
-  assert mapper.convert_value(42, int) == 42
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_plain_datatype_converter(direction: Direction):
+  mapper = make_mapper([PlainDatatypeConverter(direction)])
+  assert mapper.convert('foobar', str) == 'foobar'
+  assert mapper.convert(42, int) == 42
 
   with pytest.raises(ConversionError):
-    assert mapper.convert_value('42', int)
+    assert mapper.convert('42', int)
 
-  mapper.settings.add_global(Strict(False))
-  assert mapper.convert_value('42', int)
+  if direction == Direction.SERIALIZE:
+    with pytest.raises(ConversionError):
+      assert mapper.convert('42', int, settings=[Strict(False)])
+  else:
+    assert mapper.convert('42', int, settings=[Strict(False)]) == 42

@@ -7,7 +7,7 @@ import typeapi
 if t.TYPE_CHECKING:
   from databind.core.context import Context, Location
   from databind.core.module import Module
-  from databind.core.settings import Settings
+  from databind.core.settings import Setting, Settings
 
 
 class ObjectMapper:
@@ -27,7 +27,7 @@ class ObjectMapper:
     assert isinstance(module, Module), module
     self.modules.append(module)
 
-  def convert(self, context: Context) -> t.Any:
+  def _convert_context(self, context: Context) -> t.Any:
     for module in self.modules:
       for converter in module.converters:
         try:
@@ -36,16 +36,20 @@ class ObjectMapper:
           pass
     raise NoMatchingConverter(context.datatype)
 
-  def convert_value(
+  def convert(
     self,
     value: t.Any,
     datatype: t.Union[typeapi.Hint, t.Any],
     location: t.Optional[Location] = None,
+    settings: t.Union[Settings, t.List[Setting], None] = None,
   ) -> t.Any:
     from databind.core.context import Context, Location
+    from databind.core.settings import Settings
     if not isinstance(datatype, typeapi.Hint):
       datatype = typeapi.of(datatype)
-    context = Context(None, value, datatype, self.settings, None, location or Location.EMPTY, self.convert)
+    if isinstance(settings, list):
+      settings = Settings(self.settings, global_settings=settings)
+    context = Context(None, value, datatype, settings or self.settings, None, location or Location.EMPTY, self._convert_context)
     return context.convert()
 
 

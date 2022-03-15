@@ -65,7 +65,7 @@ class Context:
   def get_setting(self, setting_type: t.Type[T_Setting]) -> T_Setting | None:
     """ Retrieve a setting by type that for the current context. """
 
-    return self.settings.get_setting(setting_type)
+    return self.settings.get_setting(self, setting_type)
 
   def spawn(
     self,
