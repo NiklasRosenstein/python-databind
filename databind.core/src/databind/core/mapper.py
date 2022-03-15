@@ -7,7 +7,7 @@ import typeapi
 if t.TYPE_CHECKING:
   from databind.core.context import Context, Location
   from databind.core.module import Module
-  from databind.core.settings import Setting, Settings
+  from databind.core.settings import Setting, Settings, SettingsProvider
 
 
 class ObjectMapper:
@@ -41,22 +41,29 @@ class ObjectMapper:
     value: t.Any,
     datatype: t.Union[typeapi.Hint, t.Any],
     location: t.Optional[Location] = None,
-    settings: t.Union[Settings, t.List[Setting], None] = None,
+    settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
   ) -> t.Any:
+    """ Convert a value according to the given datatype.
+
+    Arguments:
+      value: The value to convert.
+      datatype: The datatype. If not already a #typeapi.Hint instance, it will be converted using #typeapi.of().
+      location: The location of where *value* is coming from. Useful to specify to make debugging easier.
+      settings: A list of settings, in which case they will be treated as global settings in addition to the
+        mapper's #settings, or an entirely different #SettingsProvider instance (for which it is recommended that
+        it is taking the ObjectMapper's #settings into account, for example by passing them for the #Settings.parent).
+    Raises:
+      ConversionError: For more generic errosr during the conversion process.
+      NoMatchingConverter: If at any point during the conversion a datatype was encountered for which no matching
+        converter was found.
+      """
+
     from databind.core.context import Context, Location
     from databind.core.settings import Settings
+
     if not isinstance(datatype, typeapi.Hint):
       datatype = typeapi.of(datatype)
     if isinstance(settings, list):
       settings = Settings(self.settings, global_settings=settings)
     context = Context(None, value, datatype, settings or self.settings, None, location or Location.EMPTY, self._convert_context)
     return context.convert()
-
-
-class NoMatchingConverter(Exception):
-
-  def __init__(self, datatype: typeapi.Hint) -> None:
-    self.datatype = datatype
-
-  def __str__(self) -> str:
-    return f'no applicable converter found for {self.datatype}'

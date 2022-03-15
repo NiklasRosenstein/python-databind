@@ -25,6 +25,7 @@ class Converter(abc.ABC):
 
 
 class ConversionError(Exception):
+  """ For any errors that occur during conversion. """
 
   def __init__(self, message: str, context: Context) -> None:
     self.message = message
@@ -38,3 +39,10 @@ class ConversionError(Exception):
     except:
       import traceback
       return traceback.format_exc()
+
+
+class NoMatchingConverter(ConversionError):
+  """ If no converter matched to convert the value and datatype in the context. """
+
+  def __str__(self) -> str:
+    return f'no applicable converter found for {self.context.datatype}'

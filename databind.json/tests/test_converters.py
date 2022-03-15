@@ -2,8 +2,8 @@
 import typing as t
 
 import pytest
-from databind.core.converter import Converter, ConversionError
-from databind.core.mapper import NoMatchingConverter, ObjectMapper
+from databind.core.converter import Converter, ConversionError, NoMatchingConverter
+from databind.core.mapper import ObjectMapper
 from databind.core.module import Module
 from databind.core.settings import Strict
 from databind.json.converters import AnyConverter, PlainDatatypeConverter
@@ -29,14 +29,22 @@ def test_any_converter():
 @pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_plain_datatype_converter(direction: Direction):
   mapper = make_mapper([PlainDatatypeConverter(direction)])
+
+  # test strict
+
   assert mapper.convert('foobar', str) == 'foobar'
   assert mapper.convert(42, int) == 42
-
   with pytest.raises(ConversionError):
     assert mapper.convert('42', int)
 
+  # test non-strict
+
+  mapper.settings.add_global(Strict(False))
   if direction == Direction.SERIALIZE:
     with pytest.raises(ConversionError):
-      assert mapper.convert('42', int, settings=[Strict(False)])
+      assert mapper.convert('42', int)
+
   else:
-    assert mapper.convert('42', int, settings=[Strict(False)]) == 42
+    assert mapper.convert('42', int) == 42
+    with pytest.raises(ConversionError):
+      mapper.convert('foobar', int)
