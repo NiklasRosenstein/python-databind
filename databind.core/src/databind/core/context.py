@@ -51,6 +51,9 @@ class Context:
   #: A function to dispatch the further conversion of a #Context.
   convert_func: t.Callable[[Context], t.Any]
 
+  def __post_init__(self) -> None:
+    assert isinstance(self.datatype, typeapi.Hint), self.datatype
+
   def get_setting(self, setting_type: t.Type[T_Setting]) -> T_Setting | None:
     """ Retrieve a setting by type that for the current context. """
 

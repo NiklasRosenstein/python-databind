@@ -1,4 +1,5 @@
 
+from __future__ import annotations
 import typing as t
 
 import typeapi
@@ -22,6 +23,7 @@ class ObjectMapper:
   def add_module(self, module: Module) -> None:
     """ Add a module to the mapper. """
 
+    from databind.core.module import Module
     assert isinstance(module, Module), module
     self.modules.append(module)
 
@@ -34,8 +36,15 @@ class ObjectMapper:
           pass
     raise NoMatchingConverter(context.datatype)
 
-  def convert_value(self, value: t.Any, datatype: typeapi.Hint, location: t.Optional[Location] = None) -> t.Any:
+  def convert_value(
+    self,
+    value: t.Any,
+    datatype: t.Union[typeapi.Hint, t.Any],
+    location: t.Optional[Location] = None,
+  ) -> t.Any:
     from databind.core.context import Context
+    if not isinstance(datatype, typeapi.Hint):
+      datatype = typeapi.of(datatype)
     context = Context(None, value, datatype, self.settings, None, location, self.convert)
     return context.convert()
 

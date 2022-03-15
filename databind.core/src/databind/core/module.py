@@ -1,7 +1,6 @@
 
+from __future__ import annotations
 import typing as t
-
-import typeapi
 
 if t.TYPE_CHECKING:
   from databind.core.converter import Converter
@@ -18,5 +17,6 @@ class Module:
     return f'Module({self.name!r})'
 
   def register(self, converter: Converter) -> None:
+    from databind.core.converter import Converter
     assert isinstance(converter, Converter), converter
     self.converters.append(converter)
