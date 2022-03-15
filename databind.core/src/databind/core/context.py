@@ -1,16 +1,18 @@
 
 from __future__ import annotations
-from xdrlib import ConversionError
 import dataclasses
 import typing as t
 
 import typeapi
+from nr.util.singleton import NotSet
 
 if t.TYPE_CHECKING:
   from databind.core.settings import SettingsProvider, T_Setting
+  from databind.core.converter import ConversionError
 
 
-class Location(t.NamedTuple):
+@dataclasses.dataclass(frozen=True)
+class Location:
   """ Represents a location in a file. """
 
   #: The name of the file.
@@ -21,6 +23,11 @@ class Location(t.NamedTuple):
 
   #: The column number in the file.
   column: t.Optional[int]
+
+  EMPTY: t.ClassVar[Location]
+
+
+Location.EMPTY = Location(None, None, None)
 
 
 @dataclasses.dataclass
@@ -53,6 +60,7 @@ class Context:
 
   def __post_init__(self) -> None:
     assert isinstance(self.datatype, typeapi.Hint), self.datatype
+    assert self.location is not None
 
   def get_setting(self, setting_type: t.Type[T_Setting]) -> T_Setting | None:
     """ Retrieve a setting by type that for the current context. """
@@ -94,7 +102,8 @@ class Context:
     return self.convert_func(self)
 
   def error(self, message: str) -> ConversionError:
-    return ConversionError(message)
+    from databind.core.converter import ConversionError
+    return ConversionError(message, self)
 
   def iter_hierarchy_up(self) -> t.Iterable[Context]:
     current: t.Optional[Context] = self
@@ -108,11 +117,11 @@ def format_context_trace(ctx: Context) -> str:
   context is pointing to in the payload that is being converted. """
 
   lines = []
-  prev_filename: t.Optional[str] = None
+  prev_filename: t.Union[str, None, NotSet] = NotSet.Value
   for ctx in reversed(list(ctx.iter_hierarchy_up())):
 
     # On the first context, or if the filename changed, we output the filename.
-    if prev_filename is None or (ctx.location.filename != prev_filename and ctx.location.filename is not None):
+    if prev_filename is NotSet.Value or (ctx.location.filename != prev_filename and ctx.location.filename is not None):
       lines.append(f'In "{ctx.location.filename}"')
       prev_filename = ctx.location.filename
 
@@ -131,4 +140,4 @@ def format_context_trace(ctx: Context) -> str:
 
     lines.append(line)
 
-  return '\n'.join(line)
+  return '\n'.join(lines)

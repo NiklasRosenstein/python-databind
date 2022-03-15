@@ -42,10 +42,10 @@ class ObjectMapper:
     datatype: t.Union[typeapi.Hint, t.Any],
     location: t.Optional[Location] = None,
   ) -> t.Any:
-    from databind.core.context import Context
+    from databind.core.context import Context, Location
     if not isinstance(datatype, typeapi.Hint):
       datatype = typeapi.of(datatype)
-    context = Context(None, value, datatype, self.settings, None, location, self.convert)
+    context = Context(None, value, datatype, self.settings, None, location or Location.EMPTY, self.convert)
     return context.convert()
 
 

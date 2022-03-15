@@ -31,8 +31,10 @@ class ConversionError(Exception):
     self.context = context
 
   def __str__(self) -> str:
-    from databind.core.context import format_context_trace
-    message = f'{self.message}\n  Conversion trace:\n{self.context.get_trace().format()}'
-    if self.tried:
-      message += '\n  Tried converters:\n' + '\n'.join(f'    - {c}' for c in self.tried)
-    return message
+    import textwrap
+    try:
+      from databind.core.context import format_context_trace
+      return f'{self.message}\nConversion trace:\n{textwrap.indent(format_context_trace(self.context), "  ")}'
+    except:
+      import traceback
+      return traceback.format_exc()
