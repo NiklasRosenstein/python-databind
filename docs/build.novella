@@ -1,0 +1,15 @@
+
+template "mkdocs"
+
+action "mkdocs-update-config" {
+  site_name = "python-databind"
+  update '$.theme.features' add: []
+  update '$.theme.palette' set: {'scheme': 'slate', 'primary': 'blue', 'accent': 'amber'}
+}
+
+action "preprocess-markdown" {
+  use "pydoc" {
+    loader().search_path = [ "../databind.core/src", "../databind.json/src" ]
+    loader().packages = [ "databind.core", "databind.json" ]
+  }
+}
