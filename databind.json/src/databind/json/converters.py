@@ -1,5 +1,6 @@
 
 import base64
+import collections.abc
 import datetime
 import decimal
 import enum
@@ -287,6 +288,47 @@ class DurationConverter(Converter):
         return duration.parse(ctx.value)
       except ValueError as exc:
         raise ConversionError(ctx, str(exc))
+
+
+class MappingConverter(Converter):
+
+  def __init__(self, direction: Direction, json_mapping_type: t.Type[collections.abc.Mapping] = dict) -> None:
+    self.direction = direction
+    self.json_mapping_type = json_mapping_type
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, collections.abc.Mapping):
+      raise NotImplementedError
+
+    if ctx.datatype.nparams != 2:
+      # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
+      # track of type parameter values.
+      raise NotImplementedError
+
+    if ctx.datatype.args is None:
+      key_type, value_type = t.Any, t.Any
+    else:
+      key_type, value_type = ctx.datatype.args
+
+    if not isinstance(ctx.value, collections.abc.Mapping):
+      raise ConversionError.expected(ctx, collections.abc.Mapping)
+
+    if self.direction == Direction.DESERIALIZE:
+      try:
+        result = ctx.datatype.type()
+      except TypeError:
+        # We assume that the native dict type is an appropriate placeholder for whatever specific Mapping type
+        # was chosen in the value's datatype.
+        result = {}
+    else:
+      result = self.json_mapping_type()
+
+    for key, value in ctx.value.items():
+      value = ctx.spawn(value, value_type, key).convert()
+      key = ctx.spawn(key, key_type, f'Key({key!r})').convert()
+      result[key] = value
+
+    return result
 
 
 class StringifyConverter(Converter):

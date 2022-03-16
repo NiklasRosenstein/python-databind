@@ -17,20 +17,20 @@ class JsonModule(Module):
     import uuid
     import pathlib
     from databind.json.converters import AnyConverter, DatetimeConverter, DecimalConverter, DurationConverter, \
-        EnumConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
+        EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
 
     self.register(AnyConverter())
     self.register(DatetimeConverter(direction))
     self.register(DecimalConverter(direction))
     self.register(DurationConverter(direction))
     self.register(EnumConverter(direction))
+    self.register(MappingConverter())
     self.register(OptionalConverter())
     self.register(PlainDatatypeConverter(direction))
     self.register(StringifyConverter(direction, uuid.UUID, lambda _, v: uuid.UUID(v)))
     self.register(StringifyConverter(direction, pathlib.PurePath, lambda t, v: t(v)))
 
     # self.register(CollectionConverter(direction))
-    # self.register(MapConverter(direction))
     # self.register(UnionConverter(direction))
     # self.register(DataclassConverter(direction))
 
