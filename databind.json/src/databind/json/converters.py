@@ -209,7 +209,6 @@ class EnumConverter(Converter):
 class OptionalConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
-    print('@@', ctx.datatype)
     if not isinstance(ctx.datatype, typeapi.Union) or type(None) not in ctx.datatype.types:
       raise NotImplementedError
     if ctx.value is None:
