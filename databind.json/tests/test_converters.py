@@ -2,9 +2,9 @@
 import datetime
 import decimal
 import enum
+import uuid
 import typing as t
 import typing_extensions as te
-from xmlrpc.client import SERVER_ERROR
 
 import pytest
 from databind.core.converter import Converter, ConversionError
@@ -12,7 +12,7 @@ from databind.core.mapper import ObjectMapper
 from databind.core.module import Module
 from databind.core.settings import Alias, Strict
 from databind.json.converters import AnyConverter, DatetimeConverter, DecimalConverter, DurationConverter, \
-  EnumConverter, OptionalConverter, PlainDatatypeConverter
+  EnumConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
 from databind.json.direction import Direction
 from nr.util.date import duration
 
@@ -145,3 +145,14 @@ def test_duration_converter(direction: Direction):
       assert mapper.convert(py_value, duration) == str_value
     else:
       assert mapper.convert(str_value, duration) == py_value
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_stringify_converter(direction: Direction):
+  mapper = make_mapper([StringifyConverter(direction, uuid.UUID)])
+
+  uid = uuid.uuid4()
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(uid, uuid.UUID) == str(uid)
+  else:
+    assert mapper.convert(str(uid), uuid.UUID) == uid

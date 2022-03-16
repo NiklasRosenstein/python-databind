@@ -287,3 +287,30 @@ class DurationConverter(Converter):
         return duration.parse(ctx.value)
       except ValueError as exc:
         raise ConversionError(ctx, str(exc))
+
+
+class StringifyConverter(Converter):
+  """ A useful helper converter that matches on a given type or its subclasses and converts them to a string for
+  serialization and deserializes them from a string using the type's constructor. """
+
+  def __init__(self, direction: Direction, type_: t.Type) -> None:
+    assert isinstance(type_, type), type_
+    self.direction = direction
+    self.type_ = type_
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, self.type_):
+      raise NotImplementedError
+
+    if self.direction == Direction.DESERIALIZE:
+      if not isinstance(ctx.value, str):
+        raise ConversionError.expected(ctx, str)
+      try:
+        return self.type_(ctx.value)
+      except (TypeError, ValueError) as exc:
+        raise ConversionError(ctx, str(exc))
+
+    else:
+      if not isinstance(ctx.value, ctx.datatype.type):
+        raise ConversionError.expected(ctx, ctx.datatype.type)
+      return str(ctx.value)

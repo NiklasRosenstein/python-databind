@@ -14,8 +14,10 @@ class JsonModule(Module):
     super().__init__(f'JSON ({direction.name.lower()}')
     self.direction = direction
 
+    import uuid
+    import pathlib
     from databind.json.converters import AnyConverter, DatetimeConverter, DecimalConverter, DurationConverter, \
-        EnumConverter, OptionalConverter, PlainDatatypeConverter
+        EnumConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
 
     self.register(AnyConverter())
     self.register(DatetimeConverter(direction))
@@ -24,13 +26,13 @@ class JsonModule(Module):
     self.register(EnumConverter(direction))
     self.register(OptionalConverter())
     self.register(PlainDatatypeConverter(direction))
+    self.register(StringifyConverter(direction, uuid.UUID, lambda _, v: uuid.UUID(v)))
+    self.register(StringifyConverter(direction, pathlib.PurePath, lambda t, v: t(v)))
 
-    # self.register(CollectionConverter())
-    # self.register(MapConverter())
-    # self.register(UnionConverter())
-    # self.register(DataclassConverter())
-    # self.register(StringifyConverter(uuid.UUID, lambda _, v: uuid.UUID(v)))
-    # self.register(StringifyConverter(pathlib.PurePath, lambda t, v: t(v)))
+    # self.register(CollectionConverter(direction))
+    # self.register(MapConverter(direction))
+    # self.register(UnionConverter(direction))
+    # self.register(DataclassConverter(direction))
 
   @staticmethod
   def serializing() -> JsonModule:
