@@ -79,69 +79,47 @@ class CollectionConverter(Converter):
         return values
 
 
-class PlainDatatypeConverter(Converter):
-  """ A converter for the plain datatypes #bool, #bytes, #int, #str and #float.
+class DatetimeConverter(Converter):
+  """ A converter for #datetime.datetime, #datetime.date and #datetime.time that represents the serialized form as
+  strings formatted using the #nr.util.date module. The converter respects the #DateFormat setting. """
 
-  Arguments:
-    direction (Direction): The direction in which to convert (serialize or deserialize).
-    strict_by_default (bool): Whether to use strict type conversion on values by default if no other
-      information on strictness is given. This defaults to `True`. With strict conversion enabled,
-      loss-less type conversions are disabled (such as casting a string to an integer). Note that
-      serialization is _always_ strict, only the deserialization is controlled with this option or
-      the #Strict setting.
-  """
+  DEFAULT_DATE_FMT = DateFormat('.ISO_8601')
+  DEFAULT_TIME_FMT = DEFAULT_DATE_FMT
+  DEFAULT_DATETIME_FMT = DEFAULT_DATE_FMT
 
-  # Map for (source_type, target_type)
-  _strict_adapters: t.Dict[t.Tuple[t.Type, t.Type], t.Callable[[t.Any], t.Any]] = {
-    (bytes, bytes):   lambda d: base64.b64encode(d).decode('ascii'),
-    (str, bytes):     base64.b64decode,
-    (str, str):       str,
-    (int, int):       int,
-    (float, float):   float,
-    (int, float):     float,
-    (float, int):     _int_lossless,
-    (bool, bool):     bool,
-  }
-
-  # Used only during deserialization if the #fieldinfo.strict is disabled.
-  _nonstrict_adapters = _strict_adapters.copy()
-  _nonstrict_adapters.update({
-    (str, int):       int,
-    (str, float):     float,
-    (str, bool):      _bool_from_str,
-    (int, str):       str,
-    (float, str):     str,
-    (bool, str):      str,
-  })
-
-
-  def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
+  def __init__(self, direction: Direction) -> None:
     self.direction = direction
-    self.strict_by_default = strict_by_default
 
   def convert(self, ctx: Context) -> t.Any:
     if not isinstance(ctx.datatype, typeapi.Type):
       raise NotImplementedError
-    if ctx.datatype.type not in {k[0] for k in self._strict_adapters}:
+
+    date_type = ctx.datatype.type
+    if date_type not in (datetime.date, datetime.time, datetime.datetime):
       raise NotImplementedError
 
-    source_type = type(ctx.value)
-    target_type = ctx.datatype.type
-    strict = (
-      (ctx.get_setting(Strict) or Strict(self.strict_by_default))
-      if self.direction == Direction.DESERIALIZE else
-      Strict(True))
-    adapters = (self._strict_adapters if strict.enabled else self._nonstrict_adapters)
-    adapter = adapters.get((source_type, target_type))
+    datefmt = ctx.get_setting(DateFormat) or (
+      self.DEFAULT_DATE_FMT if date_type == datetime.date else
+      self.DEFAULT_TIME_FMT if date_type == datetime.time else
+      self.DEFAULT_DATETIME_FMT if date_type == datetime.datetime else None)
+    assert datefmt is not None
 
-    if adapter is None:
-      msg = f'unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}'
-      raise ConversionError(ctx, msg)
+    if self.direction == Direction.DESERIALIZE:
+      if isinstance(ctx.value, date_type):
+        return ctx.value
+      elif isinstance(ctx.value, str):
+        try:
+          dt = datefmt.parse(date_type, ctx.value)
+        except ValueError as exc:
+          raise ConversionError(ctx, str(exc))
+        assert isinstance(dt, date_type)
+        return dt
+      raise ConversionError.expected(ctx, date_type, type(ctx.value))
 
-    try:
-      return adapter(ctx.value)
-    except ValueError as exc:
-      raise ConversionError(ctx, str(exc)) from exc
+    else:
+      if not isinstance(ctx.value, date_type):
+        raise ConversionError.expected(ctx, date_type, type(ctx.value))
+      return datefmt.format(ctx.value)
 
 
 class DecimalConverter(Converter):
@@ -168,6 +146,31 @@ class DecimalConverter(Converter):
       if not isinstance(ctx.value, decimal.Decimal):
         raise ConversionError.expected(ctx, decimal.Decimal, type(ctx.value))
       return str(ctx.value)
+
+
+class DurationConverter(Converter):
+  """ A converter for #nr.util.date.duration in ISO 8601 duration format. """
+
+  def __init__(self, direction: Direction) -> None:
+    self.direction = direction
+
+  def convert(self, ctx: Context) -> t.Any:
+    from nr.util.date import duration
+    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, duration):
+      raise NotImplementedError
+
+    if self.direction == Direction.SERIALIZE:
+      if not isinstance(ctx.value, duration):
+        raise ConversionError.expected(ctx, duration)
+      return str(ctx.value)
+
+    else:
+      if not isinstance(ctx.value, str):
+        raise ConversionError.expected(ctx, str)
+      try:
+        return duration.parse(ctx.value)
+      except ValueError as exc:
+        raise ConversionError(ctx, str(exc))
 
 
 class EnumConverter(Converter):
@@ -244,89 +247,6 @@ class EnumConverter(Converter):
       assert False, enum_type
 
 
-class OptionalConverter(Converter):
-
-  def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Union) or type(None) not in ctx.datatype.types:
-      raise NotImplementedError
-    if ctx.value is None:
-      return None
-    types = tuple(t for t in ctx.datatype.types if t is not type(None))
-    if len(types) == 1:
-      datatype = types[0]
-    else:
-      datatype = typeapi.Union(types)
-    return ctx.spawn(ctx.value, datatype, None).convert()
-
-
-class DatetimeConverter(Converter):
-  """ A converter for #datetime.datetime, #datetime.date and #datetime.time that represents the serialized form as
-  strings formatted using the #nr.util.date module. The converter respects the #DateFormat setting. """
-
-  DEFAULT_DATE_FMT = DateFormat('.ISO_8601')
-  DEFAULT_TIME_FMT = DEFAULT_DATE_FMT
-  DEFAULT_DATETIME_FMT = DEFAULT_DATE_FMT
-
-  def __init__(self, direction: Direction) -> None:
-    self.direction = direction
-
-  def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type):
-      raise NotImplementedError
-
-    date_type = ctx.datatype.type
-    if date_type not in (datetime.date, datetime.time, datetime.datetime):
-      raise NotImplementedError
-
-    datefmt = ctx.get_setting(DateFormat) or (
-      self.DEFAULT_DATE_FMT if date_type == datetime.date else
-      self.DEFAULT_TIME_FMT if date_type == datetime.time else
-      self.DEFAULT_DATETIME_FMT if date_type == datetime.datetime else None)
-    assert datefmt is not None
-
-    if self.direction == Direction.DESERIALIZE:
-      if isinstance(ctx.value, date_type):
-        return ctx.value
-      elif isinstance(ctx.value, str):
-        try:
-          dt = datefmt.parse(date_type, ctx.value)
-        except ValueError as exc:
-          raise ConversionError(ctx, str(exc))
-        assert isinstance(dt, date_type)
-        return dt
-      raise ConversionError.expected(ctx, date_type, type(ctx.value))
-
-    else:
-      if not isinstance(ctx.value, date_type):
-        raise ConversionError.expected(ctx, date_type, type(ctx.value))
-      return datefmt.format(ctx.value)
-
-
-class DurationConverter(Converter):
-  """ A converter for #nr.util.date.duration in ISO 8601 duration format. """
-
-  def __init__(self, direction: Direction) -> None:
-    self.direction = direction
-
-  def convert(self, ctx: Context) -> t.Any:
-    from nr.util.date import duration
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, duration):
-      raise NotImplementedError
-
-    if self.direction == Direction.SERIALIZE:
-      if not isinstance(ctx.value, duration):
-        raise ConversionError.expected(ctx, duration)
-      return str(ctx.value)
-
-    else:
-      if not isinstance(ctx.value, str):
-        raise ConversionError.expected(ctx, str)
-      try:
-        return duration.parse(ctx.value)
-      except ValueError as exc:
-        raise ConversionError(ctx, str(exc))
-
-
 class MappingConverter(Converter):
 
   def __init__(self, direction: Direction, json_mapping_type: t.Type[collections.abc.Mapping] = dict) -> None:
@@ -366,6 +286,86 @@ class MappingConverter(Converter):
       result[key] = value
 
     return result
+
+
+class OptionalConverter(Converter):
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Union) or type(None) not in ctx.datatype.types:
+      raise NotImplementedError
+    if ctx.value is None:
+      return None
+    types = tuple(t for t in ctx.datatype.types if t is not type(None))
+    if len(types) == 1:
+      datatype = types[0]
+    else:
+      datatype = typeapi.Union(types)
+    return ctx.spawn(ctx.value, datatype, None).convert()
+
+
+class PlainDatatypeConverter(Converter):
+  """ A converter for the plain datatypes #bool, #bytes, #int, #str and #float.
+
+  Arguments:
+    direction (Direction): The direction in which to convert (serialize or deserialize).
+    strict_by_default (bool): Whether to use strict type conversion on values by default if no other
+      information on strictness is given. This defaults to `True`. With strict conversion enabled,
+      loss-less type conversions are disabled (such as casting a string to an integer). Note that
+      serialization is _always_ strict, only the deserialization is controlled with this option or
+      the #Strict setting.
+  """
+
+  # Map for (source_type, target_type)
+  _strict_adapters: t.Dict[t.Tuple[t.Type, t.Type], t.Callable[[t.Any], t.Any]] = {
+    (bytes, bytes):   lambda d: base64.b64encode(d).decode('ascii'),
+    (str, bytes):     base64.b64decode,
+    (str, str):       str,
+    (int, int):       int,
+    (float, float):   float,
+    (int, float):     float,
+    (float, int):     _int_lossless,
+    (bool, bool):     bool,
+  }
+
+  # Used only during deserialization if the #fieldinfo.strict is disabled.
+  _nonstrict_adapters = _strict_adapters.copy()
+  _nonstrict_adapters.update({
+    (str, int):       int,
+    (str, float):     float,
+    (str, bool):      _bool_from_str,
+    (int, str):       str,
+    (float, str):     str,
+    (bool, str):      str,
+  })
+
+
+  def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
+    self.direction = direction
+    self.strict_by_default = strict_by_default
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type):
+      raise NotImplementedError
+    if ctx.datatype.type not in {k[0] for k in self._strict_adapters}:
+      raise NotImplementedError
+
+    source_type = type(ctx.value)
+    target_type = ctx.datatype.type
+    strict = (
+      (ctx.get_setting(Strict) or Strict(self.strict_by_default))
+      if self.direction == Direction.DESERIALIZE else
+      Strict(True))
+    adapters = (self._strict_adapters if strict.enabled else self._nonstrict_adapters)
+    adapter = adapters.get((source_type, target_type))
+
+    if adapter is None:
+      msg = f'unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}'
+      raise ConversionError(ctx, msg)
+
+    try:
+      return adapter(ctx.value)
+    except ValueError as exc:
+      raise ConversionError(ctx, str(exc)) from exc
 
 
 class StringifyConverter(Converter):
