@@ -1,4 +1,5 @@
 
+import decimal
 import enum
 import typing as t
 import typing_extensions as te
@@ -7,8 +8,8 @@ import pytest
 from databind.core.converter import Converter, ConversionError, NoMatchingConverter
 from databind.core.mapper import ObjectMapper
 from databind.core.module import Module
-from databind.core.settings import Alias, Strict
-from databind.json.converters import AnyConverter, EnumConverter, PlainDatatypeConverter
+from databind.core.settings import Alias, Precision, Strict
+from databind.json.converters import AnyConverter, DecimalConverter, EnumConverter, PlainDatatypeConverter
 from databind.json.direction import Direction
 
 
@@ -50,6 +51,21 @@ def test_plain_datatype_converter(direction: Direction):
     assert mapper.convert('42', int) == 42
     with pytest.raises(ConversionError):
       mapper.convert('foobar', int)
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_decimal_converter(direction: Direction):
+  mapper = make_mapper([DecimalConverter(direction)])
+
+  pi = decimal.Decimal('3.141592653589793')
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(pi, decimal.Decimal) == str(pi)
+
+  else:
+    assert mapper.convert(str(pi), decimal.Decimal) == pi
+    with pytest.raises(ConversionError):
+      assert mapper.convert(3.14, decimal.Decimal)
+    assert mapper.convert(3.14, decimal.Decimal, settings=[Strict(False)]) == decimal.Decimal(3.14)
 
 
 @pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))

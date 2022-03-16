@@ -111,7 +111,6 @@ class Priority(enum.IntEnum):
   ULTIMATE = 3
 
 
-@dataclasses.dataclass
 class Setting:
   """ Base class for types of which instances represent a setting to be taken into account during data conversion.
   Every setting has a priority that is used to construct and order or to determine the single setting to use in
@@ -123,9 +122,9 @@ class Setting:
   if it does not exist) such that it can be picked up when introspected by a converter. Such #Setting subclasses
   should inherit from #DecoratorSetting instead. """
 
-  priority: Priority
+  priority: Priority = Priority.NORMAL
 
-  def __post_init__(self) -> None:
+  def __init__(self) -> None:
     if type(self) is Setting:
       raise TypeError('Setting cannot be directly instantiated')
 
@@ -134,10 +133,10 @@ class ClassDecoratorSetting(Setting):
 
   bound_to: t.Optional[t.Type[Setting]] = None
 
-  def __post_init__(self) -> None:
+  def __init__(self) -> None:
     if type(self) is ClassDecoratorSetting:
       raise TypeError('ClassDecoratorSetting cannot be directly instantiated')
-    super().__post_init__()
+    super().__init__()
 
   def __call__(self, type_: t.Type[T]) -> t.Type[T]:
     """ Decorate the class *type_* with this setting, adding the setting to its `__databind_settings__` list
@@ -186,15 +185,11 @@ class BooleanSetting(Setting):
   """ Base class for boolean settings. """
 
   enabled: bool
-
-  def __init__(self, enabled: bool = True, priority = Priority.NORMAL) -> None:
-    self.priority = priority
-    self.enabled = enabled
+  priority: Priority = Priority.NORMAL
 
   def __post_init__(self) -> None:
     if type(self) is BooleanSetting:
       raise TypeError('BooleanSetting cannot be directly instantiated')
-    super().__post_init__()
 
 
 class Alias(Setting):
@@ -220,10 +215,11 @@ class Alias(Setting):
 
   #: A tuple of the aliases provided to the constructor.
   aliases: t.Tuple[str, ...]
+  priority: Priority = Priority.NORMAL
 
   def __init__(self, alias: str, *additional_aliases: str, priority: Priority = Priority.NORMAL) -> None:
-    super().__init__(priority)
     self.aliases = (alias,) + additional_aliases
+    self.priority = priority
 
   def __repr__(self) -> str:
     return f'Alias({", ".join(map(repr, self.aliases))}, priority={self.priority!r})'
@@ -292,6 +288,7 @@ class Precision(Setting):
   Emax: t.Optional[int] = None
   capitals: t.Optional[bool] = None
   clamp: t.Optional[bool] = None
+  priority: Priority = Priority.NORMAL
 
   def to_decimal_context(self) -> decimal.Context:
     return decimal.Context(

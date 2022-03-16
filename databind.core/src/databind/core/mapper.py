@@ -27,17 +27,17 @@ class ObjectMapper:
     assert isinstance(module, Module), module
     self.modules.append(module)
 
-  def _convert_context(self, context: Context) -> t.Any:
+  def _convert_context(self, ctx: Context) -> t.Any:
     from databind.core.converter import NoMatchingConverter
 
     for module in self.modules:
       for converter in module.converters:
         try:
-          return converter.convert(context)
+          return converter.convert(ctx)
         except NotImplementedError:
           pass
 
-    raise NoMatchingConverter(context)
+    raise NoMatchingConverter(ctx)
 
   def convert(
     self,

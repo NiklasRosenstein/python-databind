@@ -1,12 +1,13 @@
 
 import base64
+import decimal
 import enum
 import typing as t
 
 import typeapi
 from databind.core.context import Context
 from databind.core.converter import Converter, ConversionError
-from databind.core.settings import Alias, Strict, get_highest_setting
+from databind.core.settings import Alias, Precision, Strict, get_highest_setting
 from databind.json.direction import Direction
 
 
@@ -104,6 +105,32 @@ class PlainDatatypeConverter(Converter):
       raise ConversionError(ctx, str(exc)) from exc
 
 
+class DecimalConverter(Converter):
+  """ A converter for #decimal.Decimal values to and from JSON as strings. """
+
+  def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
+    self.direction = direction
+    self.strict_by_default = strict_by_default
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, decimal.Decimal):
+      raise NotImplementedError
+
+    strict = ctx.get_setting(Strict) or Strict(self.strict_by_default)
+    precision = ctx.get_setting(Precision)
+    context = precision.to_decimal_context() if precision else None
+
+    if self.direction == Direction.DESERIALIZE:
+      if (not strict.enabled and isinstance(ctx.value, (int, float))) or isinstance(ctx.value, str):
+        return decimal.Decimal(ctx.value, context)
+      raise ConversionError(ctx, f'expected string, got {typeapi.type_repr(ctx.value.__class__)}')
+
+    else:
+      if not isinstance(ctx.value, decimal.Decimal):
+        raise ConversionError(ctx, f'expected decimal.Decimal, got {typeapi.type_repr(ctx.value.__class__)}')
+      return str(ctx.value)
+
+
 class EnumConverter(Converter):
   """ JSON converter for enum values.
 
@@ -154,8 +181,9 @@ class EnumConverter(Converter):
         if alias and alias.aliases:
           return alias.aliases[0]
         return value.name
+      assert False, enum_type
 
-    elif self.direction == Direction.DESERIALIZE:
+    else:
       if issubclass(enum_type, enum.IntEnum):
         if not isinstance(value, int):
           raise ConversionError(ctx, f'expected int but found {value.__class__.__name__}')
@@ -174,5 +202,4 @@ class EnumConverter(Converter):
           return enum_type[value]
         except KeyError:
           raise ConversionError(ctx, f'{value!r} is not a member of enumeration {ctx.datatype}')
-
-    assert False, (self.direction, enum_type)
+      assert False, enum_type
