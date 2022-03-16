@@ -1,10 +1,15 @@
 
 from __future__ import annotations
 import abc
+import logging
 import typing as t
+
+import typeapi
 
 if t.TYPE_CHECKING:
   from databind.core.context import Context
+
+logger = logging.getLogger(__name__)
 
 
 class Converter(abc.ABC):
@@ -33,12 +38,21 @@ class ConversionError(Exception):
 
   def __str__(self) -> str:
     import textwrap
+    from databind.core.context import format_context_trace
+
     try:
-      from databind.core.context import format_context_trace
       return f'{self.message}\nConversion trace:\n{textwrap.indent(format_context_trace(self.context), "  ")}'
     except:
-      import traceback
-      return traceback.format_exc()
+      logger.exception('Exception while formatting context traceback')
+      raise
+
+  @staticmethod
+  def expected(ctx: Context, types: t.Union[t.Type, t.Sequence[t.Type]], got: t.Optional[t.Type] = None) -> ConversionError:
+    if isinstance(types, type):
+      types = (types,)
+    expected = '|'.join(typeapi.type_repr(t) for t in types)
+    got = type(ctx.value) if got is None else got
+    return ConversionError(ctx, f'expected {expected}, got {typeapi.type_repr(got)} instead')
 
 
 class NoMatchingConverter(ConversionError):

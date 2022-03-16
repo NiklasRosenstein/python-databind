@@ -1,8 +1,10 @@
 
 from __future__ import annotations
 import abc
-import decimal
+from ast import Is
 import dataclasses
+import datetime
+import decimal
 import enum
 import typing as t
 
@@ -13,6 +15,7 @@ from nr.util.preconditions import check_instance_of, check_not_none, check_subcl
 if t.TYPE_CHECKING:
   from databind.core.context import Context
   from databind.core.union import EntrypointUnionMembers, ImportUnionMembers, StaticUnionMembers, UnionMembers
+  from nr.util.date import date_format, time_format, datetime_format, format_set
 
 T_Setting = t.TypeVar('T_Setting', bound='Setting')
 T_ClassDecoratorSetting = t.TypeVar('T_ClassDecoratorSetting', bound='ClassDecoratorSetting')
@@ -423,3 +426,120 @@ class Union(ClassDecoratorSetting):
   def import_() -> ImportUnionMembers:
     from databind.core.union import ImportUnionMembers
     return ImportUnionMembers()
+
+
+@dataclasses.dataclass
+class DateFormat(Setting):
+  """ The #DateFormat setting is used to describe the date format to use for #datetime.datetime, #datetime.date
+  and #datetime.time values when formatting them as a string, i.e. usually when the date/time is serialized, and
+  when parsing them.
+
+  The #nr.util.date module provides types to describe the format of a date, time and datetime (see #date_format,
+  #time_format and #datetime_format), as well as an entire suite of formats for all types of date/time values.
+
+  Arguments:
+    formats: One or more datetime formats to use when parsing. The first of the formats is used for formatting.
+      Each element must be one of the following:
+
+      * A formatter (like #date_format, #time_format or #datetime_format),
+      * a #format_set,
+      * a string that is a date/time format, or
+      * a string starting with a period (`.`) that names a builtin format set (like `.ISO_8601`)
+
+      Attempting to use #parse() or #format() for a date/time value type for which the #DateFormat does not
+      provide an applicable format results in a #ValueError.
+  """
+
+  Dtype = t.Union[datetime.date, datetime.time, datetime.datetime]
+  Formatter = t.Union['date_format', 'time_format', 'datetime_format']
+  T_Input = t.Union[str, 'date_format', 'time_format'', datetime_format', 'format_set']
+  T_Dtype = t.TypeVar('T_Dtype', bound=Dtype)
+  T_Formatter = t.TypeVar('T_Formatter', bound=Formatter)
+
+  formats: t.Sequence[T_Input]
+
+  def __init__(self, *formats: T_Input) -> None:
+    if not formats:
+      raise ValueError('need at least one date format')
+    self.formats = formats
+
+  @staticmethod
+  def __get_builtin_format(fmt: str) -> T_Formatter:
+    if fmt == '.ISO_8601':
+      from nr.util.date.format_sets import ISO_8601
+      return ISO_8601
+    if fmt == '.JAVA_OFFSET_DATETIME':
+      from nr.util.date.format_sets import JAVA_OFFSET_DATETIME
+      return JAVA_OFFSET_DATETIME
+    raise ValueError(f'{fmt!r} is not a built-in date/time format set')
+
+  def __iter_formats(self, type_: t.Type[T_Formatter]) -> t.Iterable[T_Formatter]:
+    for fmt in self.formats:
+      if isinstance(fmt, str):
+        if fmt.startswith('.'):
+          yield self.__get_builtin_format(fmt)
+        yield type_.compile(fmt)  # type: ignore
+      elif type(fmt) == type_:
+        yield fmt
+      elif isinstance(fmt, format_set):
+        yield from getattr(fmt, type_.__name__ + 's')
+      #else:
+      #  raise RuntimeError(f'bad date format type: {type(fmt).__name__}')
+
+  def parse(self, type_: t.Type[T_Dtype], value: str) -> T_Dtype:
+    """ Parse a date/time value from a string.
+
+    Arguments:
+      type_: The type to parse the value into, i.e. #datetime.date, #datetime.time or #datetime.datetime.
+      value: The string to parse.
+    Raises:
+      ValueError: If no date format is sufficient to parse *value* into the given *type_*.
+    Returns:
+      The parsed date/time value.
+    """
+
+    from nr.util.date import date_format, time_format, datetime_format
+
+    format_t: t.Type[DateFormat.Formatter]
+    format_t, method_name = {  # type: ignore
+      datetime.date: (date_format, 'parse_date'),
+      datetime.time: (time_format, 'parse_time'),
+      datetime.datetime: (datetime_format, 'parse_datetime'),
+    }[type_]
+    for fmt in self.__iter_formats(format_t):  # type: ignore
+      try:
+        return getattr(fmt, method_name)(value)
+      except ValueError:
+        pass
+    raise self._formulate_parse_error(list(self.__iter_formats(format_t)), value)  # type: ignore
+
+  def format(self, dt: T_Dtype) -> str:
+    """ Format a date/time value to a string.
+
+    Arguments:
+      value: The date/time value to format (i.e. an instance of #datetime.date, #datetime.time or #datetime.datetime).
+    Raises:
+      ValueError: If no date format to format the type of *value* is available.
+    Returns:
+      The formatted date/time value.
+    """
+
+    from nr.util.date import date_format, time_format, datetime_format
+
+    format_t: t.Type[DateFormat.Formatter]
+    format_t, method_name = {  # type: ignore
+      datetime.date: (date_format, 'format_date'),
+      datetime.time: (time_format, 'format_time'),
+      datetime.datetime: (datetime_format, 'format_datetime'),
+    }[type(dt)]
+    for fmt in self.__iter_formats(format_t):  # type: ignore
+      try:
+        return getattr(fmt, method_name)(dt)
+      except ValueError:
+        pass
+    raise self._formulate_parse_error(list(self.__iter_formats(format_t)), dt)  # type: ignore
+
+  @staticmethod
+  def _formulate_parse_error(formats: t.Sequence[t.Any], s: t.Any) -> ValueError:
+    return ValueError(f'"{s}" does not match date formats ({len(formats)}):' +
+      ''.join(f'\n  | {x.format_str}' for x in formats))
