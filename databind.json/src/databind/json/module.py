@@ -25,6 +25,13 @@ class JsonModule(Module):
     self.register(OptionalConverter())
     self.register(PlainDatatypeConverter(direction))
 
+    # self.register(CollectionConverter())
+    # self.register(MapConverter())
+    # self.register(UnionConverter())
+    # self.register(DataclassConverter())
+    # self.register(StringifyConverter(uuid.UUID, lambda _, v: uuid.UUID(v)))
+    # self.register(StringifyConverter(pathlib.PurePath, lambda t, v: t(v)))
+
   @staticmethod
   def serializing() -> JsonModule:
     """ Return a serializing JSON module. """
