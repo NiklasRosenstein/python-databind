@@ -69,3 +69,18 @@ def test_enum_converter(direction: Direction):
     assert mapper.convert('CAT', Pet) == Pet.CAT
     assert mapper.convert('DOG', Pet) == Pet.DOG
     assert mapper.convert('KITTY', Pet) == Pet.LION
+
+  class Flags(enum.IntEnum):
+    A = 1
+    B = 2
+
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(Flags.A, Flags) == 1
+    assert mapper.convert(Flags.B, Flags) == 2
+    with pytest.raises(ConversionError):
+      assert mapper.convert(Flags.A | Flags.B, Flags)
+  else:
+    assert mapper.convert(1, Flags) == Flags.A
+    assert mapper.convert(2, Flags) == Flags.B
+    with pytest.raises(ConversionError):
+      assert mapper.convert(3, Flags)

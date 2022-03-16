@@ -28,13 +28,16 @@ class ObjectMapper:
     self.modules.append(module)
 
   def _convert_context(self, context: Context) -> t.Any:
+    from databind.core.converter import NoMatchingConverter
+
     for module in self.modules:
       for converter in module.converters:
         try:
           return converter.convert(context)
         except NotImplementedError:
           pass
-    raise NoMatchingConverter(context.datatype)
+
+    raise NoMatchingConverter(context)
 
   def convert(
     self,

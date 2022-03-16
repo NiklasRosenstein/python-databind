@@ -107,9 +107,23 @@ class PlainDatatypeConverter(Converter):
 class EnumConverter(Converter):
   """ JSON converter for enum values.
 
-  Converts #enum.IntEnum values to integers and #enum.Enum values to strings.
+  Converts #enum.IntEnum values to integers and #enum.Enum values to strings. Note that combined integer flags
+  are not supported and cannot be serializ
 
-  #Alias settings on
+  #Alias#es on the type annotation of an enum field are considered as aliases for the field name to be used
+  in the value's serialized form as opposed to its value name defined in code.
+
+  Example:
+
+  ```py
+  import enum, typing
+  from databind.core.settings import Alias
+
+  class Pet(enum.Enum):
+    CAT = enum.auto()
+    DOG = enum.auto()
+    LION: typing.Annotated[int, Alias('KITTY')] = enum.auto()
+  ```
   """
 
   def __init__(self, direction: Direction) -> None:
@@ -145,7 +159,10 @@ class EnumConverter(Converter):
       if issubclass(enum_type, enum.IntEnum):
         if not isinstance(value, int):
           raise ConversionError(ctx, f'expected int but found {value.__class__.__name__}')
-        return enum_type(value)
+        try:
+          return enum_type(value)
+        except ValueError as exc:
+          raise ConversionError(ctx, str(exc))
       if issubclass(enum_type, enum.Enum):
         if not isinstance(value, str):
           raise ConversionError(ctx, f'expected string but found {value.__class__.__name__}')
@@ -158,4 +175,4 @@ class EnumConverter(Converter):
         except KeyError:
           raise ConversionError(ctx, f'{value!r} is not a member of enumeration {ctx.datatype}')
 
-    assert False, self.direction
+    assert False, (self.direction, enum_type)
