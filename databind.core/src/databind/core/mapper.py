@@ -68,5 +68,5 @@ class ObjectMapper:
       datatype = typeapi.of(datatype)
     if isinstance(settings, list):
       settings = Settings(self.settings, global_settings=settings)
-    context = Context(None, value, datatype, settings or self.settings, None, location or Location.EMPTY, self._convert_context)
+    context = Context(None, value, datatype, settings or self.settings, Context.ROOT, location or Location.EMPTY, self._convert_context)
     return context.convert()

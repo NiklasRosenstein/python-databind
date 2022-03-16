@@ -1,6 +1,7 @@
 
 import base64
 import decimal
+from email.errors import NonASCIILocalPartDefect
 import enum
 import typing as t
 
@@ -203,3 +204,19 @@ class EnumConverter(Converter):
         except KeyError:
           raise ConversionError(ctx, f'{value!r} is not a member of enumeration {ctx.datatype}')
       assert False, enum_type
+
+
+class OptionalConverter(Converter):
+
+  def convert(self, ctx: Context) -> t.Any:
+    print('@@', ctx.datatype)
+    if not isinstance(ctx.datatype, typeapi.Union) or type(None) not in ctx.datatype.types:
+      raise NotImplementedError
+    if ctx.value is None:
+      return None
+    types = tuple(t for t in ctx.datatype.types if t is not type(None))
+    if len(types) == 1:
+      datatype = types[0]
+    else:
+      datatype = typeapi.Union(types)
+    return ctx.spawn(ctx.value, datatype, None).convert()

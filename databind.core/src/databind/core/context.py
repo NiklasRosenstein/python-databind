@@ -1,14 +1,20 @@
 
 from __future__ import annotations
 import dataclasses
+import enum
 import typing as t
 
 import typeapi
-from nr.util.singleton import NotSet
 
 if t.TYPE_CHECKING:
   from databind.core.settings import SettingsProvider, T_Setting
   from databind.core.converter import ConversionError
+
+
+class Root(enum.Enum):
+  """ A singleton to represent that a #Context is pointing to the root of the payload. """
+
+  Value = 0
 
 
 @dataclasses.dataclass(frozen=True)
@@ -50,7 +56,7 @@ class Context:
 
   #: The key or index under which #value is present in the source material relative to the #parent context.
   #: This is `None` only for the root value in the same source.
-  key: t.Union[int, str, None]
+  key: t.Union[int, str, Root, None]
 
   #: The location of the #value in the source material.
   location: Location
@@ -58,8 +64,11 @@ class Context:
   #: A function to dispatch the further conversion of a #Context.
   convert_func: t.Callable[[Context], t.Any]
 
+  ROOT: t.ClassVar = Root.Value
+
   def __post_init__(self) -> None:
     assert isinstance(self.datatype, typeapi.Hint), self.datatype
+    assert isinstance(self.key, (int, str, Root)) or self.key is None, self.key
     assert self.location is not None
 
   def get_setting(self, setting_type: t.Type[T_Setting]) -> T_Setting | None:
@@ -94,7 +103,7 @@ class Context:
     if location is None:
       location = Location(self.location.filename, None, None)
 
-    return Context(self, value, datatype, self.settings, key, location)
+    return Context(self, value, datatype, self.settings, key, location, self.convert_func)
 
   def convert(self) -> t.Any:
     """ Invoke the #convert_func with *self*. """
@@ -121,12 +130,14 @@ def format_context_trace(ctx: Context) -> str:
       lines.append(f'In "{ctx.location.filename}"')
       prev_filename = ctx.location.filename
 
-    if ctx.key is None:
+    if ctx.key is Context.ROOT:
       key = '$'
     elif isinstance(ctx.key, str):
       key = f'.{ctx.key}'
     elif isinstance(ctx.key, int):
       key = f'[{ctx.key}]'
+    elif ctx.key is None:
+      key = '^'
     else:
       raise TypeError(f'encountered unexpected type in Context.key: {ctx.key.__class__.__name__!r}')
 

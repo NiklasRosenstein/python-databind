@@ -9,7 +9,7 @@ from databind.core.converter import Converter, ConversionError, NoMatchingConver
 from databind.core.mapper import ObjectMapper
 from databind.core.module import Module
 from databind.core.settings import Alias, Precision, Strict
-from databind.json.converters import AnyConverter, DecimalConverter, EnumConverter, PlainDatatypeConverter
+from databind.json.converters import AnyConverter, DecimalConverter, EnumConverter, OptionalConverter, PlainDatatypeConverter
 from databind.json.direction import Direction
 
 
@@ -100,3 +100,12 @@ def test_enum_converter(direction: Direction):
     assert mapper.convert(2, Flags) == Flags.B
     with pytest.raises(ConversionError):
       assert mapper.convert(3, Flags)
+
+
+def test_optional_converter():
+  mapper = make_mapper([OptionalConverter(), PlainDatatypeConverter(Direction.SERIALIZE)])
+  assert mapper.convert(42, t.Optional[int]) == 42
+  assert mapper.convert(None, t.Optional[int]) == None
+  assert mapper.convert(42, int) == 42
+  with pytest.raises(ConversionError):
+    assert mapper.convert(None, int)
