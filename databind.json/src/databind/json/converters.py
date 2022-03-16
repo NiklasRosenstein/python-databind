@@ -42,6 +42,43 @@ class AnyConverter(Converter):
     raise NotImplementedError
 
 
+class CollectionConverter(Converter):
+
+  def __init__(self, direction: Direction, json_collection_type: t.Type[collections.abc.Collection] = list) -> None:
+    self.direction = direction
+    self.json_collection_type = json_collection_type
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, collections.abc.Collection):
+      raise NotImplementedError
+
+    if ctx.datatype.nparams != 1:
+      # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
+      # track of type parameter values.
+      raise NotImplementedError
+
+    python_type = ctx.datatype.type
+    item_type = ctx.datatype.args[0] if ctx.datatype.args else t.Any
+    values = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
+
+    if self.direction == Direction.SERIALIZE:
+      if not isinstance(ctx.value, python_type):
+        raise ConversionError.expected(ctx, python_type)
+      return self.json_collection_type(values)
+
+    else:
+      if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
+        raise ConversionError.expected(ctx, collections.abc.Collection)
+      if python_type != list:
+        values = list(values)
+      try:
+        return python_type(values)
+      except TypeError:
+        # We assume that the native list is an appropriate placeholder for whatever specific Collection type
+        # was chosen in the value's datatype.
+        return values
+
+
 class PlainDatatypeConverter(Converter):
   """ A converter for the plain datatypes #bool, #bytes, #int, #str and #float.
 

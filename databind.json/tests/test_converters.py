@@ -11,8 +11,8 @@ from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
 from databind.core.module import Module
 from databind.core.settings import Alias, Strict
-from databind.json.converters import AnyConverter, DatetimeConverter, DecimalConverter, DurationConverter, \
-  EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
+from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
+    DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
 from databind.json.direction import Direction
 from nr.util.date import duration
 
@@ -182,3 +182,29 @@ def test_mapping_converter(direction):
   #   assert mapper.convert(FixedDict({"a": 1}), FixedDict) == {"a": 1}
   # else:
   #   assert mapper.convert({"a": 1}, FixedDict) == FixedDict({"a": 1})
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_collection_converter(direction):
+  mapper = make_mapper([AnyConverter(), CollectionConverter(direction), PlainDatatypeConverter(direction)])
+  assert mapper.convert([1, 2, 3], t.Collection) == [1, 2, 3]
+  assert mapper.convert([1, 2, 3], t.Collection[int]) == [1, 2, 3]
+  assert mapper.convert([1, 2, 3], t.MutableSequence[int]) == [1, 2, 3]
+  assert mapper.convert([1, 2, 3], t.List[int]) == [1, 2, 3]
+  with pytest.raises(ConversionError):
+    assert mapper.convert(1, t.Mapping[int, str])
+
+  T = t.TypeVar('T')
+  class CustomList(t.List[T]):
+    pass
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(CustomList([1, 2, 3]), CustomList[int]) == [1, 2, 3]
+  else:
+    assert mapper.convert([1, 2, 3], CustomList[int]) == CustomList([1, 2, 3])
+
+  # class FixedList(t.List[int]):
+  #   pass
+  # if direction == Direction.SERIALIZE:
+  #   assert mapper.convert(FixedList([1, 2, 3]), FixedList) == [1, 2, 3]
+  # else:
+  #   assert mapper.convert([1, 2, 3], FixedList) == FixedList([1, 2, 3])
