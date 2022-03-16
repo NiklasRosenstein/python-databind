@@ -29,8 +29,9 @@ class JsonModule(Module):
     self.register(MappingConverter())
     self.register(OptionalConverter())
     self.register(PlainDatatypeConverter(direction))
-    self.register(StringifyConverter(direction, uuid.UUID, lambda _, v: uuid.UUID(v)))
-    self.register(StringifyConverter(direction, pathlib.PurePath, lambda t, v: t(v)))
+    self.register(StringifyConverter(direction, uuid.UUID))
+    self.register(StringifyConverter(direction, pathlib.Path))
+    self.register(StringifyConverter(direction, pathlib.PurePath))
 
     # self.register(UnionConverter(direction))
     # self.register(DataclassConverter(direction))
