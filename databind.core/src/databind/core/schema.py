@@ -75,7 +75,6 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias]) -
   """
 
   from dataclasses import MISSING
-  from databind.core.settings import get_highest_setting, Required
 
   hint = typeapi.of(dataclass_type)
   assert isinstance(hint, typeapi.Type), hint
@@ -106,11 +105,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias]) -
     datatype = typeapi.of(field.type)
     default = NotSet.Value if field.default == MISSING else field.default
     default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
-
-    if isinstance(datatype, typeapi.Annotated):
-      required = (get_highest_setting(v for v in datatype.metadata if isinstance(v, Required)) or Required(True)).enabled
-    else:
-      required = default == NotSet.Value and default_factory == NotSet.Value
+    required = _is_required(datatype, default == NotSet.Value and default_factory == NotSet.Value)
 
     # Infuse type parameters, if applicable. We may not have type parameters for the field's origin type if that
     # origion is not a generic type.
@@ -125,3 +120,61 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias]) -
     )
 
   return Schema(fields, dataclass_type)
+
+
+def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
+  """ Converts the definition of a #typing.TypedDict to a #Schema.
+
+  !!! note
+
+      This function will take into account default values assigned on the class-level of the typed dict (which is
+      usually only relevant if the class-style declaration method was used, but default values can be assigned to
+      the function-style declared type as well). Fields that have default values are considered not-required even
+      if the declaration specifies them as required.
+
+      Be aware that right-hand side values on #typing.TypedDict classes are not allowed by Mypy.
+
+      Also note that #typing.TypedDict cannot be mixed with #typing.Generic, so keys with a generic type in the
+      typed dict are not possible (state: 2022-03-17, Python 3.10.2).
+
+  !!! todo
+
+      Support understanding #typing.Required and #typing.NotRequired.
+
+  Example:
+
+  ```py
+  from databind.core.schema import convert_typed_dict_to_schema, Schema, Field
+  import typing
+  class Movie(typing.TypedDict):
+    name: str
+    year: int = 0
+  assert convert_typed_dict_to_schema(Movie) == Schema({
+    'name': Field(typeapi.of(str)),
+    'year': Field(typeapi.of(int), False, 0),
+  }, Movie)
+  ```
+  """
+
+  assert typeapi.utils.is_typed_dict(typed_dict), typed_dict
+
+  annotations = typeapi.get_annotations(typed_dict)
+  fields: t.Dict[str, Field] = {}
+  for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
+    datatype = typeapi.of(annotations[key])
+    has_default = hasattr(typed_dict, key)
+    required = _is_required(datatype, False if has_default else typed_dict.__total__)
+    fields[key] = Field(datatype, required, getattr(typed_dict, key) if has_default else NotSet.Value)
+  return Schema(fields, t.cast(t.Callable, typed_dict))
+
+
+def _is_required(datatype: typeapi.Hint, default: bool = True) -> bool:
+  """ If *datatype* is a #typeapi.Annotated instance, it will look for a #Required settings instance and returns
+  that instances #Required.enabled value. Otherwise, it returns *default*. """
+
+  from databind.core.settings import get_highest_setting, Required
+
+  if isinstance(datatype, typeapi.Annotated):
+    return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Required)) or Required(True)).enabled
+  else:
+    return default

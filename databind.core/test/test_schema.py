@@ -5,7 +5,7 @@ import typing_extensions as te
 
 import typeapi
 from databind.core.settings import Required
-from databind.core.schema import Field, Schema, convert_dataclass_to_schema
+from databind.core.schema import Field, Schema, convert_dataclass_to_schema, convert_typed_dict_to_schema
 from nr.util.generic import T, U
 
 
@@ -150,3 +150,32 @@ def test_convert_dataclass_to_schema_generic_inheritance():
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
   }, B2)
+
+
+def test_convert_typed_dict_to_schema_total() -> None:
+  class Movie(te.TypedDict):
+    name: str
+    year: int = 42  # type: ignore[misc]
+  assert convert_typed_dict_to_schema(Movie) == Schema({
+    'name': Field(typeapi.of(str)),
+    'year': Field(typeapi.of(int), False, default=42),
+  }, Movie)
+
+
+def test_convert_typed_dict_to_schema_functional():
+  Movie = te.TypedDict('Movie', {'name': str, 'year': int})
+  Movie.year = 42
+  assert convert_typed_dict_to_schema(Movie) == Schema({
+    'name': Field(typeapi.of(str)),
+    'year': Field(typeapi.of(int), False, default=42),
+  }, Movie)
+
+
+def test_convert_typed_dict_to_schema_not_total():
+  class Movie(te.TypedDict, total=False):
+    name: str
+    year: int
+  assert convert_typed_dict_to_schema(Movie) == Schema({
+    'name': Field(typeapi.of(str), False),
+    'year': Field(typeapi.of(int), False),
+  }, Movie)
