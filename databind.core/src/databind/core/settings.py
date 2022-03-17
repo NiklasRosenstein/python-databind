@@ -85,20 +85,38 @@ class Settings(SettingsProvider):
   # SettingsProvider
 
   def get_setting(self, context: Context, setting_type: t.Type[T_Setting]) -> t.Optional[T_Setting]:
+    """ Resolves the highest priority instance of the given setting type relevant to the current context. The places
+    that the setting is looked for are, in order:
+
+    1. If the context's datatype is #typeapi.Annotated, look for it in the #typeapi.Annotated.metadata. Otherwise,
+       use the wrapped type in the following steps.
+    2. If the datatype is a #typeapi.Type, look for it as a class setting, then subsequently in the settings added
+       with #add_local().
+    3. Check the setting providers added with #add_provider() or #add_conditional().
+    4. Look for it in the global settings.
+    5. Delegate to the #parent settings provider (if any).
+
+    If multiple settings are find using any of these steps, the setting with the highest priority among the settings
+    is returned. If multiple settings have the same priority, the setting found first via the above order is returned.
+    """
 
     from nr.util.stream import Stream
 
     def _all_settings():
-      if self.parent:
-        setting = self.parent.get_setting(context, setting_type)
-        if setting is not None:
-          return setting
-      if isinstance(context.datatype, typeapi.Type):
-        yield from get_class_settings(context.datatype.type, setting_type)
-        yield from self.local_settings.get(context.datatype.type, [])
+      datatype = context.datatype
+      if isinstance(datatype, typeapi.Annotated):
+        yield from (s for s in datatype.metadata if isinstance(s, setting_type))
+        datatype = datatype.wrapped
+      if isinstance(datatype, typeapi.Type):
+        yield from get_class_settings(datatype.type, setting_type)
+        yield from self.local_settings.get(datatype.type, [])
       for provider in self.providers:
         yield from provider(context)
       yield from self.global_settings
+      if self.parent:
+        setting = self.parent.get_setting(context, setting_type)
+        if setting is not None:
+          yield setting
 
     return get_highest_setting(Stream(_all_settings()).of_type(setting_type))
 
