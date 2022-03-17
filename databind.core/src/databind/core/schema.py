@@ -47,7 +47,7 @@ class Schema:
   constructor: t.Callable[[t.Dict[str, t.Any]], t.Any]
 
 
-def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias]) -> Schema:
+def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, typeapi.Type]) -> Schema:
   """ Converts a Python class that is decorated with #dataclasses.dataclass().
 
   The function will respect the #Required setting if it is present in a field's datatype if and only if the
@@ -76,8 +76,11 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias]) -
 
   from dataclasses import MISSING
 
-  hint = typeapi.of(dataclass_type)
-  assert isinstance(hint, typeapi.Type), hint
+  if isinstance(dataclass_type, typeapi.Type):
+    hint = dataclass_type
+  else:
+    hint = t.cast(typeapi.Type, typeapi.of(dataclass_type))
+    assert isinstance(hint, typeapi.Type), hint
 
   dataclass_type = hint.type
   assert isinstance(dataclass_type, type), repr(dataclass_type)
