@@ -2,7 +2,7 @@ name: Python application
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, revamp ]
     tags: [ '*' ]
   pull_request:
     branches: [ develop ]
