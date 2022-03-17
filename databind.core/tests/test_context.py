@@ -13,9 +13,9 @@ def test_format_context_trace():
   ctx1 = Context(None, {'a': 1}, typeapi.of(t.Dict[str, int]), settings, Context.ROOT, location, no_convert)
   ctx2 = Context(ctx1, 1, typeapi.of(int), settings, 'a', location, no_convert)
   assert format_context_trace(ctx1) == (
-    '  $: Type(dict, nparams=2, args=(str, int))'
+    '  $: Type(dict, nparams=2, args=(Type(str), Type(int)))'
   )
   assert format_context_trace(ctx2) == (
-    '  $: Type(dict, nparams=2, args=(str, int))\n'
-    '  .a: Type(int, nparams=0)'
+    '  $: Type(dict, nparams=2, args=(Type(str), Type(int)))\n'
+    '  .a: Type(int)'
   )

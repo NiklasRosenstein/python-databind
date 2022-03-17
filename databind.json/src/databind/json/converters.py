@@ -291,16 +291,11 @@ class MappingConverter(Converter):
 class OptionalConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Union) or type(None) not in ctx.datatype.types:
+    if not isinstance(ctx.datatype, typeapi.Union) or not ctx.datatype.has_none_type():
       raise NotImplementedError
     if ctx.value is None:
       return None
-    types = tuple(t for t in ctx.datatype.types if t is not type(None))
-    if len(types) == 1:
-      datatype = types[0]
-    else:
-      datatype = typeapi.Union(types)
-    return ctx.spawn(ctx.value, datatype, None).convert()
+    return ctx.spawn(ctx.value, ctx.datatype.without_none_type(), None).convert()
 
 
 class PlainDatatypeConverter(Converter):
@@ -337,7 +332,6 @@ class PlainDatatypeConverter(Converter):
     (float, str):     str,
     (bool, str):      str,
   })
-
 
   def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
     self.direction = direction
