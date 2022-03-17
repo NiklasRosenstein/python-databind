@@ -82,7 +82,12 @@ class StaticUnionMembers(UnionMembers):
 
   def get_type_id(self, type_: t.Any) -> str:
     for type_id in self.members:
-      if self.get_type_by_id(type_id) == type_:
+      reference_type = self.get_type_by_id(type_id)
+      # NOTE (@NiklasRosenstein): If we have a typeapi.Type hint, it could represent a generic alias, but we get
+      #   passed the type of a value here as type_ which would have lost any generic aliasing if it was even
+      #   present in the first place. We compare to the underlying type instead, but this means you cannot have
+      #   a union with two members of the "same type" (even if they might differ in type parametrization).
+      if reference_type == type_ or isinstance(reference_type, typeapi.Type) and reference_type.type == type_:
         return type_id
     raise ValueError(f'type {type_} is not a member of {self}')
 
