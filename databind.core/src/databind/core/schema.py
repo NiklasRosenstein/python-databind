@@ -31,6 +31,10 @@ class Field:
   #: The default value factory for the field, if any.
   default_factory: t.Union[NotSet, t.Any] = NotSet.Value
 
+  #: Indicates whether the field is to be treated "flat". If the #datatype is a structured type that has fields of its
+  #: own, those fields should be treated as if expanded into the same level as this field.
+  flattened: bool = False
+
 
 @dataclasses.dataclass
 class Schema:
@@ -120,6 +124,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
       required=required,
       default=default,
       default_factory=default_factory,
+      flattened=_is_flat(datatype, False),
     )
 
   return Schema(fields, dataclass_type)
@@ -171,13 +176,21 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
   return Schema(fields, t.cast(t.Callable, typed_dict))
 
 
-def _is_required(datatype: typeapi.Hint, default: bool = True) -> bool:
+def _is_required(datatype: typeapi.Hint, default: bool) -> bool:
   """ If *datatype* is a #typeapi.Annotated instance, it will look for a #Required settings instance and returns
   that instances #Required.enabled value. Otherwise, it returns *default*. """
 
   from databind.core.settings import get_highest_setting, Required
 
   if isinstance(datatype, typeapi.Annotated):
-    return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Required)) or Required(True)).enabled
+    return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Required)) or Required(default)).enabled
+  else:
+    return default
+
+
+def _is_flat(datatype: typeapi.Hint, default: bool) -> bool:
+  from databind.core.settings import get_highest_setting, Flattened
+  if isinstance(datatype, typeapi.Annotated):
+    return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Flattened)) or Flattened(default)).enabled
   else:
     return default

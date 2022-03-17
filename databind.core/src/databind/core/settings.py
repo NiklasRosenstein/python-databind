@@ -264,7 +264,7 @@ class Required(BooleanSetting):
   """
 
 
-class Flatten(BooleanSetting):
+class Flattened(BooleanSetting):
   """ Indicates whether a field should be "flattened" by virtually expanding it's sub fields into the parent
   datastructure's serialized form.
 
@@ -273,7 +273,7 @@ class Flatten(BooleanSetting):
   ```py
   import typing
   from dataclasses import dataclass
-  from databind.core.settings import Flatten
+  from databind.core.settings import Flattened
 
   @dataclass
   class Inner:
@@ -282,7 +282,7 @@ class Flatten(BooleanSetting):
 
   @dataclass
   class Outter:
-    inner: typing.Annotated[Inner, Flatten()]
+    inner: typing.Annotated[Inner, Flattened()]
     c: str
   ```
 
