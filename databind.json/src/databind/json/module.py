@@ -26,7 +26,7 @@ class JsonModule(Module):
     self.register(DecimalConverter(direction))
     self.register(DurationConverter(direction))
     self.register(EnumConverter(direction))
-    self.register(MappingConverter())
+    self.register(MappingConverter(direction))
     self.register(OptionalConverter())
     self.register(PlainDatatypeConverter(direction))
     self.register(StringifyConverter(direction, uuid.UUID))

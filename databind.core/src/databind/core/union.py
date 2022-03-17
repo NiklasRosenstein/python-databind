@@ -91,7 +91,7 @@ class StaticUnionMembers(UnionMembers):
       pass
 
     try:
-      member = self._members[type_id]
+      member = self.members[type_id]
     except KeyError:
       raise ValueError(f'{type_id!r} is not a type ID of {self}')
 
@@ -123,7 +123,7 @@ class EntrypointUnionMembers(UnionMembers):
   def _entrypoints(self) -> t.Dict[str, pkg_resources.EntryPoint]:
     if self._entrypoints_cache is None:
       self._entrypoints_cache = {}
-      for ep in pkg_resources.iter_entry_points(self._group):
+      for ep in pkg_resources.iter_entry_points(self.group):
         self._entrypoints_cache[ep.name] = ep
     return self._entrypoints_cache
 
@@ -154,8 +154,8 @@ class ImportUnionMembers(UnionMembers):
   def get_type_id(self, type_: t.Any) -> str:
     if not isinstance(type_, type):
       raise ValueError(f'{type_!r} is not a type object and thus not a member of {self}')
-    type_name = f'{type_.__module__}.{type_.__qualname__}'  # type: ignore
-    if '<' in type_.__qualname__:  # type: ignore
+    type_name = f'{type_.__module__}.{type_.__qualname__}'
+    if '<' in type_.__qualname__:
       raise ValueError(f'non-global type {type_name} is not addressible')
     return type_name
 
@@ -222,7 +222,7 @@ class ChainUnionMembers(UnionMembers):
     def _gen() -> t.Iterator[str]:
       for delegate in self.delegates:
         try:
-          yield from delegate.get_type_by_id()
+          yield from delegate.get_type_ids()
         except NotImplementedError:
           pass
     return Stream(_gen()).concat().distinct().collect()

@@ -69,7 +69,7 @@ class Settings(SettingsProvider):
   def add_conditional(self, predicate: t.Callable[[Context], bool], setting: Setting) -> None:
     """ Adds a setting conditional on the given *predicate*. """
 
-    def _provider(context: Context) -> None:
+    def _provider(context: Context) -> t.List[Setting]:
       if predicate(context):
         return [setting]
       return []
@@ -134,14 +134,14 @@ class Setting:
 
 class ClassDecoratorSetting(Setting):
 
-  bound_to: t.Optional[t.Type[Setting]] = None
+  bound_to: t.Optional[t.Type] = None
 
   def __init__(self) -> None:
     if type(self) is ClassDecoratorSetting:
       raise TypeError('ClassDecoratorSetting cannot be directly instantiated')
     super().__init__()
 
-  def __call__(self, type_: t.Type[T]) -> t.Type[T]:
+  def __call__(self, type_: t.Type) -> t.Type:
     """ Decorate the class *type_* with this setting, adding the setting to its `__databind_settings__` list
     (which is created if it does not exist) and sets #bound_to. The same setting instance cannot decorate multiple
     types. """
@@ -451,10 +451,9 @@ class DateFormat(Setting):
   """
 
   Dtype = t.Union[datetime.date, datetime.time, datetime.datetime]
-  Formatter = t.Union['date_format', 'time_format', 'datetime_format']
-  T_Input = t.Union[str, 'date_format', 'time_format'', datetime_format', 'format_set']
+  Formatter = t.Union['date_format', 'time_format', 'datetime_format', 'format_set']
+  T_Input = t.Union[str, Formatter]
   T_Dtype = t.TypeVar('T_Dtype', bound=Dtype)
-  T_Formatter = t.TypeVar('T_Formatter', bound=Formatter)
 
   formats: t.Sequence[T_Input]
 
@@ -464,7 +463,7 @@ class DateFormat(Setting):
     self.formats = formats
 
   @staticmethod
-  def __get_builtin_format(fmt: str) -> T_Formatter:
+  def __get_builtin_format(fmt: str) -> Formatter:
     if fmt == '.ISO_8601':
       from nr.util.date.format_sets import ISO_8601
       return ISO_8601
@@ -473,7 +472,7 @@ class DateFormat(Setting):
       return JAVA_OFFSET_DATETIME
     raise ValueError(f'{fmt!r} is not a built-in date/time format set')
 
-  def __iter_formats(self, type_: t.Type[T_Formatter]) -> t.Iterable[T_Formatter]:
+  def __iter_formats(self, type_: t.Type[Formatter]) -> t.Iterable[Formatter]:
     for fmt in self.formats:
       if isinstance(fmt, str):
         if fmt.startswith('.'):
@@ -506,12 +505,12 @@ class DateFormat(Setting):
       datetime.time: (time_format, 'parse_time'),
       datetime.datetime: (datetime_format, 'parse_datetime'),
     }[type_]
-    for fmt in self.__iter_formats(format_t):  # type: ignore
+    for fmt in self.__iter_formats(format_t):
       try:
         return getattr(fmt, method_name)(value)
       except ValueError:
         pass
-    raise self._formulate_parse_error(list(self.__iter_formats(format_t)), value)  # type: ignore
+    raise self._formulate_parse_error(list(self.__iter_formats(format_t)), value)
 
   def format(self, dt: T_Dtype) -> str:
     """ Format a date/time value to a string.
@@ -532,12 +531,12 @@ class DateFormat(Setting):
       datetime.time: (time_format, 'format_time'),
       datetime.datetime: (datetime_format, 'format_datetime'),
     }[type(dt)]
-    for fmt in self.__iter_formats(format_t):  # type: ignore
+    for fmt in self.__iter_formats(format_t):
       try:
         return getattr(fmt, method_name)(dt)
       except ValueError:
         pass
-    raise self._formulate_parse_error(list(self.__iter_formats(format_t)), dt)  # type: ignore
+    raise self._formulate_parse_error(list(self.__iter_formats(format_t)), dt)
 
   @staticmethod
   def _formulate_parse_error(formats: t.Sequence[t.Any], s: t.Any) -> ValueError:
