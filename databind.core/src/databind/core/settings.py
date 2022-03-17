@@ -187,7 +187,7 @@ def get_class_setting(type_: t.Type, setting_type: t.Type[T_ClassDecoratorSettin
 class BooleanSetting(Setting):
   """ Base class for boolean settings. """
 
-  enabled: bool
+  enabled: bool = True
   priority: Priority = Priority.NORMAL
 
   def __post_init__(self) -> None:
