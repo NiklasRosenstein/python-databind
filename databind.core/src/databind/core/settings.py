@@ -370,8 +370,8 @@ class Union(ClassDecoratorSetting):
     self,
     members: t.Union[
       UnionMembers,
-      StaticUnionMembers._MembersDictType,
-      t.List[UnionMembers | StaticUnionMembers._MembersDictType],
+      StaticUnionMembers._MembersMappingType,
+      t.List[UnionMembers | StaticUnionMembers._MembersMappingType],
       str,
       None] = None,
     style: str = NESTED,
@@ -379,10 +379,10 @@ class Union(ClassDecoratorSetting):
     nesting_key: t.Optional[str] = None,
   ) -> None:
 
-    def _convert_handler(handler: t.Union[UnionMembers, StaticUnionMembers._MembersDictType, str]) -> UnionMembers:
-      if isinstance(handler, dict) or handler is None:
+    def _convert_handler(handler: t.Union[UnionMembers, StaticUnionMembers._MembersMappingType, str]) -> UnionMembers:
+      if isinstance(handler, t.Mapping) or handler is None:
         from databind.core.union import StaticUnionMembers
-        return StaticUnionMembers(handler or {})
+        return StaticUnionMembers(dict(handler) or {})
       elif isinstance(handler, str):
         if handler == '<import>':
           return Union.import_()
