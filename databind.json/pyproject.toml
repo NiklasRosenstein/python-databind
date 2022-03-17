@@ -10,7 +10,7 @@ packages = [{include = "databind/json", from = "src"}]
   [tool.poetry.dependencies]
   python = "^3.7"
   "databind.core" = "^1.5.1"
-  "nr.util" = ">=0.8.3,<1.0.0"
+  "nr.util" = ">=0.8.6,<1.0.0"
   typing-extensions = "^3.10.0"
 
   [tool.poetry.dev-dependencies]
