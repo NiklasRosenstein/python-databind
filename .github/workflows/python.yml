@@ -3,7 +3,7 @@ name: Python application
 on:
   push:
     branches: [ develop, revamp ]
-    tags: [ '*' ]
+    tags: [ "*" ]
   pull_request:
     branches: [ develop ]
 
@@ -11,19 +11,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      failt-fast: false
       matrix:
-        python-version: [ '3.7', '3.8', '3.9', '3.10', '3.x' ]
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.x" ]
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v2
-      with: { python-version: "3.10" }
-    - name: Install tooling
-      run: pip install pipx -q && pipx install $(cat .github/files/slam-cli.txt)
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - uses: NiklasRosenstein/slam@github-action/install/v1
+    - uses: actions/setup-python@v2
       with: { python-version: "${{ matrix.python-version }}" }
-    - name: Install tooling
-      run: slam install -vv --no-venv-check
-    - name: Run tests
-      run: slam test
+    - run: slam install -vv --no-venv-check
+    - run: slam test
