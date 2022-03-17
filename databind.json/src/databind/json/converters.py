@@ -278,7 +278,12 @@ class MappingConverter(Converter):
 
     if self.direction == Direction.DESERIALIZE and ctx.datatype.type != dict:
       # We assume that the runtime type is constructible from a plain dictionary.
-      return ctx.datatype.type(result)  # type: ignore[call-arg]
+      try:
+        return ctx.datatype.type(result)  # type: ignore[call-arg]
+      except TypeError:
+        # We expect this exception to occur for example if the annotated type is an abstract class like
+        # collections.abc.Mapping; in which case we just assume that "dict' is a fine type to return.
+        return result
     elif self.direction == Direction.SERIALIZE and self.json_mapping_type != dict:
       # Same for the JSON output type.
       return self.json_mapping_type(result)  # type: ignore[call-arg]
