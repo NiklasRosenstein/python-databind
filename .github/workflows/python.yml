@@ -1,11 +1,8 @@
 name: Python application
 
 on:
-  push:
-    branches: [ develop, revamp ]
-    tags: [ "*" ]
-  pull_request:
-    branches: [ develop ]
+  push: { branches: [ develop, revamp ], tags: [ "*" ] }
+  pull_request: { branches: [ develop ] }
 
 jobs:
   test:
