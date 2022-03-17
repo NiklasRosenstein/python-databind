@@ -333,7 +333,9 @@ class Union(ClassDecoratorSetting):
 
   #: The subtypes of the union as an implementation of the #UnionMembers interface. When constructing the #Union
   #: setting, a dictionary may be passed in place of a #UnionMembers implementation, or a list of #UnionMembers
-  #: to chain them together.
+  #: to chain them together. Te constructor will also accept a string that is either `"<import>"`, which will
+  #: be converted to an #ImportUnionMembers handler, or a string formatted as `"!<entrypoint>"`, which will be
+  #: converted to an #EntrypointUnionMembers handler.
   members: UnionMembers
 
   #: The style of the union. This should be one of #NESTED, #FLAT, #KEYED or #BEST_MATCH. The default is #NESTED.
@@ -352,23 +354,32 @@ class Union(ClassDecoratorSetting):
       UnionMembers,
       StaticUnionMembers._MembersDictType,
       t.List[UnionMembers | StaticUnionMembers._MembersDictType],
+      str,
       None] = None,
     style: str = NESTED,
     discriminator_key: str = 'type',
     nesting_key: t.Optional[str] = None,
   ) -> None:
 
-    if isinstance(members, dict) or members is None:
-      from databind.core.union import StaticUnionMembers
-      members = StaticUnionMembers(members or {})
-    elif isinstance(members, list):
-      from databind.core.union import ChainUnionMembers, StaticUnionMembers
-      chain = ChainUnionMembers()
-      for item in members:
-        if isinstance(item, dict):
-          item = StaticUnionMembers(item)
-        chain.delegates.append(item)
-      members = chain
+    def _convert_handler(handler: t.Union[UnionMembers, StaticUnionMembers._MembersDictType, str]) -> UnionMembers:
+      if isinstance(handler, dict) or handler is None:
+        from databind.core.union import StaticUnionMembers
+        return StaticUnionMembers(handler or {})
+      elif isinstance(handler, str):
+        if handler == '<import>':
+          return Union.import_()
+        elif handler.startswith('!'):
+          return Union.entrypoint(handler[1:])
+        raise ValueError(f'invalid union members string specified: {handler!r}')
+      return handler
+
+    if isinstance(members, list):
+      from databind.core.union import ChainUnionMembers
+      members = ChainUnionMembers(*(_convert_handler(x) for x in members))
+    elif members is None:
+      members = _convert_handler({})
+    else:
+      members = _convert_handler(members)
 
     self.members = members
     self.style = style
