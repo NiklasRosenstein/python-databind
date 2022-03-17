@@ -10,9 +10,10 @@ import pytest
 from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
 from databind.core.module import Module
-from databind.core.settings import Alias, Strict
+from databind.core.settings import Alias, Strict, Union
 from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
-    DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter
+    DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter, \
+    UnionConverter
 from databind.json.direction import Direction
 from nr.util.date import duration
 
@@ -208,3 +209,39 @@ def test_collection_converter(direction):
   #   assert mapper.convert(FixedList([1, 2, 3]), FixedList) == [1, 2, 3]
   # else:
   #   assert mapper.convert([1, 2, 3], FixedList) == FixedList([1, 2, 3])
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_union_converter_nested(direction):
+  mapper = make_mapper([UnionConverter(direction), PlainDatatypeConverter(direction)])
+
+  if direction == Direction.DESERIALIZE:
+    assert mapper.convert({"type": "int", "int": 42}, t.Union[int, str]) == 42
+  else:
+    assert mapper.convert(42, t.Union[int, str]) == {"type": "int", "int": 42}
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_union_converter_keyed(direction):
+  mapper = make_mapper([UnionConverter(direction), PlainDatatypeConverter(direction)])
+
+  th = te.Annotated[t.Union[int, str], Union({'int': int, 'str': str}, style=Union.KEYED)]
+  if direction == Direction.DESERIALIZE:
+    assert mapper.convert({"int": 42}, th) == 42
+  else:
+    assert mapper.convert(42, th) == {"int": 42}
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_union_converter_flat_plain_types_not_supported(direction):
+  mapper = make_mapper([UnionConverter(direction), PlainDatatypeConverter(direction)])
+
+  th = te.Annotated[t.Union[int, str], Union({'int': int, 'str': str}, style=Union.FLAT)]
+  if direction == Direction.DESERIALIZE:
+    with pytest.raises(ConversionError) as excinfo:
+      assert mapper.convert({"type": "int", "int": 42}, th)
+    assert 'unable to deserialize dict -> int' in str(excinfo.value)
+  else:
+    with pytest.raises(ConversionError) as excinfo:
+      assert mapper.convert(42, th)
+    assert 'The Union.FLAT style is not supported for plain member types' in str(excinfo.value)

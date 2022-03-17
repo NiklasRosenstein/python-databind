@@ -9,7 +9,7 @@ import typing as t
 import typeapi
 from databind.core.context import Context
 from databind.core.converter import Converter, ConversionError
-from databind.core.settings import Alias, DateFormat, Precision, Strict, get_highest_setting
+from databind.core.settings import Alias, DateFormat, Precision, Strict, Union, get_highest_setting
 from databind.json.direction import Direction
 
 
@@ -468,6 +468,177 @@ class PlainDatatypeConverter(Converter):
 #     elif ctx.direction == Direction.deserialize:
 #       return self._deserialize(ctx, ctx.type)
 #     assert False
+
+
+class UnionConverter(Converter):
+  """ Converter for union types. The following kinds of union types are supported:
+
+  * A #typing.Union (represented as #typeapi.Union) instance, in which case the members are deserialized in the
+    the #Union.NESTED mode, using the class name as the discriminator keys.
+
+      ```py
+      AOrB = A | B   # ex.: {"type": "A", "A": {...}}
+      ```
+
+  * A #typing.Annotated annotated with the #Union setting (represented as #typeapi.Annotated)
+
+      ```py
+      from databind.core.settings import Union
+      AOrB = typing.Annotated[A | B, Union({'a': A, 'b': B}, Union.KEYED)]  # ex.: {"a": {...}}
+      ```
+
+  * A class that is decorated with the #Union setting
+
+      ```py
+      import dataclasses
+      from databind.core.settings import Union
+
+      @Union(style=Union.FLAT)
+      class Base(abc.ABC):
+        pass
+
+      @Union.register(Base, 'a')
+      @dataclasses.dataclass
+      class A(Base):
+        pass
+
+      # ...
+      # ex.: {"type": "a", ...}
+      ```
+
+  !!! note
+
+      Note that the union members should be concrete types, not generic aliases, because the converter cannot check
+      if an object is an instance of an alias. This is an implementation detail of the #databind.core.union.UnionMembers
+      implementations.
+
+  More Examples:
+
+  ```py
+  import abc
+  import typing
+  from databind.core.settings import Union
+
+  AOrB = typing.Annotated[
+    typing.Union[A, B],
+    Union({'A': A, 'B': B}, Union.NESTED, 'uses', 'with')
+  ]
+
+  @Union('!my.package.plugins')
+  class Plugin(abc.ABC):
+    @abc.abstractmethod
+    def activate(self) -> None: ...
+  ```
+  """
+
+  def __init__(self, direction: Direction) -> None:
+    self.direction = direction
+
+  def _get_deserialize_member_name(self, ctx: Context, value: t.Mapping, style: str, discriminator_key: str) -> str:
+    """ Identify the name of the union member of the given serialized *value* and return it. How that name is
+    determined depends on the *style*. """
+
+    self._check_style_compatibility(ctx, style, value)
+
+    # TODO (@NiklasRosenstein): Support Union.BEST_MATCH
+    if style in (Union.NESTED, Union.FLAT):
+      if discriminator_key not in value:
+        raise ConversionError(ctx, f'missing discriminator key {discriminator_key!r} in mapping')
+      member_name = value[discriminator_key]
+      if not isinstance(member_name, str):
+        raise ConversionError.expected(ctx.spawn(member_name, str, discriminator_key), str)
+    elif style == Union.KEYED:
+      if len(value) != 1:
+        raise ConversionError(ctx, f'expected exactly one key to act as the discriminator, got {len(value)} key(s)')
+      member_name = next(iter(value))
+      assert isinstance(member_name, str)
+    else:
+      raise ConversionError(ctx, f'unsupported Union.style: {style!r}')
+
+    assert isinstance(member_name, str), (member_name, value)
+    return member_name
+
+  def _check_style_compatibility(self, ctx: Context, style: str, value: t.Any) -> None:
+    if not isinstance(value, t.MutableMapping) and style in (Union.FLAT,):
+      raise ConversionError(ctx, f'The Union.{style.upper()} style is not supported for plain member types')
+
+  def convert(self, ctx: Context) -> t.Any:
+    union: t.Optional[Union]
+    if isinstance(ctx.datatype, typeapi.Union):
+      if ctx.datatype.has_none_type():
+        raise NotImplementedError('unable to handle Union type with None in it')
+      if not all(isinstance(a, typeapi.Type) for a in ctx.datatype.types):
+        raise NotImplementedError(f'members of plain Union must be concrete types: {ctx.datatype}')
+      members = {t.cast(typeapi.Type, a).type.__name__: a for a in ctx.datatype.types}
+      if len(members) != len(ctx.datatype.types):
+        raise NotImplementedError(f'members of plain Union cannot have overlapping type names: {ctx.datatype}')
+      union = Union(members)
+    elif isinstance(ctx.datatype, (typeapi.Annotated, typeapi.Type)):
+      union = ctx.get_setting(Union)
+      if union is None:
+        raise NotImplementedError
+    else:
+      raise NotImplementedError
+
+    style = union.style
+    discriminator_key = union.discriminator_key
+    is_deserialize = self.direction == Direction.DESERIALIZE
+
+    if is_deserialize:
+      # Identify the member type to deserialize to.
+      if not isinstance(ctx.value, t.Mapping):
+        raise ConversionError.expected(ctx, t.Mapping)
+      member_name = self._get_deserialize_member_name(ctx, ctx.value, style, discriminator_key)
+      member_type = union.members.get_type_by_id(member_name)
+
+    else:
+      # Identify the member type based on the Python value type.
+      member_name = union.members.get_type_id(type(ctx.value))
+      member_type = union.members.get_type_by_id(member_name)
+
+    nesting_key = union.nesting_key or member_name
+    type_hint = typeapi.of(member_type) if not isinstance(member_type, typeapi.Hint) else member_type
+
+    if is_deserialize:
+      # Forward deserialization of the value using the newly identified type hint.
+      # TODO (@NiklasRosenstein): Support Union.BEST_MATCH.
+      if style == Union.NESTED:
+        if nesting_key not in ctx.value:
+          raise ConversionError(ctx, f'missing nesting key {nesting_key!r} in mapping')
+        child_context = ctx.spawn(ctx.value[nesting_key], type_hint, nesting_key)
+      elif style == Union.FLAT:
+        child_context = ctx.spawn(dict(ctx.value), type_hint, None)
+        # Don't pass down the discriminator key.
+        t.cast(t.Dict, child_context.value).pop(discriminator_key)
+      elif style == Union.KEYED:
+        child_context = ctx.spawn(ctx.value[member_name], type_hint, member_name)
+      else:
+        raise ConversionError(ctx, f'unsupported union style: {style!r}')
+
+    else:
+      child_context = ctx.spawn(ctx.value, type_hint, None)
+
+    result = child_context.convert()
+
+    if is_deserialize:
+      return result
+
+    else:
+      self._check_style_compatibility(ctx, style, result)
+      # Bring the serialized value into shape.
+      if style == Union.NESTED:
+        result = {discriminator_key: member_name, member_name: result}
+      elif style == Union.FLAT:
+        assert isinstance(result, t.MutableMapping), type(result)
+        result[discriminator_key] = member_name
+      elif style == Union.KEYED:
+        result = {member_name: result}
+      elif style == Union.BEST_MATCH:
+        pass
+      else:
+        raise ConversionError(ctx, f'unsupported union style: {style!r}')
+
+    return result
 
 
 class StringifyConverter(Converter):
