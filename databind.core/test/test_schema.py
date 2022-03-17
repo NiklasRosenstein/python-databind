@@ -72,6 +72,35 @@ def test_convert_dataclass_to_schema_generic():
   }, A)
 
 
+def test_convert_dataclass_overriden_field_type():
+  @dataclasses.dataclass
+  class A:
+    a: int
+  @dataclasses.dataclass
+  class B(A):
+    a: str
+  assert convert_dataclass_to_schema(B) == Schema({
+    'a': Field(typeapi.of(str))
+  }, B)
+
+
+def test_convert_dataclass_to_schema_type_var_without_generic():
+  @dataclasses.dataclass
+  class A:
+    a: T  # type: ignore[valid-type]  # Type variable "nr.util.generic.T" is unbound
+  @dataclasses.dataclass
+  class B(A, t.Generic[T]):
+    b: T
+  assert convert_dataclass_to_schema(B) == Schema({
+    'a': Field(typeapi.of(T)),
+    'b': Field(typeapi.of(T)),
+  }, B)
+  assert convert_dataclass_to_schema(B[int]) == Schema({
+    'a': Field(typeapi.of(T)),
+    'b': Field(typeapi.of(int)),
+  }, B)
+
+
 def test_convert_dataclass_to_schema_generic_nested():
   @dataclasses.dataclass
   class A(t.Generic[T]):
@@ -105,13 +134,14 @@ def test_convert_dataclass_to_schema_generic_inheritance():
   @dataclasses.dataclass
   class B1(A[int]):
     b: str
-  @dataclasses.dataclass
-  class B2(A[U], t.Generic[U]):
-    b: str
   assert convert_dataclass_to_schema(B1) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
   }, B1)
+
+  @dataclasses.dataclass
+  class B2(A[U], t.Generic[U]):
+    b: str
   assert convert_dataclass_to_schema(B2) == Schema({
     'a': Field(typeapi.of(U)),
     'b': Field(typeapi.of(str)),

@@ -3,3 +3,9 @@ id = "6873045a-f6b2-4244-991e-d31cf8eb0e3d"
 type = "feature"
 description = "add `nesting_key` parameter to `union()` annotation"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "522f0281-3064-4b49-a1f8-ab672823f2a2"
+type = "fix"
+description = "Fix taking into account the right base class for the annotation in `convert_dataclass_to_schema()`"
+author = "@NiklasRosenstein"

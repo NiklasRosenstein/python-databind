@@ -199,7 +199,8 @@ class EnumConverter(Converter):
     self.direction = direction
 
   def _discover_alias(self, enum_type: t.Type[enum.Enum], member_name: str) -> t.Optional[Alias]:
-    hint = typeapi.of(typeapi.get_type_hints(enum_type).get(member_name))
+    # TODO (@NiklasRosenstein): Take into account annotations of the base classes?
+    hint = typeapi.of(typeapi.get_annotations(enum_type).get(member_name))
     if isinstance(hint, typeapi.Annotated):
       return get_highest_setting(s for s in hint.metadata if isinstance(s, Alias))
     return None
