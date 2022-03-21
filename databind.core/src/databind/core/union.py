@@ -12,6 +12,8 @@ import typing as t
 import typeapi
 from nr.util.generic import T
 
+__all__ = ['UnionMembers', 'StaticUnionMembers', 'EntrypointUnionMembers', 'ImportUnionMembers', 'ChainUnionMembers']
+
 
 class UnionMembers(abc.ABC):
   """ Interface for representing the members of a union type. It defines methods to look up member type details
