@@ -19,11 +19,11 @@ def test_convert_to_schema():
   assert convert_to_schema(typeapi.of(A)) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
-  }, A)
+  }, A, A)
   assert convert_to_schema(typeapi.of(te.Annotated[A, 42])) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
-  }, A, [42])
+  }, A, A, [42])
 
   # Test typed dict detection
   class Movie(te.TypedDict):
@@ -32,7 +32,7 @@ def test_convert_to_schema():
   assert convert_to_schema(typeapi.of(Movie)) == Schema({
     'name': Field(typeapi.of(str)),
     'year': Field(typeapi.of(int)),
-  }, Movie)
+  }, Movie, Movie)
 
 
 def test_get_fields_expanded():
@@ -90,7 +90,7 @@ def test_convert_dataclass_to_schema_simple():
   assert convert_dataclass_to_schema(A) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
-  }, A)
+  }, A, A)
 
 
 def test_convert_dataclass_to_schema_with_defaults():
@@ -103,7 +103,7 @@ def test_convert_dataclass_to_schema_with_defaults():
     'a': Field(typeapi.of(int), False, 42),
     'b': Field(typeapi.of(te.Annotated[int, Required()]), True, 42),
     'c': Field(typeapi.of(str), False, default_factory=str),
-  }, A)
+  }, A, A)
 
 
 def test_convert_dataclass_to_schema_nested():
@@ -117,7 +117,7 @@ def test_convert_dataclass_to_schema_nested():
   assert convert_dataclass_to_schema(B) == Schema({
     'a': Field(typeapi.of(A)),
     'b': Field(typeapi.of(str)),
-  }, B)
+  }, B, B)
 
 
 def test_convert_dataclass_to_schema_inheritance():
@@ -130,7 +130,7 @@ def test_convert_dataclass_to_schema_inheritance():
   assert convert_dataclass_to_schema(B) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
-  }, B)
+  }, B, B)
 
 
 def test_convert_dataclass_to_schema_generic():
@@ -139,10 +139,10 @@ def test_convert_dataclass_to_schema_generic():
     a: T
   assert convert_dataclass_to_schema(A) == Schema({
     'a': Field(typeapi.of(T)),
-  }, A)
+  }, A, A)
   assert convert_dataclass_to_schema(A[int]) == Schema({
     'a': Field(typeapi.of(int)),
-  }, A)
+  }, A, A)
 
 
 def test_convert_dataclass_overriden_field_type():
@@ -154,7 +154,7 @@ def test_convert_dataclass_overriden_field_type():
     a: str
   assert convert_dataclass_to_schema(B) == Schema({
     'a': Field(typeapi.of(str))
-  }, B)
+  }, B, B)
 
 
 def test_convert_dataclass_to_schema_type_var_without_generic():
@@ -167,11 +167,11 @@ def test_convert_dataclass_to_schema_type_var_without_generic():
   assert convert_dataclass_to_schema(B) == Schema({
     'a': Field(typeapi.of(T)),
     'b': Field(typeapi.of(T)),
-  }, B)
+  }, B, B)
   assert convert_dataclass_to_schema(B[int]) == Schema({
     'a': Field(typeapi.of(T)),
     'b': Field(typeapi.of(int)),
-  }, B)
+  }, B, B)
 
 
 def test_convert_dataclass_to_schema_generic_nested():
@@ -189,15 +189,15 @@ def test_convert_dataclass_to_schema_generic_nested():
   assert convert_dataclass_to_schema(B1) == Schema({
     'a': Field(typeapi.of(A[int])),
     'b': Field(typeapi.of(str)),
-  }, B1)
+  }, B1, B1)
   assert convert_dataclass_to_schema(B2) == Schema({
     'a': Field(typeapi.of(A[U])),
     'b': Field(typeapi.of(str)),
-  }, B2)
+  }, B2, B2)
   assert convert_dataclass_to_schema(B2[int]) == Schema({
     'a': Field(typeapi.of(A[int])),
     'b': Field(typeapi.of(str)),
-  }, B2)
+  }, B2, B2)
 
 
 def test_convert_dataclass_to_schema_generic_inheritance():
@@ -210,7 +210,7 @@ def test_convert_dataclass_to_schema_generic_inheritance():
   assert convert_dataclass_to_schema(B1) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
-  }, B1)
+  }, B1, B1)
 
   @dataclasses.dataclass
   class B2(A[U], t.Generic[U]):
@@ -218,11 +218,11 @@ def test_convert_dataclass_to_schema_generic_inheritance():
   assert convert_dataclass_to_schema(B2) == Schema({
     'a': Field(typeapi.of(U)),
     'b': Field(typeapi.of(str)),
-  }, B2)
+  }, B2, B2)
   assert convert_dataclass_to_schema(B2[int]) == Schema({
     'a': Field(typeapi.of(int)),
     'b': Field(typeapi.of(str)),
-  }, B2)
+  }, B2, B2)
 
 
 def test_convert_typed_dict_to_schema_total() -> None:
@@ -232,7 +232,7 @@ def test_convert_typed_dict_to_schema_total() -> None:
   assert convert_typed_dict_to_schema(Movie) == Schema({
     'name': Field(typeapi.of(str)),
     'year': Field(typeapi.of(int), False, default=42),
-  }, Movie)
+  }, Movie, Movie)
 
 
 def test_convert_typed_dict_to_schema_functional():
@@ -241,7 +241,7 @@ def test_convert_typed_dict_to_schema_functional():
   assert convert_typed_dict_to_schema(Movie) == Schema({
     'name': Field(typeapi.of(str)),
     'year': Field(typeapi.of(int), False, default=42),
-  }, Movie)
+  }, Movie, Movie)
 
 
 def test_convert_typed_dict_to_schema_not_total():
@@ -251,4 +251,4 @@ def test_convert_typed_dict_to_schema_not_total():
   assert convert_typed_dict_to_schema(Movie) == Schema({
     'name': Field(typeapi.of(str), False),
     'year': Field(typeapi.of(int), False),
-  }, Movie)
+  }, Movie, Movie)

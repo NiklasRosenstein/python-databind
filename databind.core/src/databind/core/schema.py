@@ -12,6 +12,10 @@ if sys.version_info[:2] <= (3, 8):
 else:
   from types import GenericAlias
 
+if t.TYPE_CHECKING:
+  class Constructor(t.Protocol):
+    def __call__(self, **kwargs: t.Any) -> t.Any: ...
+
 __all__ = ['Field', 'Schema', 'convert_to_schema', 'convert_dataclass_to_schema', 'convert_typed_dict_to_schema',
   'get_fields_expanded']
 
@@ -38,6 +42,17 @@ class Field:
   #: own, those fields should be treated as if expanded into the same level as this field.
   flattened: bool = False
 
+  def has_default(self) -> bool:
+    return self.default is not NotSet.Value or self.default_factory is not NotSet.Value
+
+  def get_default(self) -> t.Any:
+    if self.default is not NotSet.Value:
+      return self.default
+    elif self.default_factory is not NotSet.Value:
+      return self.default_factory()
+    else:
+      raise RuntimeError(f'Field does not have a default value')
+
 
 @dataclasses.dataclass
 class Schema:
@@ -48,10 +63,13 @@ class Schema:
   #: be read using attribute lookup.
   fields: t.Dict[str, Field]
 
-  #: A function that constructs an instance of a Python object that this schema represents given a dictionary of
-  #: the deserialized field values. Fields that are not present in the source payload and a that do not have a default
-  #: value will not be present in the passed dictionary.
-  constructor: t.Callable[[t.Dict[str, t.Any]], t.Any]
+  #: A function that constructs an instance of a Python object that this schema represents given a dictionary as
+  #: keyword arguments of the deserialized field values. Fields that are not present in the source payload and a that
+  #: do not have a default value will not be present in the passed dictionary.
+  constructor: Constructor
+
+  #: The underlying native Python type associated with the schema.
+  type: t.Type
 
   #: Annotation metadata that goes with the schema, possibly derived from a #typeapi.Annotated hint or the underlying
   #: Python type object.
@@ -164,7 +182,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
       flattened=_is_flat(datatype, False),
     )
 
-  return Schema(fields, dataclass_type)
+  return Schema(fields, t.cast('Constructor', dataclass_type), dataclass_type)
 
 
 def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
@@ -215,7 +233,8 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
       default=getattr(typed_dict, key) if has_default else NotSet.Value,
       flattened=_is_flat(datatype, False),
     )
-  return Schema(fields, t.cast(t.Callable, typed_dict))
+
+  return Schema(fields, t.cast('Constructor', typed_dict), t.cast(t.Type, typed_dict))
 
 
 def _is_required(datatype: typeapi.Hint, default: bool) -> bool:

@@ -42,17 +42,17 @@ class Context:
   according to the #datatype. """
 
   #: The parent context.
-  parent: t.Optional[Context]
+  parent: t.Optional[Context] = dataclasses.field(repr=False)
 
   #: The value to convert.
-  value: t.Any
+  value: t.Any = dataclasses.field(repr=False)
 
   #: The expected datatype of the value to inform the converter of what to convert the #value from or to.
   datatype: typeapi.Hint
 
   #: A list of #Setting#s that are to be taken into account by the converter which can potentialy impact
   #: the conversion process.
-  settings: SettingsProvider
+  settings: SettingsProvider = dataclasses.field(repr=False)
 
   #: The key or index under which #value is present in the source material relative to the #parent context.
   #: This is `None` only for the root value in the same source. The value must be #Context.ROOT if the context
@@ -63,7 +63,7 @@ class Context:
   location: Location
 
   #: A function to dispatch the further conversion of a #Context.
-  convert_func: t.Callable[[Context], t.Any]
+  convert_func: t.Callable[[Context], t.Any] = dataclasses.field(repr=False)
 
   ROOT: t.ClassVar = Root.Value
 

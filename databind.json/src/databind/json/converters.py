@@ -4,12 +4,15 @@ import collections.abc
 import datetime
 import decimal
 import enum
+from os import unsetenv
 import typing as t
+from unicodedata import east_asian_width
 
 import typeapi
 from databind.core.context import Context
 from databind.core.converter import Converter, ConversionError
-from databind.core.settings import Alias, DateFormat, Precision, Strict, Union, get_highest_setting
+from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
+from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_highest_setting
 from databind.json.direction import Direction
 
 
@@ -366,108 +369,159 @@ class PlainDatatypeConverter(Converter):
       raise ConversionError(ctx, str(exc)) from exc
 
 
-# class SchemaConverter(Converter):
-#   """ Converter for type hints that can be adopted to a schema definition with #databind.core.schema.of(). """
+class SchemaConverter(Converter):
+  """ Converter for type hints that can be adapter to a #databind.core.schema.Schema object.
 
-#   def _serialize(self, ctx: Context) -> t.Dict[str, t.Any]:
-#     skip_default_values = True
+  This converter respects the following settings:
 
-#     if not isinstance(ctx.value, type_.schema.python_type):
-#       raise ctx.type_error(expected=type_.schema.python_type)
+  * #Alias
+  * #SerializeDefaults
+  """
 
-#     groups: t.Dict[str, t.Dict[str, t.Any]] = {}
-#     for field in type_.schema.fields.values():
-#       if not field.flat:
-#         continue
-#       value = getattr(ctx.value, field.name)
-#       if skip_default_values and value == field.get_default():
-#         continue
-#       groups[field.name] = ctx.push(field.type, value, field.name, field).convert()
+  def __init__(
+    self,
+    direction: Direction,
+    json_mapping_type: t.Type[collections.abc.MutableMapping] = dict,
+    convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
+    serialize_defaults: bool = True,
+  ) -> None:
+    self.direction = direction
+    self.json_mapping_type = json_mapping_type
+    self.convert_to_schema = convert_to_schema
+    self.serialize_defaults = serialize_defaults
 
-#     result: t.Dict[str, t.Any] = {}
-#     flattened = type_.schema.flattened()
-#     for name, flat_field in flattened.fields.items():
-#       alias = (flat_field.field.aliases or [name])[0]
-#       if not flat_field.group:
-#         value = getattr(ctx.value, name)
-#         if skip_default_values and value != flat_field.field.get_default():
-#           result[alias] = ctx.push(flat_field.field.type, value, name, flat_field.field).convert()
-#       elif alias in groups[flat_field.group or '$']:
-#         # May not be contained if we skipped default values.
-#         result[alias] = groups[flat_field.group or '$'][alias]
+  @staticmethod
+  def _get_alias_setting(ctx: Context, field_name: str) -> Alias:
+    return ctx.get_setting(Alias) or Alias(field_name)
 
-#     # Explode values from the remainder field into the result.
-#     if flattened.remainder_field:
-#       assert isinstance(flattened.remainder_field.type, MapType)
-#       remnants = ctx.push(flattened.remainder_field.type, getattr(ctx.value, flattened.remainder_field.name), None, flattened.remainder_field).convert()
-#       for key, value in remnants.items():
-#         if key in result:
-#           raise ctx.error(f'key {key!r} of remainder field {flattened.remainder_field.name!r} cannot be exploded '
-#             'into resulting JSON object because of a conflict.')
-#         result[key] = value
+  def serialize(self, ctx: Context, schema: Schema) -> t.MutableMapping[str, t.Any]:
+    try:
+      is_instance = isinstance(ctx.value, schema.type)
+    except TypeError:
+      # The type may not support isinstance() checks (e.g. typing.TypedDict).
+      pass
+    else:
+      if not is_instance:
+        raise ConversionError.expected(ctx, schema.type)
 
-#     return result
+    serialize_defaults = (ctx.get_setting(SerializeDefaults) or SerializeDefaults(self.serialize_defaults)).enabled
+    result = self.json_mapping_type()
 
-#   def _deserialize(self, ctx: Context) -> t.Any:
-#     enable_unknowns = ctx.settings.get(A.enable_unknowns)
-#     typeinfo = ctx.get_annotation(A.typeinfo)
+    def _get_field_value(field_name: str, field: Field) -> t.Any:
+      if isinstance(ctx.value, t.Mapping):
+        return ctx.value[field_name]  # TODO (@NiklasRosenstein): Respect non-required fields
+      else:
+        return getattr(ctx.value, field_name)
 
-#     if not isinstance(ctx.value, t.Mapping):
-#       raise ctx.type_error(expected=t.Mapping)
+    for field_name, field in schema.fields.items():
+      field_ctx = ctx.spawn(_get_field_value(field_name, field), field.datatype, field_name)
+      value = field_ctx.convert()
+      if field.flattened:
+        if not isinstance(value, t.Mapping):
+          raise ConversionError(
+            field_ctx,
+            f'field {field_name!r} is flattened but its serialized form is not '
+            f'a mapping (got {type(value).__name__!r})',
+          )
+        assert result.keys().isdisjoint(value.keys()), result.keys() & value.keys()
+        result.update(value)
+      else:
+        if serialize_defaults or not field.has_default() or field_ctx.value != field.get_default():
+          alias = self._get_alias_setting(ctx, field_name).aliases[0]
+          result[alias] = value
 
-#     groups: t.Dict[str, t.Dict[str, t.Any]] = {'$': {}}
+    # TODO (@NiklasRosenstein): Support flattening a "remainder" field
 
-#     # Collect keys into groups.
-#     used_keys: t.Set[str] = set()
-#     flattened = type_.schema.flattened()
-#     for name, flat_field in flattened.fields.items():
-#       aliases = flat_field.field.aliases or [name]
-#       for alias in aliases:
-#         if alias in ctx.value:
-#           value = ctx.value[alias]
-#           groups.setdefault(flat_field.group or '$', {})[name] = \
-#             ctx.push(flat_field.field.type, value, name, flat_field.field).convert()
-#           used_keys.add(alias)
-#           break
+    return result
 
-#     # Move captured groups into the root group ($).
-#     for group, values in groups.items():
-#       if group == '$': continue
-#       field = type_.schema.fields[group]
-#       groups['$'][group] = ctx.push(field.type, values, group, field).convert()
+  def deserialize(self, ctx: Context, schema: Schema) -> t.Any:
+    if not isinstance(ctx.value, t.Mapping):
+      raise ConversionError.expected(ctx, collections.abc.Mapping)
 
-#     # Collect unknown fields into the remainder field if there is one.
-#     if flattened.remainder_field:
-#       assert isinstance(flattened.remainder_field.type, MapType)
-#       remanants = {k: ctx.value[k] for k in ctx.value.keys() - used_keys}
-#       groups['$'][flattened.remainder_field.name] = ctx.push(flattened.remainder_field.type, remanants, None, flattened.remainder_field).convert()
-#       used_keys.update(ctx.value.keys())
+    source = ctx.value
+    used_keys = set()
 
-#     if not enable_unknowns or (enable_unknowns and enable_unknowns.callback):
-#       unused_keys = ctx.value.keys() - used_keys
-#       if unused_keys and not enable_unknowns:
-#         raise ConversionError(f'unknown keys found while deserializing {ctx.type}: {unused_keys}', ctx.location)
-#       elif unused_keys and enable_unknowns and enable_unknowns.callback:
-#         enable_unknowns.callback(ctx, set(unused_keys))
+    def _extract_field(result: t.Dict[str, t.Any], field_name: str, field: Field) -> t.Dict[str, t.Any]:
+      aliases = self._get_alias_setting(ctx, field_name).aliases
+      for alias in aliases:
+        if alias in source:
+          result[field_name] = source[alias]
+          used_keys.add(alias)
+          break
+      else:
+        if field.required:
+          other_aliases = f' (or {", ".join(map(repr, aliases[1:]))})' if len(aliases) > 1 else ''
+          raise ConversionError(ctx, f'missing required field: {aliases[0]!r}{other_aliases}')
+      return result
 
-#     try:
-#       return ((typeinfo.deserialize_as if typeinfo else None) or type_.schema.python_type)(**groups['$'])
-#     except TypeError as exc:
-#       raise ctx.error(str(exc))
+    def _extract_fields(fields: t.Dict[str, Field]) -> t.Dict[str, t.Any]:
+      result: t.Dict[str, t.Any] = {}
+      for field_name, field in fields.items():
+        _extract_field(result, field_name, field)
+      return result
 
-#   def convert(self, ctx: Context) -> t.Any:
-#     assert isinstance(ctx.type, ObjectType)
+    result = {}
+    expanded = get_fields_expanded(schema)
+    for field_name, field in schema.fields.items():
+      if field.flattened:
+        assert field_name in expanded, field_name
+        value = ctx.spawn(_extract_fields(expanded[field_name]), field.datatype, field_name).convert()
+      else:
+        container = _extract_field({}, field_name, field)
+        if not container:
+          assert not field.required
+          continue
+        value = ctx.spawn(container[field_name], field.datatype, field_name).convert()
+      result[field_name] = value
 
-#     try:
-#       return with_custom_json_converter.apply_converter(ctx.type.schema.python_type, ctx)
-#     except ConversionNotApplicable:
-#       pass
+    # TODO(@NiklasRosenstein): Support remainder field.
+    # TODO(@NiklasRosenstein): Support deserializing as a type different than what is defined in the schema.
+    # TODO(@NiklasRosenstein): Option to not raise an error upon encountering unknown fields.
 
-#     if ctx.direction == Direction.serialize:
-#       return self._serialize(ctx, ctx.type)
-#     elif ctx.direction == Direction.deserialize:
-#       return self._deserialize(ctx, ctx.type)
-#     assert False
+    unused_keys = source.keys() - used_keys
+    if unused_keys:
+      s = 's' if len(unused_keys) != 1 else ''
+      raise ConversionError(ctx, f'encountered unknown field{s}: {unused_keys}')
+
+    return schema.constructor(**result)
+
+  def convert(self, ctx: Context) -> t.Any:
+    try:
+      schema = self.convert_to_schema(ctx.datatype)
+    except ValueError as exc:
+      raise NotImplementedError(str(exc))
+
+    if self.direction == Direction.SERIALIZE:
+      return self.serialize(ctx, schema)
+    else:
+      return self.deserialize(ctx, schema)
+
+
+class StringifyConverter(Converter):
+  """ A useful helper converter that matches on a given type or its subclasses and converts them to a string for
+  serialization and deserializes them from a string using the type's constructor. """
+
+  def __init__(self, direction: Direction, type_: t.Type) -> None:
+    assert isinstance(type_, type), type_
+    self.direction = direction
+    self.type_ = type_
+
+  def convert(self, ctx: Context) -> t.Any:
+    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, self.type_):
+      raise NotImplementedError
+
+    if self.direction == Direction.DESERIALIZE:
+      if not isinstance(ctx.value, str):
+        raise ConversionError.expected(ctx, str)
+      try:
+        return self.type_(ctx.value)
+      except (TypeError, ValueError) as exc:
+        raise ConversionError(ctx, str(exc))
+
+    else:
+      if not isinstance(ctx.value, ctx.datatype.type):
+        raise ConversionError.expected(ctx, ctx.datatype.type)
+      return str(ctx.value)
 
 
 class UnionConverter(Converter):
@@ -639,30 +693,3 @@ class UnionConverter(Converter):
         raise ConversionError(ctx, f'unsupported union style: {style!r}')
 
     return result
-
-
-class StringifyConverter(Converter):
-  """ A useful helper converter that matches on a given type or its subclasses and converts them to a string for
-  serialization and deserializes them from a string using the type's constructor. """
-
-  def __init__(self, direction: Direction, type_: t.Type) -> None:
-    assert isinstance(type_, type), type_
-    self.direction = direction
-    self.type_ = type_
-
-  def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, self.type_):
-      raise NotImplementedError
-
-    if self.direction == Direction.DESERIALIZE:
-      if not isinstance(ctx.value, str):
-        raise ConversionError.expected(ctx, str)
-      try:
-        return self.type_(ctx.value)
-      except (TypeError, ValueError) as exc:
-        raise ConversionError(ctx, str(exc))
-
-    else:
-      if not isinstance(ctx.value, ctx.datatype.type):
-        raise ConversionError.expected(ctx, ctx.datatype.type)
-      return str(ctx.value)

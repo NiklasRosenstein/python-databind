@@ -1,4 +1,5 @@
 
+import dataclasses
 import datetime
 import decimal
 import enum
@@ -9,10 +10,10 @@ import typing_extensions as te
 import pytest
 from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
-from databind.core.settings import Alias, Strict, Union
+from databind.core.settings import Alias, Flattened, Strict, Union
 from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
-    DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter, \
-    UnionConverter
+    DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, \
+    StringifyConverter, UnionConverter
 from databind.json.direction import Direction
 from nr.util.date import duration
 
@@ -242,3 +243,44 @@ def test_union_converter_flat_plain_types_not_supported(direction):
     with pytest.raises(ConversionError) as excinfo:
       assert mapper.convert(42, th)
     assert 'The Union.FLAT style is not supported for plain member types' in str(excinfo.value)
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_schema_converter(direction):
+  mapper = make_mapper([SchemaConverter(direction), PlainDatatypeConverter(direction)])
+
+  class Dict1(te.TypedDict):
+    a: int
+    b: str
+
+  @dataclasses.dataclass
+  class Class2:
+    a: te.Annotated[Dict1, Flattened()]  # The field "a" can be shadowed by a field of its own members
+    c: int
+
+  class Dict3(te.TypedDict):
+    d: te.Annotated[Class2, Flattened()]
+
+  @dataclasses.dataclass
+  class Class4:
+    f: te.Annotated[Dict3, Flattened()]
+
+  obj = Class4(Dict3(d=Class2(Dict1(a=42, b='Universe'), c=99)))
+  serialized = {'a': 42, 'b': 'Universe', 'c': 99}
+
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(obj, Class4) == serialized
+  elif direction == Direction.DESERIALIZE:
+    assert mapper.convert(serialized, Class4) == obj
+
+    # Test an unused key.
+    serialized = {'a': 42, 'b': 'Universe', 'c': 99, 'd': 42}
+    with pytest.raises(ConversionError) as excinfo:
+      mapper.convert(serialized, Class4)
+    assert str(excinfo.value).splitlines()[0] == "encountered unknown field: {'d'}"
+
+    # Test a missing key.
+    serialized = {'a': 42, 'b': 'Universe'}
+    with pytest.raises(ConversionError) as excinfo:
+      mapper.convert(serialized, Class4)
+    assert str(excinfo.value).splitlines()[0] == "missing required field: 'c'"

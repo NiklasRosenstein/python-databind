@@ -299,6 +299,13 @@ class Strict(BooleanSetting):
   handling is disabled). """
 
 
+class SerializeDefaults(BooleanSetting):
+  """ Control whether default values are to be encoded in the serialized form of a structure. The default behaviour
+  is up to the serializer implementation, though we consider it good practices to include values that match the default
+  value of a field by default. However, using the setting defaults to #enabled having a value of `True` due to how the
+  name of the setting appears assertive of the fact that the instance indicates the setting is enabled. """
+
+
 @dataclasses.dataclass
 class Precision(Setting):
   """ A setting to describe the precision for #decimal.Decimal fields. """

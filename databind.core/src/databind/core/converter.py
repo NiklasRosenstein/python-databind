@@ -89,3 +89,11 @@ class NoMatchingConverter(ConversionError):
   def __init__(self, context: Context, errors: t.List[t.Tuple[Converter, Exception]]) -> None:
     super().__init__(context, f'no applicable converter found for {context.datatype}')
     self.errors = errors
+
+  def __str__(self) -> str:
+    message = super().__str__()
+    if self.errors:
+      message += '\nThe following errors have been reported by converters:'
+      for converter, exc in self.errors:
+        message += f'\n  {converter}: {exc}'
+    return message
