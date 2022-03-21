@@ -16,25 +16,25 @@ class JsonModule(Module):
 
     import uuid
     import pathlib
+    from nr.util.date import duration
     from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
-        DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, \
-        StringifyConverter
+        EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, \
+        StringifyConverter, UnionConverter
 
     self.register(AnyConverter())
     self.register(CollectionConverter(direction))
     self.register(DatetimeConverter(direction))
     self.register(DecimalConverter(direction))
-    self.register(DurationConverter(direction))
     self.register(EnumConverter(direction))
     self.register(MappingConverter(direction))
     self.register(OptionalConverter())
     self.register(PlainDatatypeConverter(direction))
+    self.register(SchemaConverter(direction))
     self.register(StringifyConverter(direction, uuid.UUID))
     self.register(StringifyConverter(direction, pathlib.Path))
     self.register(StringifyConverter(direction, pathlib.PurePath))
-
-    # self.register(UnionConverter(direction))
-    # self.register(DataclassConverter(direction))
+    self.register(StringifyConverter(direction, duration, duration.parse))
+    self.register(UnionConverter(direction))
 
   @staticmethod
   def serializing() -> JsonModule:

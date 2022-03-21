@@ -4,9 +4,7 @@ import collections.abc
 import datetime
 import decimal
 import enum
-from os import unsetenv
 import typing as t
-from unicodedata import east_asian_width
 
 import typeapi
 from databind.core.context import Context
@@ -14,6 +12,7 @@ from databind.core.converter import Converter, ConversionError
 from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
 from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_highest_setting
 from databind.json.direction import Direction
+from nr.util.generic import T
 
 
 def _int_lossless(v: float) -> int:
@@ -149,31 +148,6 @@ class DecimalConverter(Converter):
       if not isinstance(ctx.value, decimal.Decimal):
         raise ConversionError.expected(ctx, decimal.Decimal, type(ctx.value))
       return str(ctx.value)
-
-
-class DurationConverter(Converter):
-  """ A converter for #nr.util.date.duration in ISO 8601 duration format. """
-
-  def __init__(self, direction: Direction) -> None:
-    self.direction = direction
-
-  def convert(self, ctx: Context) -> t.Any:
-    from nr.util.date import duration
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, duration):
-      raise NotImplementedError
-
-    if self.direction == Direction.SERIALIZE:
-      if not isinstance(ctx.value, duration):
-        raise ConversionError.expected(ctx, duration)
-      return str(ctx.value)
-
-    else:
-      if not isinstance(ctx.value, str):
-        raise ConversionError.expected(ctx, str)
-      try:
-        return duration.parse(ctx.value)
-      except ValueError as exc:
-        raise ConversionError(ctx, str(exc))
 
 
 class EnumConverter(Converter):
@@ -501,10 +475,18 @@ class StringifyConverter(Converter):
   """ A useful helper converter that matches on a given type or its subclasses and converts them to a string for
   serialization and deserializes them from a string using the type's constructor. """
 
-  def __init__(self, direction: Direction, type_: t.Type) -> None:
+  def __init__(
+    self,
+    direction: Direction,
+    type_: t.Type[T],
+    parser: t.Optional[t.Callable[[str], T]] = None,
+    formatter: t.Callable[[T], str] = str,
+  ) -> None:
     assert isinstance(type_, type), type_
     self.direction = direction
     self.type_ = type_
+    self.parser = t.cast(t.Callable[[str], T], parser or type_)
+    self.formatter = formatter
 
   def convert(self, ctx: Context) -> t.Any:
     if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, self.type_):
@@ -514,14 +496,14 @@ class StringifyConverter(Converter):
       if not isinstance(ctx.value, str):
         raise ConversionError.expected(ctx, str)
       try:
-        return self.type_(ctx.value)
+        return self.parser(ctx.value)
       except (TypeError, ValueError) as exc:
         raise ConversionError(ctx, str(exc))
 
     else:
       if not isinstance(ctx.value, ctx.datatype.type):
         raise ConversionError.expected(ctx, ctx.datatype.type)
-      return str(ctx.value)
+      return self.formatter(ctx.value)
 
 
 class UnionConverter(Converter):

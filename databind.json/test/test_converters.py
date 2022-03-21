@@ -12,8 +12,8 @@ from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
 from databind.core.settings import Alias, Flattened, SerializeDefaults, Strict, Union
 from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
-    DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, \
-    StringifyConverter, UnionConverter
+    EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, StringifyConverter, \
+    UnionConverter
 from databind.json.direction import Direction
 from nr.util.date import duration
 
@@ -133,7 +133,7 @@ def test_datetime_converter(direction: Direction):
 
 @pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_duration_converter(direction: Direction):
-  mapper = make_mapper([DurationConverter(direction)])
+  mapper = make_mapper([StringifyConverter(direction, duration, duration.parse)])
 
   tests = [
     (duration(2, 1, 4, 0, 3), 'P2Y1M4WT3H'),
