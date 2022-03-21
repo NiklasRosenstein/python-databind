@@ -1,7 +1,7 @@
 
 from __future__ import annotations
 
-from databind.core.module import Module
+from databind.core.converter import Module
 from databind.json.direction import Direction
 
 

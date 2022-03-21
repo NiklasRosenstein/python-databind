@@ -9,7 +9,6 @@ import typing_extensions as te
 import pytest
 from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
-from databind.core.module import Module
 from databind.core.settings import Alias, Strict, Union
 from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
     DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, StringifyConverter, \
@@ -19,11 +18,9 @@ from nr.util.date import duration
 
 
 def make_mapper(converters: t.List[Converter]) -> ObjectMapper:
-  module = Module('testing')
-  for converter in converters:
-    module.register(converter)
   mapper = ObjectMapper()
-  mapper.add_module(module)
+  for converter in converters:
+    mapper.module.register(converter)
   return mapper
 
 

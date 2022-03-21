@@ -5,8 +5,7 @@ import typing as t
 import typeapi
 
 if t.TYPE_CHECKING:
-  from databind.core.context import Context, Location
-  from databind.core.module import Module
+  from databind.core.context import Location
   from databind.core.settings import Setting, Settings, SettingsProvider
 
 
@@ -15,29 +14,11 @@ class ObjectMapper:
   a matching #Converter implementation. """
 
   def __init__(self, settings: t.Optional[Settings] = None) -> None:
+    from databind.core.converter import Module
     from databind.core.settings import Settings
     assert isinstance(settings, (type(None), Settings)), settings
+    self.module = Module('ObjectMapper.module')
     self.settings = settings or Settings()
-    self.modules: t.List[Module] = []
-
-  def add_module(self, module: Module) -> None:
-    """ Add a module to the mapper. """
-
-    from databind.core.module import Module
-    assert isinstance(module, Module), module
-    self.modules.append(module)
-
-  def _convert_context(self, ctx: Context) -> t.Any:
-    from databind.core.converter import NoMatchingConverter
-
-    for module in self.modules:
-      for converter in module.converters:
-        try:
-          return converter.convert(ctx)
-        except NotImplementedError:
-          pass
-
-    raise NoMatchingConverter(ctx)
 
   def convert(
     self,
@@ -68,5 +49,5 @@ class ObjectMapper:
       datatype = typeapi.of(datatype)
     if isinstance(settings, list):
       settings = Settings(self.settings, global_settings=settings)
-    context = Context(None, value, datatype, settings or self.settings, Context.ROOT, location or Location.EMPTY, self._convert_context)
+    context = Context(None, value, datatype, settings or self.settings, Context.ROOT, location or Location.EMPTY, self.module.convert)
     return context.convert()

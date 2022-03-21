@@ -24,9 +24,37 @@ class Converter(abc.ABC):
         recursively continue the conversion process for sub values.
     Raises:
       NotImplementedError: If the converter does not support the conversion for the given context.
+      NoMatchingConverter: If the converter is delegating to other converters, to point out that none
+        of its delegates can convert the value.
     Returns:
       The new value.
     """
+
+
+class Module(Converter):
+  """ A module is a collection of #Converter#s. """
+
+  def __init__(self, name: str) -> None:
+    self.name = name
+    self.converters: t.List[Converter] = []
+
+  def __repr__(self) -> str:
+    return f'Module({self.name!r})'
+
+  def register(self, converter: Converter) -> None:
+    assert isinstance(converter, Converter), converter
+    self.converters.append(converter)
+
+  def convert(self, ctx: Context) -> t.Any:
+    errors: t.List[t.Tuple[Converter, Exception]] = []
+    for converter in self.converters:
+      try:
+        return converter.convert(ctx)
+      except NotImplementedError as exc:
+        errors.append((converter, exc))
+      except NoMatchingConverter as exc:
+        errors.extend(exc.errors)
+    raise NoMatchingConverter(ctx, errors)
 
 
 class ConversionError(Exception):
@@ -58,5 +86,6 @@ class ConversionError(Exception):
 class NoMatchingConverter(ConversionError):
   """ If no converter matched to convert the value and datatype in the context. """
 
-  def __init__(self, context: Context) -> None:
+  def __init__(self, context: Context, errors: t.List[t.Tuple[Converter, Exception]]) -> None:
     super().__init__(context, f'no applicable converter found for {context.datatype}')
+    self.errors = errors
