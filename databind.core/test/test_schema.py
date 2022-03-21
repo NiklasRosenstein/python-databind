@@ -4,9 +4,82 @@ import typing as t
 import typing_extensions as te
 
 import typeapi
-from databind.core.settings import Required
-from databind.core.schema import Field, Schema, convert_dataclass_to_schema, convert_typed_dict_to_schema
+from databind.core.settings import Flattened, Required
+from databind.core.schema import Field, Schema, convert_dataclass_to_schema, convert_to_schema, \
+    convert_typed_dict_to_schema, get_fields_expanded
 from nr.util.generic import T, U
+
+
+def test_convert_to_schema():
+  # Test dataclass detection
+  @dataclasses.dataclass
+  class A:
+    a: int
+    b: str
+  assert convert_to_schema(typeapi.of(A)) == Schema({
+    'a': Field(typeapi.of(int)),
+    'b': Field(typeapi.of(str)),
+  }, A)
+  assert convert_to_schema(typeapi.of(te.Annotated[A, 42])) == Schema({
+    'a': Field(typeapi.of(int)),
+    'b': Field(typeapi.of(str)),
+  }, A, [42])
+
+  # Test typed dict detection
+  class Movie(te.TypedDict):
+    name: str
+    year: int
+  assert convert_to_schema(typeapi.of(Movie)) == Schema({
+    'name': Field(typeapi.of(str)),
+    'year': Field(typeapi.of(int)),
+  }, Movie)
+
+
+def test_get_fields_expanded():
+  class Dict1(te.TypedDict):
+    a: int
+    b: str
+
+  @dataclasses.dataclass
+  class Class2:
+    a: te.Annotated[Dict1, Flattened()]  # The field "a" can be shadowed by a field of its own members
+    c: int
+
+  class Dict3(te.TypedDict):
+    d: te.Annotated[Class2, Flattened()]
+
+  @dataclasses.dataclass
+  class Class4:
+    f: te.Annotated[Dict3, Flattened()]
+
+  schema = convert_to_schema(typeapi.of(Dict1))
+  assert get_fields_expanded(schema) == {}
+
+  schema = convert_to_schema(typeapi.of(Class2))
+  assert get_fields_expanded(schema) == {
+    'a': {
+      'a': Field(typeapi.of(int)),
+      'b': Field(typeapi.of(str)),
+    }
+  }
+
+  schema = convert_to_schema(typeapi.of(Dict3))
+  assert get_fields_expanded(schema) == {
+    'd': {
+      'a': Field(typeapi.of(int)),
+      'b': Field(typeapi.of(str)),
+      'c': Field(typeapi.of(int)),
+    }
+  }
+
+  schema = convert_to_schema(typeapi.of(Class4))
+  assert get_fields_expanded(schema) == {
+    'f': {
+      'a': Field(typeapi.of(int)),
+      'b': Field(typeapi.of(str)),
+      'c': Field(typeapi.of(int)),
+    }
+  }
 
 
 def test_convert_dataclass_to_schema_simple():

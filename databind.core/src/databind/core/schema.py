@@ -12,6 +12,9 @@ if sys.version_info[:2] <= (3, 8):
 else:
   from types import GenericAlias
 
+__all__ = ['Field', 'Schema', 'convert_to_schema', 'convert_dataclass_to_schema', 'convert_typed_dict_to_schema',
+  'get_fields_expanded']
+
 
 @dataclasses.dataclass
 class Field:
@@ -49,6 +52,40 @@ class Schema:
   #: the deserialized field values. Fields that are not present in the source payload and a that do not have a default
   #: value will not be present in the passed dictionary.
   constructor: t.Callable[[t.Dict[str, t.Any]], t.Any]
+
+  #: Annotation metadata that goes with the schema, possibly derived from a #typeapi.Annotated hint or the underlying
+  #: Python type object.
+  annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
+
+
+def convert_to_schema(hint: typeapi.Hint) -> Schema:
+  """ Convert the given type hint to a #Schema.
+
+  The function delegates to #convert_dataclass_to_schema() or #convert_typed_dict_to_schema().
+
+  Arguments:
+    hint: The type hint to convert. If it is a #typeapi.Annotated hint, it will be unwrapped.
+  Raises:
+    ValueError: If the type hint is not supported.
+  """
+
+  assert isinstance(hint, typeapi.Hint), hint
+  original_hint = hint
+
+  annotations = []
+  if isinstance(hint, typeapi.Annotated):
+    annotations = list(hint.metadata)
+    hint = hint.wrapped
+
+  if isinstance(hint, typeapi.Type) and dataclasses.is_dataclass(hint.type):
+    schema = convert_dataclass_to_schema(hint.type)
+  elif isinstance(hint, typeapi.Type) and typeapi.utils.is_typed_dict(hint.type):
+    schema = convert_typed_dict_to_schema(hint.type)
+  else:
+    raise ValueError(f'cannot be converted to a schema: {original_hint}')
+
+  schema.annotations.extend(annotations)
+  return schema
 
 
 def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, typeapi.Type]) -> Schema:
@@ -172,7 +209,12 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
     datatype = typeapi.of(annotations[key])
     has_default = hasattr(typed_dict, key)
     required = _is_required(datatype, False if has_default else typed_dict.__total__)
-    fields[key] = Field(datatype, required, getattr(typed_dict, key) if has_default else NotSet.Value)
+    fields[key] = Field(
+      datatype=datatype,
+      required=required,
+      default=getattr(typed_dict, key) if has_default else NotSet.Value,
+      flattened=_is_flat(datatype, False),
+    )
   return Schema(fields, t.cast(t.Callable, typed_dict))
 
 
@@ -194,3 +236,63 @@ def _is_flat(datatype: typeapi.Hint, default: bool) -> bool:
     return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Flattened)) or Flattened(default)).enabled
   else:
     return default
+
+
+def get_fields_expanded(
+  schema: Schema,
+  convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
+) -> t.Dict[str, t.Dict[str, Field]]:
+  """ Returns a dictionary that contains an entry for each flattened field in the schema, mapping to another
+  dictionary that contains _all_ fields expanded from the flattened field's sub-schema.
+
+  Given a schema like the following example, this function returns something akin to the below.
+
+  === "Schema"
+
+      ```
+      Schema1:
+        a: int
+        b: Schema2, flattened=True
+
+      Schema2:
+        c: str
+        d: Schema3, flattened=True
+
+      Schema3:
+        e: int
+      ```
+
+  === "Result"
+
+      ```py
+      {
+        "b": {
+          "c": Field(str),
+          "e": Field(int)
+        }
+      }
+
+  Arguments:
+    schema: The schema to compile the expanded fields for.
+    convert_to_schema: A function that accepts a #typeapi.Hint and converts it to a schema.
+      Defaults to the #convert_to_schema() function.
+
+  !!! note
+
+      The top-level dictionary returned by this function contains _only_ those fields that are
+      flattened and should be "composed" of other fields.
+  ```
+  """
+
+  result = {}
+  for field_name, field in schema.fields.items():
+    if field.flattened:
+      field_schema = convert_to_schema(field.datatype)
+      result[field_name] = {
+        **{k: v for k, v in field_schema.fields.items() if not v.flattened},
+        **{k: v for sf in get_fields_expanded(field_schema).values() for k, v in sf.items()},
+      }
+      for sub_field_name in result[field_name]:
+        if sub_field_name in schema.fields and sub_field_name != field_name:
+          raise RuntimeError(f'field {sub_field_name!r} occurs multiple times')
+  return result
