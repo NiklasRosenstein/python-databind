@@ -190,7 +190,7 @@ def get_highest_setting(settings: t.Iterable[T_Setting]) -> T_Setting | None:
 def get_class_settings(type_: t.Type, setting_type: t.Type[T_ClassDecoratorSetting]) -> t.Iterable[T_ClassDecoratorSetting]:
   """ Returns all matching settings on *type_*. """
 
-  for item in getattr(type, '__databind_settings__', []):
+  for item in getattr(type_, '__databind_settings__', []):
     if isinstance(item, setting_type):
       yield item
 
