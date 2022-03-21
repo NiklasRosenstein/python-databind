@@ -10,7 +10,7 @@ import typing_extensions as te
 import pytest
 from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
-from databind.core.settings import Alias, Flattened, Strict, Union
+from databind.core.settings import Alias, Flattened, SerializeDefaults, Strict, Union
 from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
     DurationConverter, EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, \
     StringifyConverter, UnionConverter
@@ -250,7 +250,7 @@ def test_schema_converter(direction):
   mapper = make_mapper([SchemaConverter(direction), PlainDatatypeConverter(direction)])
 
   class Dict1(te.TypedDict):
-    a: int
+    a: int = 42
     b: str
 
   @dataclasses.dataclass
@@ -270,6 +270,10 @@ def test_schema_converter(direction):
 
   if direction == Direction.SERIALIZE:
     assert mapper.convert(obj, Class4) == serialized
+
+    # Test with serializing defaults disabled.
+    assert mapper.convert(obj, Class4, settings=[SerializeDefaults(False)]) == {'b': 'Universe', 'c': 99}
+
   elif direction == Direction.DESERIALIZE:
     assert mapper.convert(serialized, Class4) == obj
 
