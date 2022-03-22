@@ -157,6 +157,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
         if field.name in type_annotations[base] and field.name not in field_origins:
           field_origins[field.name] = base
 
+  annotations = typeapi.get_annotations(dataclass_type, include_bases=True)
   fields: t.Dict[str, Field] = {}
   for field in dataclasses.fields(dataclass_type):
     if not field.init:
@@ -164,13 +165,13 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
       # exclude it from the definition of the type for de-/serializing.
       continue
 
-    datatype = typeapi.of(field.type)
+    datatype = typeapi.of(annotations[field.name])
     default = NotSet.Value if field.default == MISSING else field.default
     default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
     required = _is_required(datatype, default == NotSet.Value and default_factory == NotSet.Value)
 
     # Infuse type parameters, if applicable. We may not have type parameters for the field's origin type if that
-    # origion is not a generic type.
+    # origin is not a generic type.
     field_origin = field_origins[field.name]
     datatype = typeapi.infuse_type_parameters(datatype, type_parameters.get(field_origin, {}))
 

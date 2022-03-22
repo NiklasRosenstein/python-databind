@@ -93,6 +93,21 @@ def test_convert_dataclass_to_schema_simple():
   }, A, A)
 
 
+def test_convert_dataclass_with_forward_ref():
+  @dataclasses.dataclass
+  class A:
+    v: int
+  @dataclasses.dataclass
+  @typeapi.scoped
+  class B:
+    a: 'A'
+    b: 'te.Annotated[A, 42]'
+  assert convert_dataclass_to_schema(B) == Schema({
+    'a': Field(typeapi.of(A)),
+    'b': Field(typeapi.of(te.Annotated[A, 42])),
+  }, B, B)
+
+
 def test_convert_dataclass_to_schema_with_defaults():
   @dataclasses.dataclass
   class A:

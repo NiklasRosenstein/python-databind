@@ -8,6 +8,7 @@ import typing as t
 import typing_extensions as te
 
 import pytest
+import typeapi
 from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
 from databind.core.settings import Alias, Flattened, SerializeDefaults, Strict, Union
@@ -255,8 +256,9 @@ def test_schema_converter(direction):
     b: str
 
   @dataclasses.dataclass
+  @typeapi.scoped  # Need this because we're defining the class with a forward reference in a function
   class Class2:
-    a: te.Annotated[Dict1, Flattened()]  # The field "a" can be shadowed by a field of its own members
+    a: te.Annotated['Dict1', Flattened()]  # The field "a" can be shadowed by a field of its own members
     c: int
 
   class Dict3(te.TypedDict):
