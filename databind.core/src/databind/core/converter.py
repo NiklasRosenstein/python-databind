@@ -95,5 +95,6 @@ class NoMatchingConverter(ConversionError):
     if self.errors:
       message += '\nThe following errors have been reported by converters:'
       for converter, exc in self.errors:
-        message += f'\n  {converter}: {exc}'
+        if str(exc):
+          message += f'\n  {converter}: {exc}'
     return message
