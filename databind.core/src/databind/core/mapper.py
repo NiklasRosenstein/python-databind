@@ -55,7 +55,17 @@ class ObjectMapper:
       datatype = typeapi.of(datatype)
     if isinstance(settings, list):
       settings = Settings(self.settings, global_settings=settings)
-    context = Context(None, value, datatype, settings or self.settings, Context.ROOT, location or Location.EMPTY, self.module.convert)
+
+    context = Context(
+      parent=None,
+      value=value,
+      datatype=datatype,
+      settings=settings or self.settings,
+      key=Context.ROOT,
+      location=location or Location.EMPTY,
+      convert_func=self.module.convert,
+    )
+
     return context.convert()
 
 
@@ -83,6 +93,8 @@ class BiObjectMapper(t.Generic[T]):
     settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
   ) -> T:
     """ Serialize *value* according to the its *datatype*. """
+
+    from databind.core.context import Location
     return self.serializer.convert(value, datatype, Location(filename, None, None), settings)
 
   def deserialize(
@@ -93,4 +105,6 @@ class BiObjectMapper(t.Generic[T]):
     settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
   ) -> T:
     """ Deserialize *value* according to the its *datatype*. """
+
+    from databind.core.context import Location
     return self.deserializer.convert(value, datatype, Location(filename, None, None), settings)

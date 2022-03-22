@@ -207,6 +207,16 @@ def get_class_setting(type_: t.Type, setting_type: t.Type[T_ClassDecoratorSettin
   return get_highest_setting(get_class_settings(type_, setting_type))
 
 
+def get_annotation_setting(type_: typeapi.Hint, setting_type: t.Type[T_Setting]) -> T_Setting | None:
+  """ Returns the first setting of the given *setting_type* from the given type hint from inspecting the metadata
+  of the #typeapi.Annotated. Returns `None` if no such setting exists or if *type_* is not an #typeapi.Annotated
+  instance. """
+
+  if isinstance(type_, typeapi.Annotated):
+    return get_highest_setting(s for s in type_.metadata if isinstance(s, setting_type))
+  return None
+
+
 @dataclasses.dataclass
 class BooleanSetting(Setting):
   """ Base class for boolean settings. """

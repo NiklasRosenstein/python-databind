@@ -241,21 +241,13 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
 def _is_required(datatype: typeapi.Hint, default: bool) -> bool:
   """ If *datatype* is a #typeapi.Annotated instance, it will look for a #Required settings instance and returns
   that instances #Required.enabled value. Otherwise, it returns *default*. """
-
-  from databind.core.settings import get_highest_setting, Required
-
-  if isinstance(datatype, typeapi.Annotated):
-    return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Required)) or Required(default)).enabled
-  else:
-    return default
+  from databind.core.settings import get_annotation_setting, Required
+  return (get_annotation_setting(datatype, Required) or Required(default)).enabled
 
 
 def _is_flat(datatype: typeapi.Hint, default: bool) -> bool:
-  from databind.core.settings import get_highest_setting, Flattened
-  if isinstance(datatype, typeapi.Annotated):
-    return (get_highest_setting(v for v in datatype.metadata if isinstance(v, Flattened)) or Flattened(default)).enabled
-  else:
-    return default
+  from databind.core.settings import get_annotation_setting, Flattened
+  return (get_annotation_setting(datatype, Flattened) or Flattened(default)).enabled
 
 
 def get_fields_expanded(
