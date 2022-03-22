@@ -15,6 +15,7 @@ from databind.json.converters import AnyConverter, CollectionConverter, Datetime
     EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, StringifyConverter, \
     UnionConverter
 from databind.json.direction import Direction
+from databind.json.settings import ExtraKeys
 from nr.util.date import duration
 
 
@@ -277,11 +278,14 @@ def test_schema_converter(direction):
   elif direction == Direction.DESERIALIZE:
     assert mapper.convert(serialized, Class4) == obj
 
-    # Test an unused key.
+    # Test an extra key.
     serialized = {'a': 42, 'b': 'Universe', 'c': 99, 'd': 42}
     with pytest.raises(ConversionError) as excinfo:
       mapper.convert(serialized, Class4)
     assert str(excinfo.value).splitlines()[0] == "encountered extra keys: {'d'}"
+
+    # Test with extra key, but allowed.
+    mapper.convert(serialized, Class4, settings=[ExtraKeys(True)])
 
     # Test a missing key.
     serialized = {'a': 42, 'b': 'Universe'}
