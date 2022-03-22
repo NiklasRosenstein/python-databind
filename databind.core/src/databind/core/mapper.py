@@ -20,6 +20,11 @@ class ObjectMapper:
     self.module = Module('ObjectMapper.module')
     self.settings = settings or Settings()
 
+  def copy(self) -> ObjectMapper:
+    new = type(self)(self.settings.copy())
+    new.module.converters.extend(self.module.converters)
+    return new
+
   def convert(
     self,
     value: t.Any,

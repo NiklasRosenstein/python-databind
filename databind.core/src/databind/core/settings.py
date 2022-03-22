@@ -82,6 +82,12 @@ class Settings(SettingsProvider):
 
     self.providers.append(provider)
 
+  def copy(self) -> Settings:
+    new = type(self)(self.parent, self.global_settings)
+    new.local_settings = {k: list(v) for k, v in self.local_settings.items()}
+    new.providers = list(self.providers)
+    return new
+
   # SettingsProvider
 
   def get_setting(self, context: Context, setting_type: t.Type[T_Setting]) -> t.Optional[T_Setting]:
