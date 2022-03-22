@@ -3,13 +3,11 @@
 
 from __future__ import annotations
 import json
-import functools
 import typing as t
 
 from nr.util.generic import T
 
 if t.TYPE_CHECKING:
-  from databind.core.context import Location
   from databind.core.mapper import BiObjectMapper
   from databind.core.settings import Setting, Settings
 

@@ -12,6 +12,7 @@ from databind.core.converter import Converter, ConversionError
 from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
 from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_highest_setting
 from databind.json.direction import Direction
+from databind.json.settings import ExtraKeys
 from nr.util.generic import T
 
 
@@ -454,8 +455,8 @@ class SchemaConverter(Converter):
 
     unused_keys = source.keys() - used_keys
     if unused_keys:
-      s = 's' if len(unused_keys) != 1 else ''
-      raise ConversionError(ctx, f'encountered unknown field{s}: {unused_keys}')
+      extra_keys = ctx.get_setting(ExtraKeys) or ExtraKeys(False)
+      extra_keys.inform(ctx, unused_keys)
 
     return schema.constructor(**result)
 

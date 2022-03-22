@@ -281,7 +281,7 @@ def test_schema_converter(direction):
     serialized = {'a': 42, 'b': 'Universe', 'c': 99, 'd': 42}
     with pytest.raises(ConversionError) as excinfo:
       mapper.convert(serialized, Class4)
-    assert str(excinfo.value).splitlines()[0] == "encountered unknown field: {'d'}"
+    assert str(excinfo.value).splitlines()[0] == "encountered extra keys: {'d'}"
 
     # Test a missing key.
     serialized = {'a': 42, 'b': 'Universe'}
