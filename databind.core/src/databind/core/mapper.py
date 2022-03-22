@@ -3,6 +3,7 @@ from __future__ import annotations
 import typing as t
 
 import typeapi
+from nr.util.generic import T
 
 if t.TYPE_CHECKING:
   from databind.core.context import Location
@@ -56,3 +57,40 @@ class ObjectMapper:
       settings = Settings(self.settings, global_settings=settings)
     context = Context(None, value, datatype, settings or self.settings, Context.ROOT, location or Location.EMPTY, self.module.convert)
     return context.convert()
+
+
+class BiObjectMapper(t.Generic[T]):
+  """ A convenience helper that manages two object mappers, one for serialization and another for deserialization.
+
+  Type arguments:
+    T: Narrows the return type of #serialize() and *value* parameter of #deserialize().
+  """
+
+  def __init__(self, serializer: ObjectMapper, deserializer: ObjectMapper) -> None:
+    """
+    Arguments:
+      serializer: The #ObjectMapper to use in #serialize().
+      deserializer: The #ObjectMapper to use in #deserialize().
+    """
+    self.serializer = serializer
+    self.deserializer = deserializer
+
+  def serialize(
+    self,
+    value: t.Any,
+    datatype: t.Union[typeapi.Hint, t.Any],
+    filename: t.Optional[str] = None,
+    settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
+  ) -> T:
+    """ Serialize *value* according to the its *datatype*. """
+    return self.serializer.convert(value, datatype, Location(filename, None, None), settings)
+
+  def deserialize(
+    self,
+    value: T,
+    datatype: t.Union[typeapi.Hint, t.Any],
+    filename: t.Optional[str] = None,
+    settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
+  ) -> T:
+    """ Deserialize *value* according to the its *datatype*. """
+    return self.deserializer.convert(value, datatype, Location(filename, None, None), settings)

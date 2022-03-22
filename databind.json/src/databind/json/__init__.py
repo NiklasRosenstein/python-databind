@@ -3,14 +3,15 @@
 
 from __future__ import annotations
 import json
+import functools
 import typing as t
 
 from nr.util.generic import T
-from databind.core.context import Location
-from databind.core.mapper import ObjectMapper
-from databind.core.settings import Setting, Settings
-from databind.json.module import JsonModule
-from databind.json.direction import Direction
+
+if t.TYPE_CHECKING:
+  from databind.core.context import Location
+  from databind.core.mapper import BiObjectMapper
+  from databind.core.settings import Setting, Settings
 
 __version__ = '1.5.1'
 
@@ -25,27 +26,14 @@ JsonType = t.Union[
 ]
 
 
-class JsonMapper(ObjectMapper):
-
-  def __init__(self, direction: Direction, settings: t.Optional[Settings] = None) -> None:
-    super().__init__(settings)
-    self.module.register(JsonModule(direction))
-
-  @staticmethod
-  def serializing(settings: t.Optional[Settings] = None) -> JsonMapper:
-    """ Return a serializing JSON mapper. """
-
-    return JsonMapper(Direction.SERIALIZE, settings)
-
-  @staticmethod
-  def deserializing(settings: t.Optional[Settings] = None) -> JsonMapper:
-    """ Return a deserializing JSON mapper. """
-
-    return JsonMapper(Direction.DESERIALIZE, settings)
-
-
-serializer = JsonMapper.serializing()
-deserializer = JsonMapper.deserializing()
+def get_bimapper(settings: t.Optional[Settings] = None) -> BiObjectMapper[JsonType]:
+  from databind.core.mapper import BiObjectMapper, ObjectMapper
+  from databind.json.module import JsonModule
+  serializer = ObjectMapper(settings)
+  serializer.module.register(JsonModule.serializing())
+  deserializer = ObjectMapper(settings)
+  deserializer.module.register(JsonModule.deserializing())
+  return BiObjectMapper(serializer, deserializer)
 
 
 @t.overload
@@ -63,7 +51,7 @@ def load(
   type_: t.Any,
   filename: t.Optional[str] = None,
   settings: t.Optional[t.List[Setting]] = None,
-) -> T: ...
+) -> t.Any: ...
 
 
 def load(
@@ -71,8 +59,8 @@ def load(
   type_: t.Any,
   filename: t.Optional[str] = None,
   settings: t.Optional[t.List[Setting]] = None,
-) -> T:
-  return deserializer.convert(value, type_, Location(filename, None, None), settings)
+) -> t.Any:
+  return get_bimapper().deserialize(value, type_, filename, settings)
 
 
 @t.overload
@@ -108,7 +96,7 @@ def dump(
   filename: t.Optional[str] = None,
   settings: t.Optional[t.List[Setting]] = None,
 ) -> JsonType:
-  return serializer.convert(value, type_, Location(filename, None, None), settings)
+  return get_bimapper().serialize(value, type_, filename, settings)
 
 
 def dumps(
