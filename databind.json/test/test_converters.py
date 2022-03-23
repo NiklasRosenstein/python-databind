@@ -252,7 +252,7 @@ def test_schema_converter(direction):
   mapper = make_mapper([SchemaConverter(direction), PlainDatatypeConverter(direction)])
 
   class Dict1(te.TypedDict):
-    a: int = 42
+    a: te.Annotated[int, Alias('afoo', 'abar')] = 42
     b: str
 
   @dataclasses.dataclass
@@ -269,7 +269,7 @@ def test_schema_converter(direction):
     f: te.Annotated[Dict3, Flattened()]
 
   obj = Class4(Dict3(d=Class2(Dict1(a=42, b='Universe'), c=99)))
-  serialized = {'a': 42, 'b': 'Universe', 'c': 99}
+  serialized = {'afoo': 42, 'b': 'Universe', 'c': 99}
 
   if direction == Direction.SERIALIZE:
     assert mapper.convert(obj, Class4) == serialized
@@ -281,7 +281,7 @@ def test_schema_converter(direction):
     assert mapper.convert(serialized, Class4) == obj
 
     # Test an extra key.
-    serialized = {'a': 42, 'b': 'Universe', 'c': 99, 'd': 42}
+    serialized = {'abar': 42, 'b': 'Universe', 'c': 99, 'd': 42}
     with pytest.raises(ConversionError) as excinfo:
       mapper.convert(serialized, Class4)
     assert str(excinfo.value).splitlines()[0] == "encountered extra keys: {'d'}"

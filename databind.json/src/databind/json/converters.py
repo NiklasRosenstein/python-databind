@@ -395,7 +395,7 @@ class SchemaConverter(Converter):
         return getattr(ctx.value, field_name)
 
     remainder_field: t.Optional[t.Tuple[str, Field]] = None
-    remainder_values: t.Optional[t.Dict[str, t.Any]] = None
+    remainder_values: t.Optional[t.Mapping[str, t.Any]] = None
 
     for field_name, field in schema.fields.items():
       field_ctx = ctx.spawn(_get_field_value(field_name, field), field.datatype, field_name)
@@ -443,7 +443,7 @@ class SchemaConverter(Converter):
     used_keys = set()
     remainder_field: t.Optional[t.Tuple[str, Field]] = None
 
-    def _extract_field(result: t.Dict[str, t.Any], field_name: str, field: Field) -> t.Dict[str, t.Any]:
+    def _extract_field(result: t.Dict[str, t.Any], field_name: str, field: Field, keep_aliased: bool) -> t.Dict[str, t.Any]:
       nonlocal remainder_field
 
       field_ctx = ctx.spawn(None, field.datatype, field_name)
@@ -452,12 +452,12 @@ class SchemaConverter(Converter):
         if remainder_field is not None:
           raise ConversionError(ctx, f'encountered at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
         remainder_field = (field_name, field)
-        return
+        return result
 
       aliases = self._get_alias_setting(field_ctx, field_name).aliases
       for alias in aliases:
         if alias in source:
-          result[field_name] = source[alias]
+          result[alias if keep_aliased else field_name] = source[alias]
           used_keys.add(alias)
           break
       else:
@@ -469,7 +469,7 @@ class SchemaConverter(Converter):
     def _extract_fields(fields: t.Dict[str, Field]) -> t.Dict[str, t.Any]:
       result: t.Dict[str, t.Any] = {}
       for field_name, field in fields.items():
-        _extract_field(result, field_name, field)
+        _extract_field(result, field_name, field, True)
       return result
 
     result = {}
@@ -479,7 +479,7 @@ class SchemaConverter(Converter):
         assert field_name in expanded, field_name
         value = ctx.spawn(_extract_fields(expanded[field_name]), field.datatype, field_name).convert()
       else:
-        container = _extract_field({}, field_name, field)
+        container = _extract_field({}, field_name, field, False)
         if not container:
           assert not field.required or (remainder_field and remainder_field[0] == field_name)
           continue
