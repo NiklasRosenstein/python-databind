@@ -53,6 +53,17 @@ class Field:
     else:
       raise RuntimeError(f'Field does not have a default value')
 
+  @property
+  def aliases(self) -> t.Tuple[str, ...]:
+    """ For convience, the aliases described in the #datatype#'s annotations are listed here. Do note however, that
+    during the conversion process, the #Alias setting should still be looked up through #Context.get_setting()
+    and this field should be ignored. It serves only a introspective purpose. Returns an empty tuple if no alias
+    setting is present in the type hint. """
+
+    from databind.core.settings import Alias, get_annotation_setting
+    alias = get_annotation_setting(self.datatype, Alias)
+    return alias.aliases if alias else ()
+
 
 @dataclasses.dataclass
 class Schema:
