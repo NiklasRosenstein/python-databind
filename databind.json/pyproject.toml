@@ -7,22 +7,22 @@ license = "MIT"
 readme = "readme.md"
 packages = [{include = "databind/json", from = "src"}]
 
-  [tool.poetry.dependencies]
-  python = "^3.7"
-  "databind.core" = "^2.0.0a1"
-  "nr.util" = ">=0.8.6,<1.0.0"
-  typing-extensions = "^3.10.0"
+[tool.poetry.dependencies]
+python = "^3.7"
+"databind.core" = "^2.0.0a1"
+"nr.util" = ">=0.8.6,<1.0.0"
+typing-extensions = "^3.10.0"
 
-  [tool.poetry.dev-dependencies]
-  pytest = "*"
-  mypy = "*"
+[tool.poetry.dev-dependencies]
+pytest = "*"
+mypy = "*"
 
 [tool.slam]
 typed = true
 
-  [tool.slam.test]
-  mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
-  pytest = "pytest test/ -vv"
+[tool.slam.test]
+mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
+pytest = "pytest test/ -vv"
 
 [build-system]
 requires = ["poetry-core"]

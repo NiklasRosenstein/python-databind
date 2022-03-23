@@ -7,27 +7,27 @@ license = "MIT"
 readme = "readme.md"
 packages = [{include = "databind/core", from = "src"}]
 
-  [tool.poetry.dependencies]
-  python = "^3.7"
-  Deprecated = "^1.2.12"
-  "nr.util" = ">=0.8.6,<1.0.0"
-  typeapi = ">=0.1.5,<0.2.0"
-  typing-extensions = "^3.10.0"
+[tool.poetry.dependencies]
+python = "^3.7"
+Deprecated = "^1.2.12"
+"nr.util" = ">=0.8.6,<1.0.0"
+typeapi = ">=0.1.5,<0.2.0"
+typing-extensions = "^3.10.0"
 
-  [tool.poetry.dev-dependencies]
-  pytest = "*"
-  mypy = "*"
-  types-dataclasses = "*"
-  types-deprecated = "*"
-  types-pkg_resources = "*"
-  types-termcolor = "*"
+[tool.poetry.dev-dependencies]
+pytest = "*"
+mypy = "*"
+types-dataclasses = "*"
+types-deprecated = "*"
+types-pkg_resources = "*"
+types-termcolor = "*"
 
 [tool.slam]
 typed = true
 
-  [tool.slam.test]
-  mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
-  pytest = "pytest test/ -vv"
+[tool.slam.test]
+mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
+pytest = "pytest test/ -vv"
 
 [build-system]
 requires = ["poetry-core"]
