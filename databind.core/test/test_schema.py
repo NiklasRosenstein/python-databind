@@ -240,7 +240,18 @@ def test_convert_dataclass_to_schema_generic_inheritance():
   }, B2, B2)
 
 
-def test_convert_typed_dict_to_schema_total() -> None:
+def test_convert_dataclass_with_mapping_member():
+  @dataclasses.dataclass
+  class A:
+    a: int
+    b: t.Dict[str, int]
+  assert convert_dataclass_to_schema(A) == Schema({
+    'a': Field(typeapi.of(int)),
+    'b': Field(typeapi.of(t.Dict[str, int])),
+  }, A, A)
+
+
+def test_convert_typed_dict_to_schema_total():
   class Movie(te.TypedDict):
     name: str
     year: int = 42  # type: ignore[misc]
