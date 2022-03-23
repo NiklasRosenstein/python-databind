@@ -1,0 +1,719 @@
+
+import base64
+import collections.abc
+import datetime
+import decimal
+import enum
+import typing as t
+
+import typeapi
+from databind.core.context import Context
+from databind.core.converter import Converter, ConversionError
+from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
+from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_annotation_setting
+from databind.json.direction import Direction
+from databind.json.settings import ExtraKeys, Remainder
+from nr.util.generic import T
+
+
+def _int_lossless(v: float) -> int:
+  """ Convert *v* to an integer only if the conversion is lossless, otherwise raise an error. """
+
+  assert v % 1.0 == 0.0, f'expected int, got {v!r}'
+  return int(v)
+
+
+def _bool_from_str(s: str) -> bool:
+  """ Converts *s* to a boolean value based on common truthy keywords. """
+
+  if s.lower() in ('yes', 'true', 'on', 'enabled'):
+    return True
+  if s.lower() in ('no', 'false', 'off', 'disabled'):
+    return True
+  raise ValueError(f'not a truthy keyword: {s!r}')
+
+
+class AnyConverter(Converter):
+  """ A converter for #typing.Any and #object typed values, which will return them unchanged in any case. """
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    is_any_type = (
+      isinstance(datatype, typeapi.Any) or
+      isinstance(datatype, typeapi.Type) and datatype.type is object)
+    if is_any_type:
+      return ctx.value
+    raise NotImplementedError
+
+
+class CollectionConverter(Converter):
+
+  def __init__(self, direction: Direction, json_collection_type: t.Type[collections.abc.Collection] = list) -> None:
+    self.direction = direction
+    self.json_collection_type = json_collection_type
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, collections.abc.Collection):
+      raise NotImplementedError
+
+    if datatype.nparams != 1:
+      # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
+      # track of type parameter values.
+      raise NotImplementedError
+
+    python_type = datatype.type
+    item_type = datatype.args[0] if datatype.args else t.Any
+    values: t.Iterable = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
+
+    if self.direction == Direction.SERIALIZE:
+      if not isinstance(ctx.value, python_type):
+        raise ConversionError.expected(ctx, python_type)
+      return self.json_collection_type(values)  # type: ignore[call-arg]
+
+    else:
+      if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
+        raise ConversionError.expected(ctx, collections.abc.Collection)
+      if python_type != list:
+        values = list(values)
+      try:
+        return python_type(values)  # type: ignore[call-arg]
+      except TypeError:
+        # We assume that the native list is an appropriate placeholder for whatever specific Collection type
+        # was chosen in the value's datatype.
+        return values
+
+
+class DatetimeConverter(Converter):
+  """ A converter for #datetime.datetime, #datetime.date and #datetime.time that represents the serialized form as
+  strings formatted using the #nr.util.date module. The converter respects the #DateFormat setting. """
+
+  DEFAULT_DATE_FMT = DateFormat('.ISO_8601')
+  DEFAULT_TIME_FMT = DEFAULT_DATE_FMT
+  DEFAULT_DATETIME_FMT = DEFAULT_DATE_FMT
+
+  def __init__(self, direction: Direction) -> None:
+    self.direction = direction
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type):
+      raise NotImplementedError
+
+    date_type = datatype.type
+    if date_type not in (datetime.date, datetime.time, datetime.datetime):
+      raise NotImplementedError
+
+    datefmt = ctx.get_setting(DateFormat) or (
+      self.DEFAULT_DATE_FMT if date_type == datetime.date else
+      self.DEFAULT_TIME_FMT if date_type == datetime.time else
+      self.DEFAULT_DATETIME_FMT if date_type == datetime.datetime else None)
+    assert datefmt is not None
+
+    if self.direction == Direction.DESERIALIZE:
+      if isinstance(ctx.value, date_type):
+        return ctx.value
+      elif isinstance(ctx.value, str):
+        try:
+          dt = datefmt.parse(date_type, ctx.value)
+        except ValueError as exc:
+          raise ConversionError(ctx, str(exc))
+        assert isinstance(dt, date_type)
+        return dt
+      raise ConversionError.expected(ctx, date_type, type(ctx.value))
+
+    else:
+      if not isinstance(ctx.value, date_type):
+        raise ConversionError.expected(ctx, date_type, type(ctx.value))
+      return datefmt.format(ctx.value)
+
+
+class DecimalConverter(Converter):
+  """ A converter for #decimal.Decimal values to and from JSON as strings. """
+
+  def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
+    self.direction = direction
+    self.strict_by_default = strict_by_default
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, decimal.Decimal):
+      raise NotImplementedError
+
+    strict = ctx.get_setting(Strict) or Strict(self.strict_by_default)
+    precision = ctx.get_setting(Precision)
+    context = precision.to_decimal_context() if precision else None
+
+    if self.direction == Direction.DESERIALIZE:
+      if (not strict.enabled and isinstance(ctx.value, (int, float))) or isinstance(ctx.value, str):
+        return decimal.Decimal(ctx.value, context)
+      raise ConversionError.expected(ctx, str, type(ctx.value))
+
+    else:
+      if not isinstance(ctx.value, decimal.Decimal):
+        raise ConversionError.expected(ctx, decimal.Decimal, type(ctx.value))
+      return str(ctx.value)
+
+
+class EnumConverter(Converter):
+  """ JSON converter for enum values.
+
+  Converts #enum.IntEnum values to integers and #enum.Enum values to strings. Note that combined integer flags
+  are not supported and cannot be serializ
+
+  #Alias#es on the type annotation of an enum field are considered as aliases for the field name to be used
+  in the value's serialized form as opposed to its value name defined in code.
+
+  Example:
+
+  ```py
+  import enum, typing
+  from databind.core.settings import Alias
+
+  class Pet(enum.Enum):
+    CAT = enum.auto()
+    DOG = enum.auto()
+    LION: typing.Annotated[int, Alias('KITTY')] = enum.auto()
+  ```
+  """
+
+  def __init__(self, direction: Direction) -> None:
+    self.direction = direction
+
+  def _discover_alias(self, enum_type: t.Type[enum.Enum], member_name: str) -> t.Optional[Alias]:
+    # TODO (@NiklasRosenstein): Take into account annotations of the base classes?
+    hint = typeapi.of(typeapi.get_annotations(enum_type).get(member_name))
+    return get_annotation_setting(hint, Alias)
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type):
+      raise NotImplementedError
+    if not issubclass(datatype.type, enum.Enum):
+      raise NotImplementedError
+
+    value = ctx.value
+    enum_type = datatype.type
+
+    if self.direction == Direction.SERIALIZE:
+      if type(value) is not enum_type:
+        raise ConversionError.expected(ctx, enum_type, type(value))
+      if issubclass(enum_type, enum.IntEnum):
+        return value.value
+      if issubclass(enum_type, enum.Enum):
+        alias = self._discover_alias(enum_type, value.name)
+        if alias and alias.aliases:
+          return alias.aliases[0]
+        return value.name
+      assert False, enum_type
+
+    else:
+      if issubclass(enum_type, enum.IntEnum):
+        if not isinstance(value, int):
+          raise ConversionError.expected(ctx, int, type(value))
+        try:
+          return enum_type(value)
+        except ValueError as exc:
+          raise ConversionError(ctx, str(exc))
+      if issubclass(enum_type, enum.Enum):
+        if not isinstance(value, str):
+          raise ConversionError.expected(ctx, str, type(value))
+        for enum_value in enum_type:
+          alias = self._discover_alias(enum_type, enum_value.name)
+          if alias and value in alias.aliases:
+            return enum_value
+        try:
+          return enum_type[value]
+        except KeyError:
+          raise ConversionError(ctx, f'{value!r} is not a member of enumeration {datatype}')
+      assert False, enum_type
+
+
+class MappingConverter(Converter):
+
+  def __init__(self, direction: Direction, json_mapping_type: t.Type[collections.abc.Mapping] = dict) -> None:
+    self.direction = direction
+    self.json_mapping_type = json_mapping_type
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, collections.abc.Mapping):
+      raise NotImplementedError
+
+    if datatype.nparams != 2:
+      # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
+      # track of type parameter values.
+      raise NotImplementedError
+
+    if datatype.args is None:
+      key_type, value_type = t.Any, t.Any
+    else:
+      key_type, value_type = datatype.args
+
+    if not isinstance(ctx.value, collections.abc.Mapping):
+      raise ConversionError.expected(ctx, collections.abc.Mapping)
+
+    result = {}
+    for key, value in ctx.value.items():
+      value = ctx.spawn(value, value_type, key).convert()
+      key = ctx.spawn(key, key_type, f'Key({key!r})').convert()
+      result[key] = value
+
+    if self.direction == Direction.DESERIALIZE and datatype.type != dict:
+      # We assume that the runtime type is constructible from a plain dictionary.
+      try:
+        return datatype.type(result)  # type: ignore[call-arg]
+      except TypeError:
+        # We expect this exception to occur for example if the annotated type is an abstract class like
+        # collections.abc.Mapping; in which case we just assume that "dict' is a fine type to return.
+        return result
+    elif self.direction == Direction.SERIALIZE and self.json_mapping_type != dict:
+      # Same for the JSON output type.
+      return self.json_mapping_type(result)  # type: ignore[call-arg]
+
+    return result
+
+
+class OptionalConverter(Converter):
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Union) or not datatype.has_none_type():
+      raise NotImplementedError
+    if ctx.value is None:
+      return None
+    return ctx.spawn(ctx.value, datatype.without_none_type(), None).convert()
+
+
+class PlainDatatypeConverter(Converter):
+  """ A converter for the plain datatypes #bool, #bytes, #int, #str and #float.
+
+  Arguments:
+    direction (Direction): The direction in which to convert (serialize or deserialize).
+    strict_by_default (bool): Whether to use strict type conversion on values by default if no other
+      information on strictness is given. This defaults to `True`. With strict conversion enabled,
+      loss-less type conversions are disabled (such as casting a string to an integer). Note that
+      serialization is _always_ strict, only the deserialization is controlled with this option or
+      the #Strict setting.
+  """
+
+  # Map for (source_type, target_type)
+  _strict_adapters: t.Dict[t.Tuple[t.Type, t.Type], t.Callable[[t.Any], t.Any]] = {
+    (bytes, bytes):   lambda d: base64.b64encode(d).decode('ascii'),
+    (str, bytes):     base64.b64decode,
+    (str, str):       str,
+    (int, int):       int,
+    (float, float):   float,
+    (int, float):     float,
+    (float, int):     _int_lossless,
+    (bool, bool):     bool,
+  }
+
+  # Used only during deserialization if the #fieldinfo.strict is disabled.
+  _nonstrict_adapters = _strict_adapters.copy()
+  _nonstrict_adapters.update({
+    (str, int):       int,
+    (str, float):     float,
+    (str, bool):      _bool_from_str,
+    (int, str):       str,
+    (float, str):     str,
+    (bool, str):      str,
+  })
+
+  def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
+    self.direction = direction
+    self.strict_by_default = strict_by_default
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type):
+      raise NotImplementedError
+    if datatype.type not in {k[0] for k in self._strict_adapters}:
+      raise NotImplementedError
+
+    source_type = type(ctx.value)
+    target_type = datatype.type
+    strict = (
+      (ctx.get_setting(Strict) or Strict(self.strict_by_default))
+      if self.direction == Direction.DESERIALIZE else
+      Strict(True))
+    adapters = (self._strict_adapters if strict.enabled else self._nonstrict_adapters)
+    adapter = adapters.get((source_type, target_type))
+
+    if adapter is None:
+      msg = f'unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}'
+      raise ConversionError(ctx, msg)
+
+    try:
+      return adapter(ctx.value)
+    except ValueError as exc:
+      raise ConversionError(ctx, str(exc)) from exc
+
+
+class SchemaConverter(Converter):
+  """ Converter for type hints that can be adapter to a #databind.core.schema.Schema object.
+
+  This converter respects the following settings:
+
+  * #Alias
+  * #SerializeDefaults
+  """
+
+  def __init__(
+    self,
+    direction: Direction,
+    json_mapping_type: t.Type[collections.abc.MutableMapping] = dict,
+    convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
+    serialize_defaults: bool = True,
+  ) -> None:
+    self.direction = direction
+    self.json_mapping_type = json_mapping_type
+    self.convert_to_schema = convert_to_schema
+    self.serialize_defaults = serialize_defaults
+
+  @staticmethod
+  def _get_alias_setting(ctx: Context, field_name: str) -> Alias:
+    return ctx.get_setting(Alias) or Alias(field_name)
+
+  def serialize(self, ctx: Context, schema: Schema) -> t.MutableMapping[str, t.Any]:
+    try:
+      is_instance = isinstance(ctx.value, schema.type)
+    except TypeError:
+      # The type may not support isinstance() checks (e.g. typing.TypedDict).
+      pass
+    else:
+      if not is_instance:
+        raise ConversionError.expected(ctx, schema.type)
+
+    serialize_defaults = (ctx.get_setting(SerializeDefaults) or SerializeDefaults(self.serialize_defaults)).enabled
+    result = self.json_mapping_type()
+
+    def _get_field_value(field_name: str, field: Field) -> t.Any:
+      if isinstance(ctx.value, t.Mapping):
+        return ctx.value[field_name]  # TODO (@NiklasRosenstein): Respect non-required fields
+      else:
+        return getattr(ctx.value, field_name)
+
+    remainder_field: t.Optional[t.Tuple[str, Field]] = None
+    remainder_values: t.Optional[t.Mapping[str, t.Any]] = None
+
+    for field_name, field in schema.fields.items():
+      field_ctx = ctx.spawn(_get_field_value(field_name, field), field.datatype, field_name)
+      remainder = field_ctx.get_setting(Remainder)
+      if remainder and remainder.enabled:
+        if remainder_field is not None:
+          raise ConversionError(ctx, f'found at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
+        # We look at the remainder field later.
+        remainder_field = field_name, field
+        assert not field.flattened, "remainder field cannot be flattened"
+      value = field_ctx.convert()
+      if field.flattened:
+        if not isinstance(value, t.Mapping):
+          raise ConversionError(
+            field_ctx,
+            f'field {field_name!r} is flattened but its serialized form is not '
+            f'a mapping (got {type(value).__name__!r})',
+          )
+        assert result.keys().isdisjoint(value.keys()), result.keys() & value.keys()
+        result.update(value)
+      else:
+        if serialize_defaults or not field.has_default() or field_ctx.value != field.get_default():
+          alias = self._get_alias_setting(field_ctx, field_name).aliases[0]
+          if remainder and remainder.enabled:
+            if not isinstance(value, t.Mapping):
+              raise ConversionError(ctx, f'cannot expand remainder field {field_name!r} of type {type(value).__name__}')
+            remainder_values = value
+          else:
+            result[alias] = value
+
+    if remainder_field:
+      assert remainder_values is not None
+      duplicate_keys = result.keys() & remainder_values.keys()
+      if duplicate_keys:
+        raise ConversionError(ctx, f'keys in remainder field collide with other fields in the schema: {duplicate_keys}')
+      result.update(remainder_values)
+
+    return result
+
+  def deserialize(self, ctx: Context, schema: Schema) -> t.Any:
+    if not isinstance(ctx.value, t.Mapping):
+      raise ConversionError.expected(ctx, collections.abc.Mapping)
+
+    source = ctx.value
+    used_keys = set()
+    remainder_field: t.Optional[t.Tuple[str, Field]] = None
+
+    def _extract_field(result: t.Dict[str, t.Any], field_name: str, field: Field, keep_aliased: bool) -> t.Dict[str, t.Any]:
+      nonlocal remainder_field
+
+      field_ctx = ctx.spawn(None, field.datatype, field_name)
+      remainder = field_ctx.get_setting(Remainder)
+      if remainder and remainder.enabled:
+        if remainder_field is not None:
+          raise ConversionError(ctx, f'encountered at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
+        remainder_field = (field_name, field)
+        return result
+
+      aliases = self._get_alias_setting(field_ctx, field_name).aliases
+      for alias in aliases:
+        if alias in source:
+          result[alias if keep_aliased else field_name] = source[alias]
+          used_keys.add(alias)
+          break
+      else:
+        if field.required:
+          other_aliases = f' (or {", ".join(map(repr, aliases[1:]))})' if len(aliases) > 1 else ''
+          raise ConversionError(ctx, f'missing required field: {aliases[0]!r}{other_aliases}')
+      return result
+
+    def _extract_fields(fields: t.Dict[str, Field]) -> t.Dict[str, t.Any]:
+      result: t.Dict[str, t.Any] = {}
+      for field_name, field in fields.items():
+        _extract_field(result, field_name, field, True)
+      return result
+
+    result = {}
+    expanded = get_fields_expanded(schema)
+    for field_name, field in schema.fields.items():
+      if field.flattened:
+        assert field_name in expanded, field_name
+        value = ctx.spawn(_extract_fields(expanded[field_name]), field.datatype, field_name).convert()
+      else:
+        container = _extract_field({}, field_name, field, False)
+        if not container:
+          assert not field.required or (remainder_field and remainder_field[0] == field_name)
+          continue
+        value = ctx.spawn(container[field_name], field.datatype, field_name).convert()
+      result[field_name] = value
+
+    # TODO(@NiklasRosenstein): Support deserializing as a type different than what is defined in the schema.
+
+    unused_keys = source.keys() - used_keys
+    if remainder_field:
+      remainders = {k: ctx.value[k] for k in unused_keys}
+      result[remainder_field[0]] = ctx.spawn(remainders, remainder_field[1].datatype, remainder_field[0]).convert()
+    elif unused_keys:
+      extra_keys = ctx.get_setting(ExtraKeys) or ExtraKeys(False)
+      extra_keys.inform(ctx, unused_keys)
+
+    return schema.constructor(**result)
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    try:
+      schema = self.convert_to_schema(datatype)
+    except ValueError as exc:
+      raise NotImplementedError(str(exc))
+
+    if self.direction == Direction.SERIALIZE:
+      return self.serialize(ctx, schema)
+    else:
+      return self.deserialize(ctx, schema)
+
+
+class StringifyConverter(Converter):
+  """ A useful helper converter that matches on a given type or its subclasses and converts them to a string for
+  serialization and deserializes them from a string using the type's constructor. """
+
+  def __init__(
+    self,
+    direction: Direction,
+    type_: t.Type[T],
+    parser: t.Optional[t.Callable[[str], T]] = None,
+    formatter: t.Callable[[T], str] = str,
+  ) -> None:
+    assert isinstance(type_, type), type_
+    self.direction = direction
+    self.type_ = type_
+    self.parser = t.cast(t.Callable[[str], T], parser or type_)
+    self.formatter = formatter
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, self.type_):
+      raise NotImplementedError
+
+    if self.direction == Direction.DESERIALIZE:
+      if not isinstance(ctx.value, str):
+        raise ConversionError.expected(ctx, str)
+      try:
+        return self.parser(ctx.value)
+      except (TypeError, ValueError) as exc:
+        raise ConversionError(ctx, str(exc))
+
+    else:
+      if not isinstance(ctx.value, datatype.type):
+        raise ConversionError.expected(ctx, datatype.type)
+      return self.formatter(ctx.value)
+
+
+class UnionConverter(Converter):
+  """ Converter for union types. The following kinds of union types are supported:
+
+  * A #typing.Union (represented as #typeapi.Union) instance, in which case the members are deserialized in the
+    the #Union.NESTED mode, using the class name as the discriminator keys.
+
+      ```py
+      AOrB = A | B   # ex.: {"type": "A", "A": {...}}
+      ```
+
+  * A #typing.Annotated annotated with the #Union setting (represented as #typeapi.Annotated)
+
+      ```py
+      from databind.core.settings import Union
+      AOrB = typing.Annotated[A | B, Union({'a': A, 'b': B}, Union.KEYED)]  # ex.: {"a": {...}}
+      ```
+
+  * A class that is decorated with the #Union setting
+
+      ```py
+      import dataclasses
+      from databind.core.settings import Union
+
+      @Union(style=Union.FLAT)
+      class Base(abc.ABC):
+        pass
+
+      @Union.register(Base, 'a')
+      @dataclasses.dataclass
+      class A(Base):
+        pass
+
+      # ...
+      # ex.: {"type": "a", ...}
+      ```
+
+  !!! note
+
+      Note that the union members should be concrete types, not generic aliases, because the converter cannot check
+      if an object is an instance of an alias. This is an implementation detail of the #databind.core.union.UnionMembers
+      implementations.
+
+  More Examples:
+
+  ```py
+  import abc
+  import typing
+  from databind.core.settings import Union
+
+  AOrB = typing.Annotated[
+    typing.Union[A, B],
+    Union({'A': A, 'B': B}, Union.NESTED, 'uses', 'with')
+  ]
+
+  @Union('!my.package.plugins')
+  class Plugin(abc.ABC):
+    @abc.abstractmethod
+    def activate(self) -> None: ...
+  ```
+  """
+
+  def __init__(self, direction: Direction) -> None:
+    self.direction = direction
+
+  def _get_deserialize_member_name(self, ctx: Context, value: t.Mapping, style: str, discriminator_key: str) -> str:
+    """ Identify the name of the union member of the given serialized *value* and return it. How that name is
+    determined depends on the *style*. """
+
+    self._check_style_compatibility(ctx, style, value)
+
+    # TODO (@NiklasRosenstein): Support Union.BEST_MATCH
+    if style in (Union.NESTED, Union.FLAT):
+      if discriminator_key not in value:
+        raise ConversionError(ctx, f'missing discriminator key {discriminator_key!r} in mapping')
+      member_name = value[discriminator_key]
+      if not isinstance(member_name, str):
+        raise ConversionError.expected(ctx.spawn(member_name, str, discriminator_key), str)
+    elif style == Union.KEYED:
+      if len(value) != 1:
+        raise ConversionError(ctx, f'expected exactly one key to act as the discriminator, got {len(value)} key(s)')
+      member_name = next(iter(value))
+      assert isinstance(member_name, str)
+    else:
+      raise ConversionError(ctx, f'unsupported Union.style: {style!r}')
+
+    assert isinstance(member_name, str), (member_name, value)
+    return member_name
+
+  def _check_style_compatibility(self, ctx: Context, style: str, value: t.Any) -> None:
+    if not isinstance(value, t.MutableMapping) and style in (Union.FLAT,):
+      raise ConversionError(ctx, f'The Union.{style.upper()} style is not supported for plain member types')
+
+  def convert(self, ctx: Context) -> t.Any:
+    datatype = ctx.datatype
+    union: t.Optional[Union]
+    if isinstance(datatype, typeapi.Union):
+      if datatype.has_none_type():
+        raise NotImplementedError('unable to handle Union type with None in it')
+      if not all(isinstance(a, typeapi.Type) for a in datatype.types):
+        raise NotImplementedError(f'members of plain Union must be concrete types: {datatype}')
+      members = {t.cast(typeapi.Type, a).type.__name__: a for a in datatype.types}
+      if len(members) != len(datatype.types):
+        raise NotImplementedError(f'members of plain Union cannot have overlapping type names: {datatype}')
+      union = Union(members)
+    elif isinstance(datatype, (typeapi.Annotated, typeapi.Type)):
+      union = ctx.get_setting(Union)
+      if union is None:
+        raise NotImplementedError
+    else:
+      raise NotImplementedError
+
+    style = union.style
+    discriminator_key = union.discriminator_key
+    is_deserialize = self.direction == Direction.DESERIALIZE
+
+    if is_deserialize:
+      # Identify the member type to deserialize to.
+      if not isinstance(ctx.value, t.Mapping):
+        raise ConversionError.expected(ctx, t.Mapping)
+      member_name = self._get_deserialize_member_name(ctx, ctx.value, style, discriminator_key)
+      member_type = union.members.get_type_by_id(member_name)
+
+    else:
+      # Identify the member type based on the Python value type.
+      member_name = union.members.get_type_id(type(ctx.value))
+      member_type = union.members.get_type_by_id(member_name)
+
+    nesting_key = union.nesting_key or member_name
+    type_hint = typeapi.of(member_type) if not isinstance(member_type, typeapi.Hint) else member_type
+
+    if is_deserialize:
+      # Forward deserialization of the value using the newly identified type hint.
+      # TODO (@NiklasRosenstein): Support Union.BEST_MATCH.
+      if style == Union.NESTED:
+        if nesting_key not in ctx.value:
+          raise ConversionError(ctx, f'missing nesting key {nesting_key!r} in mapping')
+        child_context = ctx.spawn(ctx.value[nesting_key], type_hint, nesting_key)
+      elif style == Union.FLAT:
+        child_context = ctx.spawn(dict(ctx.value), type_hint, None)
+        # Don't pass down the discriminator key.
+        t.cast(t.Dict, child_context.value).pop(discriminator_key)
+      elif style == Union.KEYED:
+        child_context = ctx.spawn(ctx.value[member_name], type_hint, member_name)
+      else:
+        raise ConversionError(ctx, f'unsupported union style: {style!r}')
+
+    else:
+      child_context = ctx.spawn(ctx.value, type_hint, None)
+
+    result = child_context.convert()
+
+    if is_deserialize:
+      return result
+
+    else:
+      self._check_style_compatibility(ctx, style, result)
+      # Bring the serialized value into shape.
+      if style == Union.NESTED:
+        result = {discriminator_key: member_name, member_name: result}
+      elif style == Union.FLAT:
+        assert isinstance(result, t.MutableMapping), type(result)
+        result[discriminator_key] = member_name
+      elif style == Union.KEYED:
+        result = {member_name: result}
+      elif style == Union.BEST_MATCH:
+        pass
+      else:
+        raise ConversionError(ctx, f'unsupported union style: {style!r}')
+
+    return result

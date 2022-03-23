@@ -1,130 +1,108 @@
 
-__author__ = 'Niklas Rosenstein <rosensteinniklas@gmail.com>'
-__version__ = '1.5.2'
+""" The #databind.json package implements the capabilities to bind JSON payloads to objects and the reverse. """
 
-import datetime
-import decimal
-import io
+from __future__ import annotations
 import json
-import pathlib
 import typing as t
-import uuid
 
-from nr.util.date import duration
+from nr.util.generic import T
 
-from databind.core import ObjectMapper, SimpleModule, ImplicitUnionType, ListType, MapType, ObjectType, OptionalType, SetType, UnionType
-from .modules.any import AnyConverter
-from .modules.collection import CollectionConverter
-from .modules.datetime import DatetimeJsonConverter, DurationConverter
-from .modules.decimal import DecimalJsonConverter
-from .modules.enum import EnumConverter
-from .modules.implicitunion import ImplicitUnionConverter
-from .modules.map import MapConverter
-from .modules.object import ObjectTypeConverter
-from .modules.optional import OptionalConverter
-from .modules.plain import PlainJsonConverter
-from .modules.string import StringConverter
-from .modules.union import UnionConverter
+if t.TYPE_CHECKING:
+  from databind.core.mapper import BiObjectMapper
+  from databind.core.settings import Setting, Settings
 
-__all__ = [
-  'JsonModule',
-  'JsonType',
-  'mapper',
-  'load',
-  'loads',
-  'dump',
-  'dumps',
+__version__ = '1.5.1'
+
+JsonType = t.Union[
+  None,
+  bool,
+  int,
+  float,
+  str,
+  t.Dict[str, t.Any],
+  t.List[t.Any],
 ]
 
-T = t.TypeVar('T')
-JsonType = t.Union[dict, list, str, int, float, bool, None]
+
+def get_bimapper(settings: t.Optional[Settings] = None) -> BiObjectMapper[JsonType]:
+  from databind.core.mapper import BiObjectMapper, ObjectMapper
+  from databind.json.module import JsonModule
+  serializer = ObjectMapper(settings)
+  serializer.module.register(JsonModule.serializing())
+  deserializer = ObjectMapper(settings)
+  deserializer.module.register(JsonModule.deserializing())
+  return BiObjectMapper(serializer, deserializer)
 
 
-class JsonModule(SimpleModule):
-  """
-  A composite of all modules for JSON de/serialization.
-  """
-
-  def __init__(self, name: str = None) -> None:
-    super().__init__(name)
-
-    self.add_converter_for_type(object, AnyConverter())
-    self.add_converter_for_type(ObjectType, ObjectTypeConverter())
-    self.add_converter_for_type(UnionType, UnionConverter())
-    self.add_converter_for_type(bool, PlainJsonConverter())
-    self.add_converter_for_type(float, PlainJsonConverter())
-    self.add_converter_for_type(int, PlainJsonConverter())
-    self.add_converter_for_type(bytes, PlainJsonConverter())
-    self.add_converter_for_type(str, PlainJsonConverter())
-    self.add_converter_for_type(uuid.UUID, StringConverter(lambda t, v: uuid.UUID(v)))
-    self.add_converter_for_type(decimal.Decimal, DecimalJsonConverter())
-    self.add_converter_for_type(datetime.date, DatetimeJsonConverter())
-    self.add_converter_for_type(datetime.time, DatetimeJsonConverter())
-    self.add_converter_for_type(datetime.datetime, DatetimeJsonConverter())
-    self.add_converter_for_type(duration, DurationConverter())
-    self.add_converter_for_type(OptionalType, OptionalConverter())
-    self.add_converter_for_type(MapType, MapConverter())
-    self.add_converter_for_type(ListType, CollectionConverter())
-    self.add_converter_for_type(SetType, CollectionConverter())
-    self.add_converter_for_type(ImplicitUnionType, ImplicitUnionConverter())
-    self.add_converter_provider(EnumConverter())
-    self.add_converter_provider(StringConverter(lambda t, v: t(v), matches=lambda t: issubclass(t, pathlib.PurePath)))
+@t.overload
+def load(
+  value: t.Any,
+  type_: t.Type[T],
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
+) -> T: ...
 
 
-def mapper() -> ObjectMapper:
-  return ObjectMapper(JsonModule(), name=__name__)
-
-
-new_mapper = mapper  # backwards compatibility <=1.0.1
+@t.overload
+def load(
+  value: t.Any,
+  type_: t.Any,
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
+) -> t.Any: ...
 
 
 def load(
-  data: t.Union[JsonType, t.TextIO],
-  type_: t.Type[T],
-  mapper: ObjectMapper = None,
-  filename: str = None,
-  annotations: t.List[t.Any] = None,
-  options: t.List[t.Any] = None,
-) -> T:
+  value: t.Any,
+  type_: t.Any,
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
+) -> t.Any:
+  return get_bimapper().deserialize(value, type_, filename, settings)
 
-  if hasattr(data, 'read'):
-    if not filename:
-      filename = getattr(data, 'name', None)
-    data = json.load(t.cast(t.TextIO, data))
-  return (mapper or new_mapper()).deserialize(data, type_, filename=filename, annotations=annotations, settings=options)
+
+@t.overload
+def loads(
+  value: str,
+  type_: t.Type[T],
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
+) -> T: ...
+
+
+@t.overload
+def loads(
+  value: str,
+  type_: t.Any,
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
+) -> T: ...
 
 
 def loads(
-  data: str,
-  type_: t.Type[T],
-  mapper: ObjectMapper = None,
-  filename: str = None,
-  annotations: t.List[t.Any] = None,
-  options: t.List[t.Any] = None,
+  value: str,
+  type_: t.Any,
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
 ) -> T:
-  return load(io.StringIO(data), type_, mapper, filename, annotations, options)
+  return load(json.loads(value), type_, filename, settings)
 
 
 def dump(
-  value: T,
-  type_: t.Type[T] = None,
-  mapper: ObjectMapper = None,
-  annotations: t.List[t.Any] = None,
-  options: t.List[t.Any] = None,
-  out: t.TextIO = None,
+  value: t.Any,
+  type_: t.Any,
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
 ) -> JsonType:
-
-  data = (mapper or new_mapper()).serialize(value, type_ or type(value), annotations=annotations, settings=options)
-  if out is not None:
-    json.dump(data, out)
-  return data
+  return get_bimapper().serialize(value, type_, filename, settings)
 
 
 def dumps(
-  value: T,
-  type_: t.Type[T] = None,
-  mapper: ObjectMapper = None,
-  annotations: t.List[t.Any] = None,
-  options: t.List[t.Any] = None,
+  value: t.Any,
+  type_: t.Any,
+  filename: t.Optional[str] = None,
+  settings: t.Optional[t.List[Setting]] = None,
+  indent: t.Union[int, str, None] = None,
+  sort_keys: bool = False,
 ) -> str:
-  return json.dumps(dump(value, type_, mapper, annotations, options))
+  return json.dumps(dump(value, type_, filename, settings), indent=indent, sort_keys=sort_keys)

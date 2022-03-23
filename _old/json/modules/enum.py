@@ -22,7 +22,7 @@ class EnumConverter(Converter, ConverterProvider):
     assert isinstance(ctx.type, ConcreteType)
     assert issubclass(ctx.type.type, enum.Enum)
 
-    if ctx.direction == Direction.serialize:
+    if ctx.direction == Direction:
       if not isinstance(ctx.value, ctx.type.type):
         raise ctx.type_error(expected=ctx.type.type)
       if issubclass(ctx.type.type, enum.IntEnum):

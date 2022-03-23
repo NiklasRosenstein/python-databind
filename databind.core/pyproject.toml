@@ -10,7 +10,8 @@ packages = [{include = "databind/core", from = "src"}]
   [tool.poetry.dependencies]
   python = "^3.7"
   Deprecated = "^1.2.12"
-  "nr.util" = ">=0.8.3,<1.0.0"
+  "nr.util" = ">=0.8.6,<1.0.0"
+  typeapi = ">=0.1.5,<0.2.0"
   typing-extensions = "^3.10.0"
 
   [tool.poetry.dev-dependencies]
@@ -25,8 +26,8 @@ packages = [{include = "databind/core", from = "src"}]
 typed = true
 
   [tool.slam.test]
-  pytest = "pytest src/"
   mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
+  pytest = "pytest test/ -vv"
 
 [build-system]
 requires = ["poetry-core"]

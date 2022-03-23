@@ -1,5 +1,9 @@
 [changelog]
 enabled = false
 
+[run]
+"docs:build" = "cd docs && novella --base-url databind/"
+"docs:dev" = "cd docs && novella --serve"
+
 [test]
 check = "slam check"

@@ -9,8 +9,8 @@ packages = [{include = "databind/json", from = "src"}]
 
   [tool.poetry.dependencies]
   python = "^3.7"
-  "databind.core" = "^1.5.2"
-  "nr.util" = ">=0.8.3,<1.0.0"
+  "databind.core" = "^1.5.1"
+  "nr.util" = ">=0.8.6,<1.0.0"
   typing-extensions = "^3.10.0"
 
   [tool.poetry.dev-dependencies]
@@ -21,9 +21,19 @@ packages = [{include = "databind/json", from = "src"}]
 typed = true
 
   [tool.slam.test]
-  pytest = "pytest src/"
   mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
+  pytest = "pytest test/ -vv"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+pretty = true
+namespace_packages = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+show_error_context = true
+show_error_codes = true
