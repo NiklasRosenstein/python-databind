@@ -176,7 +176,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
       # exclude it from the definition of the type for de-/serializing.
       continue
 
-    datatype = typeapi.of(annotations[field.name])
+    datatype = typeapi.eval_types(typeapi.of(annotations[field.name]), globalns=typeapi.scope(dataclass_type))
     default = NotSet.Value if field.default == MISSING else field.default
     default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
     required = _is_required(datatype, default == NotSet.Value and default_factory == NotSet.Value)
@@ -236,7 +236,7 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
   annotations = typeapi.get_annotations(typed_dict)
   fields: t.Dict[str, Field] = {}
   for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
-    datatype = typeapi.of(annotations[key])
+    datatype = typeapi.eval_types(typeapi.of(annotations[key]), globalns=typeapi.scope(t.cast(type, typed_dict)))
     has_default = hasattr(typed_dict, key)
     required = _is_required(datatype, False if has_default else typed_dict.__total__)
     fields[key] = Field(
