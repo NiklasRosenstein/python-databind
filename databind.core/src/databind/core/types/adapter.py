@@ -94,9 +94,9 @@ class TypeContext:
       if self.type_vars and tv in self.type_vars:
         return self.type_vars[tv]
       elif isinstance(tv.__bound__, (str, t.ForwardRef)):
-        return self.resolve_forward_reference(tv.__bound__)
+        return self.resolve_forward_reference(tv.__bound__)  # type: ignore[unreachable]
       elif isinstance(tv.__bound__, str):
-        return self.resolve_forward_reference(tv.__bound__)
+        return self.resolve_forward_reference(tv.__bound__)  # type: ignore[unreachable]
       elif tv.__bound__:
         return tv.__bound__
       else:
