@@ -2,7 +2,7 @@
 import typing as t
 from databind.core.converter import ConversionError
 from databind.core.context import Context
-from databind.core.settings import Priority, Setting
+from databind.core.settings import BooleanSetting, Priority, Setting
 
 
 class ExtraKeys(Setting):
@@ -21,3 +21,9 @@ class ExtraKeys(Setting):
       raise ConversionError(ctx, f'encountered extra keys: {extra_keys}')
     elif self.arg is not True:
       self.arg(ctx, extra_keys)
+
+
+class Remainder(BooleanSetting):
+  """ This setting can be used to indicate on a field of a schema that is of a mapping type that it consumes any
+  extra keys that are not otherwise understood by the schema. Note that there can only be a maximum of 1 remainder
+  field in the same schema. """

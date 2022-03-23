@@ -10,9 +10,9 @@ import typeapi
 from databind.core.context import Context
 from databind.core.converter import Converter, ConversionError
 from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
-from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_highest_setting
+from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_annotation_setting
 from databind.json.direction import Direction
-from databind.json.settings import ExtraKeys
+from databind.json.settings import ExtraKeys, Remainder
 from nr.util.generic import T
 
 
@@ -37,9 +37,10 @@ class AnyConverter(Converter):
   """ A converter for #typing.Any and #object typed values, which will return them unchanged in any case. """
 
   def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
     is_any_type = (
-      isinstance(ctx.datatype, typeapi.Any) or
-      isinstance(ctx.datatype, typeapi.Type) and ctx.datatype.type is object)
+      isinstance(datatype, typeapi.Any) or
+      isinstance(datatype, typeapi.Type) and datatype.type is object)
     if is_any_type:
       return ctx.value
     raise NotImplementedError
@@ -52,16 +53,17 @@ class CollectionConverter(Converter):
     self.json_collection_type = json_collection_type
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, collections.abc.Collection):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, collections.abc.Collection):
       raise NotImplementedError
 
-    if ctx.datatype.nparams != 1:
+    if datatype.nparams != 1:
       # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
       # track of type parameter values.
       raise NotImplementedError
 
-    python_type = ctx.datatype.type
-    item_type = ctx.datatype.args[0] if ctx.datatype.args else t.Any
+    python_type = datatype.type
+    item_type = datatype.args[0] if datatype.args else t.Any
     values: t.Iterable = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
 
     if self.direction == Direction.SERIALIZE:
@@ -94,10 +96,11 @@ class DatetimeConverter(Converter):
     self.direction = direction
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type):
       raise NotImplementedError
 
-    date_type = ctx.datatype.type
+    date_type = datatype.type
     if date_type not in (datetime.date, datetime.time, datetime.datetime):
       raise NotImplementedError
 
@@ -133,7 +136,8 @@ class DecimalConverter(Converter):
     self.strict_by_default = strict_by_default
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, decimal.Decimal):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, decimal.Decimal):
       raise NotImplementedError
 
     strict = ctx.get_setting(Strict) or Strict(self.strict_by_default)
@@ -179,18 +183,17 @@ class EnumConverter(Converter):
   def _discover_alias(self, enum_type: t.Type[enum.Enum], member_name: str) -> t.Optional[Alias]:
     # TODO (@NiklasRosenstein): Take into account annotations of the base classes?
     hint = typeapi.of(typeapi.get_annotations(enum_type).get(member_name))
-    if isinstance(hint, typeapi.Annotated):
-      return get_highest_setting(s for s in hint.metadata if isinstance(s, Alias))
-    return None
+    return get_annotation_setting(hint, Alias)
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type):
       raise NotImplementedError
-    if not issubclass(ctx.datatype.type, enum.Enum):
+    if not issubclass(datatype.type, enum.Enum):
       raise NotImplementedError
 
     value = ctx.value
-    enum_type = ctx.datatype.type
+    enum_type = datatype.type
 
     if self.direction == Direction.SERIALIZE:
       if type(value) is not enum_type:
@@ -222,7 +225,7 @@ class EnumConverter(Converter):
         try:
           return enum_type[value]
         except KeyError:
-          raise ConversionError(ctx, f'{value!r} is not a member of enumeration {ctx.datatype}')
+          raise ConversionError(ctx, f'{value!r} is not a member of enumeration {datatype}')
       assert False, enum_type
 
 
@@ -233,18 +236,19 @@ class MappingConverter(Converter):
     self.json_mapping_type = json_mapping_type
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, collections.abc.Mapping):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, collections.abc.Mapping):
       raise NotImplementedError
 
-    if ctx.datatype.nparams != 2:
+    if datatype.nparams != 2:
       # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
       # track of type parameter values.
       raise NotImplementedError
 
-    if ctx.datatype.args is None:
+    if datatype.args is None:
       key_type, value_type = t.Any, t.Any
     else:
-      key_type, value_type = ctx.datatype.args
+      key_type, value_type = datatype.args
 
     if not isinstance(ctx.value, collections.abc.Mapping):
       raise ConversionError.expected(ctx, collections.abc.Mapping)
@@ -255,10 +259,10 @@ class MappingConverter(Converter):
       key = ctx.spawn(key, key_type, f'Key({key!r})').convert()
       result[key] = value
 
-    if self.direction == Direction.DESERIALIZE and ctx.datatype.type != dict:
+    if self.direction == Direction.DESERIALIZE and datatype.type != dict:
       # We assume that the runtime type is constructible from a plain dictionary.
       try:
-        return ctx.datatype.type(result)  # type: ignore[call-arg]
+        return datatype.type(result)  # type: ignore[call-arg]
       except TypeError:
         # We expect this exception to occur for example if the annotated type is an abstract class like
         # collections.abc.Mapping; in which case we just assume that "dict' is a fine type to return.
@@ -273,11 +277,12 @@ class MappingConverter(Converter):
 class OptionalConverter(Converter):
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Union) or not ctx.datatype.has_none_type():
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Union) or not datatype.has_none_type():
       raise NotImplementedError
     if ctx.value is None:
       return None
-    return ctx.spawn(ctx.value, ctx.datatype.without_none_type(), None).convert()
+    return ctx.spawn(ctx.value, datatype.without_none_type(), None).convert()
 
 
 class PlainDatatypeConverter(Converter):
@@ -320,13 +325,14 @@ class PlainDatatypeConverter(Converter):
     self.strict_by_default = strict_by_default
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type):
       raise NotImplementedError
-    if ctx.datatype.type not in {k[0] for k in self._strict_adapters}:
+    if datatype.type not in {k[0] for k in self._strict_adapters}:
       raise NotImplementedError
 
     source_type = type(ctx.value)
-    target_type = ctx.datatype.type
+    target_type = datatype.type
     strict = (
       (ctx.get_setting(Strict) or Strict(self.strict_by_default))
       if self.direction == Direction.DESERIALIZE else
@@ -388,8 +394,18 @@ class SchemaConverter(Converter):
       else:
         return getattr(ctx.value, field_name)
 
+    remainder_field: t.Optional[t.Tuple[str, Field]] = None
+    remainder_values: t.Optional[t.Dict[str, t.Any]] = None
+
     for field_name, field in schema.fields.items():
       field_ctx = ctx.spawn(_get_field_value(field_name, field), field.datatype, field_name)
+      remainder = field_ctx.get_setting(Remainder)
+      if remainder and remainder.enabled:
+        if remainder_field is not None:
+          raise ConversionError(ctx, f'found at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
+        # We look at the remainder field later.
+        remainder_field = field_name, field
+        assert not field.flattened, "remainder field cannot be flattened"
       value = field_ctx.convert()
       if field.flattened:
         if not isinstance(value, t.Mapping):
@@ -402,10 +418,20 @@ class SchemaConverter(Converter):
         result.update(value)
       else:
         if serialize_defaults or not field.has_default() or field_ctx.value != field.get_default():
-          alias = self._get_alias_setting(ctx, field_name).aliases[0]
-          result[alias] = value
+          alias = self._get_alias_setting(field_ctx, field_name).aliases[0]
+          if remainder and remainder.enabled:
+            if not isinstance(value, t.Mapping):
+              raise ConversionError(ctx, f'cannot expand remainder field {field_name!r} of type {type(value).__name__}')
+            remainder_values = value
+          else:
+            result[alias] = value
 
-    # TODO (@NiklasRosenstein): Support flattening a "remainder" field
+    if remainder_field:
+      assert remainder_values is not None
+      duplicate_keys = result.keys() & remainder_values.keys()
+      if duplicate_keys:
+        raise ConversionError(ctx, f'keys in remainder field collide with other fields in the schema: {duplicate_keys}')
+      result.update(remainder_values)
 
     return result
 
@@ -415,9 +441,20 @@ class SchemaConverter(Converter):
 
     source = ctx.value
     used_keys = set()
+    remainder_field: t.Optional[t.Tuple[str, Field]] = None
 
     def _extract_field(result: t.Dict[str, t.Any], field_name: str, field: Field) -> t.Dict[str, t.Any]:
-      aliases = self._get_alias_setting(ctx, field_name).aliases
+      nonlocal remainder_field
+
+      field_ctx = ctx.spawn(None, field.datatype, field_name)
+      remainder = field_ctx.get_setting(Remainder)
+      if remainder and remainder.enabled:
+        if remainder_field is not None:
+          raise ConversionError(ctx, f'encountered at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
+        remainder_field = (field_name, field)
+        return
+
+      aliases = self._get_alias_setting(field_ctx, field_name).aliases
       for alias in aliases:
         if alias in source:
           result[field_name] = source[alias]
@@ -444,25 +481,27 @@ class SchemaConverter(Converter):
       else:
         container = _extract_field({}, field_name, field)
         if not container:
-          assert not field.required
+          assert not field.required or (remainder_field and remainder_field[0] == field_name)
           continue
         value = ctx.spawn(container[field_name], field.datatype, field_name).convert()
       result[field_name] = value
 
-    # TODO(@NiklasRosenstein): Support remainder field.
     # TODO(@NiklasRosenstein): Support deserializing as a type different than what is defined in the schema.
-    # TODO(@NiklasRosenstein): Option to not raise an error upon encountering unknown fields.
 
     unused_keys = source.keys() - used_keys
-    if unused_keys:
+    if remainder_field:
+      remainders = {k: ctx.value[k] for k in unused_keys}
+      result[remainder_field[0]] = ctx.spawn(remainders, remainder_field[1].datatype, remainder_field[0]).convert()
+    elif unused_keys:
       extra_keys = ctx.get_setting(ExtraKeys) or ExtraKeys(False)
       extra_keys.inform(ctx, unused_keys)
 
     return schema.constructor(**result)
 
   def convert(self, ctx: Context) -> t.Any:
+    datatype = typeapi.unwrap(ctx.datatype)[0]
     try:
-      schema = self.convert_to_schema(ctx.datatype)
+      schema = self.convert_to_schema(datatype)
     except ValueError as exc:
       raise NotImplementedError(str(exc))
 
@@ -490,7 +529,8 @@ class StringifyConverter(Converter):
     self.formatter = formatter
 
   def convert(self, ctx: Context) -> t.Any:
-    if not isinstance(ctx.datatype, typeapi.Type) or not issubclass(ctx.datatype.type, self.type_):
+    datatype = typeapi.unwrap(ctx.datatype)[0]
+    if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, self.type_):
       raise NotImplementedError
 
     if self.direction == Direction.DESERIALIZE:
@@ -502,8 +542,8 @@ class StringifyConverter(Converter):
         raise ConversionError(ctx, str(exc))
 
     else:
-      if not isinstance(ctx.value, ctx.datatype.type):
-        raise ConversionError.expected(ctx, ctx.datatype.type)
+      if not isinstance(ctx.value, datatype.type):
+        raise ConversionError.expected(ctx, datatype.type)
       return self.formatter(ctx.value)
 
 
@@ -600,17 +640,18 @@ class UnionConverter(Converter):
       raise ConversionError(ctx, f'The Union.{style.upper()} style is not supported for plain member types')
 
   def convert(self, ctx: Context) -> t.Any:
+    datatype = ctx.datatype
     union: t.Optional[Union]
-    if isinstance(ctx.datatype, typeapi.Union):
-      if ctx.datatype.has_none_type():
+    if isinstance(datatype, typeapi.Union):
+      if datatype.has_none_type():
         raise NotImplementedError('unable to handle Union type with None in it')
-      if not all(isinstance(a, typeapi.Type) for a in ctx.datatype.types):
-        raise NotImplementedError(f'members of plain Union must be concrete types: {ctx.datatype}')
-      members = {t.cast(typeapi.Type, a).type.__name__: a for a in ctx.datatype.types}
-      if len(members) != len(ctx.datatype.types):
-        raise NotImplementedError(f'members of plain Union cannot have overlapping type names: {ctx.datatype}')
+      if not all(isinstance(a, typeapi.Type) for a in datatype.types):
+        raise NotImplementedError(f'members of plain Union must be concrete types: {datatype}')
+      members = {t.cast(typeapi.Type, a).type.__name__: a for a in datatype.types}
+      if len(members) != len(datatype.types):
+        raise NotImplementedError(f'members of plain Union cannot have overlapping type names: {datatype}')
       union = Union(members)
-    elif isinstance(ctx.datatype, (typeapi.Annotated, typeapi.Type)):
+    elif isinstance(datatype, (typeapi.Annotated, typeapi.Type)):
       union = ctx.get_setting(Union)
       if union is None:
         raise NotImplementedError

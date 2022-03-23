@@ -16,7 +16,7 @@ from databind.json.converters import AnyConverter, CollectionConverter, Datetime
     EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, StringifyConverter, \
     UnionConverter
 from databind.json.direction import Direction
-from databind.json.settings import ExtraKeys
+from databind.json.settings import ExtraKeys, Remainder
 from nr.util.date import duration
 
 
@@ -294,3 +294,33 @@ def test_schema_converter(direction):
     with pytest.raises(ConversionError) as excinfo:
       mapper.convert(serialized, Class4)
     assert str(excinfo.value).splitlines()[0] == "missing required field: 'c'"
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_schema_converter_with_dict_member(direction):
+  mapper = make_mapper([SchemaConverter(direction), MappingConverter(direction), PlainDatatypeConverter(direction)])
+
+  @dataclasses.dataclass
+  class A:
+    a: int
+    b: t.Dict[str, int]
+
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(A(1, {'spam': 2}), A) == {'a': 1, 'b': {'spam': 2}}
+  else:
+    assert mapper.convert({'a': 1, 'b': {'spam': 2}}, A) == A(1, {'spam': 2})
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_schema_converter_remainder_field(direction):
+  mapper = make_mapper([SchemaConverter(direction), MappingConverter(direction), PlainDatatypeConverter(direction)])
+
+  @dataclasses.dataclass
+  class A:
+    a: int
+    b: te.Annotated[t.Dict[str, int], Remainder()]
+
+  if direction == Direction.SERIALIZE:
+    assert mapper.convert(A(1, {'spam': 2}), A) == {'a': 1, 'spam': 2}
+  else:
+    assert mapper.convert({'a': 1, 'spam': 2}, A) == A(1, {'spam': 2})
