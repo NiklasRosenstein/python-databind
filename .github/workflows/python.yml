@@ -13,8 +13,8 @@ jobs:
         python-version: [ "3.7", "3.8", "3.9", "3.10", "3.x" ]
     steps:
     - uses: actions/checkout@v2
-    - uses: NiklasRosenstein/slam@github-action/install/v1
+    - uses: NiklasRosenstein/slap@gha/install/v1
     - uses: actions/setup-python@v2
       with: { python-version: "${{ matrix.python-version }}" }
-    - run: slam install -vv --no-venv-check
-    - run: slam test
+    - run: slap install -vv --no-venv-check
+    - run: slap test

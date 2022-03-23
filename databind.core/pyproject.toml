@@ -22,10 +22,10 @@ types-deprecated = "*"
 types-pkg_resources = "*"
 types-termcolor = "*"
 
-[tool.slam]
+[tool.slap]
 typed = true
 
-[tool.slam.test]
+[tool.slap.test]
 mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
 pytest = "pytest test/ -vv"
 

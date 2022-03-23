@@ -17,10 +17,10 @@ typing-extensions = "^3.10.0"
 pytest = "*"
 mypy = "*"
 
-[tool.slam]
+[tool.slap]
 typed = true
 
-[tool.slam.test]
+[tool.slap.test]
 mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
 pytest = "pytest test/ -vv"
 

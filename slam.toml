@@ -6,4 +6,4 @@ enabled = false
 "docs:dev" = "cd docs && novella --serve"
 
 [test]
-check = "slam check"
+check = "slap check"
