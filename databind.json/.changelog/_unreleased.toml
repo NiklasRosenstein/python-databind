@@ -1,0 +1,5 @@
+[[entries]]
+id = "85403125-18ad-4988-8514-019a38a7128d"
+type = "improvement"
+description = "move `ExtraKeys` and `Remainder` setting from `databind.json` to `databind.core`"
+author = "@NiklasRosenstein"
