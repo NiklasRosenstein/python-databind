@@ -10,9 +10,9 @@ import typeapi
 from databind.core.context import Context
 from databind.core.converter import Converter, ConversionError
 from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
-from databind.core.settings import Alias, DateFormat, Precision, SerializeDefaults, Strict, Union, get_annotation_setting
+from databind.core.settings import Alias, DateFormat, ExtraKeys, Precision, Remainder, SerializeDefaults, Strict, \
+    Union, get_annotation_setting
 from databind.json.direction import Direction
-from databind.json.settings import ExtraKeys, Remainder
 from nr.util.generic import T
 
 

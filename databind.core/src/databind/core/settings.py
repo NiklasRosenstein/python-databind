@@ -594,3 +594,37 @@ class DateFormat(Setting):
   def _formulate_parse_error(formats: t.Sequence[t.Any], s: t.Any) -> ValueError:
     return ValueError(f'"{s}" does not match date formats ({len(formats)}):' +
       ''.join(f'\n  | {x.format_str}' for x in formats))
+
+
+class ExtraKeys(ClassDecoratorSetting):
+  """ If discovered while deserializing a #databind.core.schema.Schema, it's callback is used to inform when extras
+  keys are encountered. If the setting is not available, or if the arg is set to `False` (the default), it will
+  cause an error.
+
+  The setting may also be supplied at an individual schema level.
+
+  Can be used as a decorator for a class to indicate that extra keys on the schema informed by the class are allowed,
+  as a global setting or as an annotation on a schema field.
+
+  !!! note
+
+      Only the first, highest priority annotation is used; thus if you pass a callback for *arg* it may not be called
+      if the #ExtraKeys setting you pass it to is overruled by another.
+  """
+
+  def __init__(self, arg: t.Union[bool, t.Callable[[Context, t.Set[str]], t.Any]], priority: Priority = Priority.NORMAL) -> None:
+    self.arg = arg
+    self.priority = priority
+
+  def inform(self, ctx: Context, extra_keys: t.Set[str]) -> None:
+    from databind.core.converter import ConversionError
+    if self.arg is False:
+      raise ConversionError(ctx, f'encountered extra keys: {extra_keys}')
+    elif self.arg is not True:
+      self.arg(ctx, extra_keys)
+
+
+class Remainder(BooleanSetting):
+  """ This setting can be used to indicate on a field of a schema that is of a mapping type that it consumes any
+  extra keys that are not otherwise understood by the schema. Note that there can only be a maximum of 1 remainder
+  field in the same schema. """
