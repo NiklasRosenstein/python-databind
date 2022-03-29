@@ -1,0 +1,5 @@
+[[entries]]
+id = "3bac26ba-57d6-4953-8393-386c618e1d14"
+type = "fix"
+description = "Fix error in `ConversionError.expected()` if the `types` parameter was a type hint"
+author = "@NiklasRosenstein"

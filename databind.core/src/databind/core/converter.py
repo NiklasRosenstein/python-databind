@@ -76,7 +76,7 @@ class ConversionError(Exception):
 
   @staticmethod
   def expected(ctx: Context, types: t.Union[t.Type, t.Sequence[t.Type]], got: t.Optional[t.Type] = None) -> ConversionError:
-    if isinstance(types, type):
+    if not isinstance(types, t.Sequence):
       types = (types,)
     expected = '|'.join(typeapi.type_repr(t) for t in types)
     got = type(ctx.value) if got is None else got
