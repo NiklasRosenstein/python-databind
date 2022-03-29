@@ -4,6 +4,7 @@ import collections.abc
 import datetime
 import decimal
 import enum
+import types
 import typing as t
 
 import typeapi
@@ -74,11 +75,13 @@ class CollectionConverter(Converter):
     else:
       if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
         raise ConversionError.expected(ctx, collections.abc.Collection)
-      if python_type != list:
-        values = list(values)
+      values = list(values)
+      if python_type == list:
+        return values
       try:
         return python_type(values)  # type: ignore[call-arg]
       except TypeError:
+        assert not isinstance(values, types.GeneratorType), (type(values), python_type)
         # We assume that the native list is an appropriate placeholder for whatever specific Collection type
         # was chosen in the value's datatype.
         return values
