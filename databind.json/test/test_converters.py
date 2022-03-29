@@ -215,10 +215,21 @@ def test_collection_converter(direction):
 def test_union_converter_nested(direction):
   mapper = make_mapper([UnionConverter(direction), PlainDatatypeConverter(direction)])
 
+  hint = te.Annotated[t.Union[int, str], Union({"int": int, "str": str})]
   if direction == Direction.DESERIALIZE:
-    assert mapper.convert({"type": "int", "int": 42}, t.Union[int, str]) == 42
+    assert mapper.convert({"type": "int", "int": 42}, hint) == 42
   else:
-    assert mapper.convert(42, t.Union[int, str]) == {"type": "int", "int": 42}
+    assert mapper.convert(42, hint) == {"type": "int", "int": 42}
+
+
+@pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_union_converter_best_match(direction):
+  mapper = make_mapper([UnionConverter(direction), PlainDatatypeConverter(direction)])
+
+  if direction == Direction.DESERIALIZE:
+    assert mapper.convert(42, t.Union[int, str]) == 42
+  else:
+    assert mapper.convert(42, t.Union[int, str]) == 42
 
 
 @pytest.mark.parametrize('direction', (Direction.SERIALIZE, Direction.DESERIALIZE))

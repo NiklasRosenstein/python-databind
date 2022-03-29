@@ -1,0 +1,5 @@
+[[entries]]
+id = "9f5996fe-a2bf-4fb5-b8bf-42c526673d93"
+type = "breaking change"
+description = "implement `Union.BEST_MATCH` in `UnionConverter`, which is now used as the default if an un-annotated `typing.Union` is encountered"
+author = "@NiklasRosenstein"

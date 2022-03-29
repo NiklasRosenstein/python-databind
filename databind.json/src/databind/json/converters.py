@@ -654,7 +654,7 @@ class UnionConverter(Converter):
       members = {t.cast(typeapi.Type, a).type.__name__: a for a in datatype.types}
       if len(members) != len(datatype.types):
         raise NotImplementedError(f'members of plain Union cannot have overlapping type names: {datatype}')
-      union = Union(members)
+      union = Union(members, Union.BEST_MATCH)
     elif isinstance(datatype, (typeapi.Annotated, typeapi.Type)):
       union = ctx.get_setting(Union)
       if union is None:
@@ -663,6 +663,16 @@ class UnionConverter(Converter):
       raise NotImplementedError
 
     style = union.style
+    if style == Union.BEST_MATCH:
+      errors = []
+      for member_name in union.members.get_type_ids():
+        member_type = union.members.get_type_by_id(member_name)
+        try:
+          return ctx.spawn(ctx.value, member_type, None).convert()
+        except ConversionError as exc:
+          errors.append((exc))
+      raise ConversionError(self, ctx, f'unable to {self.direction.name.lower()} any union member', )
+
     discriminator_key = union.discriminator_key
     is_deserialize = self.direction == Direction.DESERIALIZE
 
