@@ -3,3 +3,9 @@ id = "3bac26ba-57d6-4953-8393-386c618e1d14"
 type = "fix"
 description = "Fix error in `ConversionError.expected()` if the `types` parameter was a type hint"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "9439eaa0-19ba-4b9e-9437-b59c55219550"
+type = "breaking change"
+description = "add `ConversionError()` `origin` and `errors` parameter"
+author = "@NiklasRosenstein"

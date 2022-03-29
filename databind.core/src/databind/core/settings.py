@@ -1,7 +1,6 @@
 
 from __future__ import annotations
 import abc
-from ast import Is
 import dataclasses
 import datetime
 import decimal
@@ -13,6 +12,7 @@ from nr.util.generic import T
 from nr.util.preconditions import check_instance_of, check_not_none, check_subclass_of
 
 if t.TYPE_CHECKING:
+  from databind.core.converter import Converter
   from databind.core.context import Context
   from databind.core.union import EntrypointUnionMembers, ImportUnionMembers, StaticUnionMembers, UnionMembers
   from nr.util.date import date_format, time_format, datetime_format, format_set
@@ -616,10 +616,10 @@ class ExtraKeys(ClassDecoratorSetting):
     self.arg = arg
     self.priority = priority
 
-  def inform(self, ctx: Context, extra_keys: t.Set[str]) -> None:
+  def inform(self, origin: Converter, ctx: Context, extra_keys: t.Set[str]) -> None:
     from databind.core.converter import ConversionError
     if self.arg is False:
-      raise ConversionError(ctx, f'encountered extra keys: {extra_keys}')
+      raise ConversionError(origin, ctx, f'encountered extra keys: {extra_keys}')
     elif self.arg is not True:
       self.arg(ctx, extra_keys)
 

@@ -69,12 +69,12 @@ class CollectionConverter(Converter):
 
     if self.direction == Direction.SERIALIZE:
       if not isinstance(ctx.value, python_type):
-        raise ConversionError.expected(ctx, python_type)
+        raise ConversionError.expected(self, ctx, python_type)
       return self.json_collection_type(values)  # type: ignore[call-arg]
 
     else:
       if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
-        raise ConversionError.expected(ctx, collections.abc.Collection)
+        raise ConversionError.expected(self, ctx, collections.abc.Collection)
       values = list(values)
       if python_type == list:
         return values
@@ -120,14 +120,14 @@ class DatetimeConverter(Converter):
         try:
           dt = datefmt.parse(date_type, ctx.value)
         except ValueError as exc:
-          raise ConversionError(ctx, str(exc))
+          raise ConversionError(self, ctx, str(exc))
         assert isinstance(dt, date_type)
         return dt
-      raise ConversionError.expected(ctx, date_type, type(ctx.value))
+      raise ConversionError.expected(self, ctx, date_type, type(ctx.value))
 
     else:
       if not isinstance(ctx.value, date_type):
-        raise ConversionError.expected(ctx, date_type, type(ctx.value))
+        raise ConversionError.expected(self, ctx, date_type, type(ctx.value))
       return datefmt.format(ctx.value)
 
 
@@ -150,11 +150,11 @@ class DecimalConverter(Converter):
     if self.direction == Direction.DESERIALIZE:
       if (not strict.enabled and isinstance(ctx.value, (int, float))) or isinstance(ctx.value, str):
         return decimal.Decimal(ctx.value, context)
-      raise ConversionError.expected(ctx, str, type(ctx.value))
+      raise ConversionError.expected(self, ctx, str, type(ctx.value))
 
     else:
       if not isinstance(ctx.value, decimal.Decimal):
-        raise ConversionError.expected(ctx, decimal.Decimal, type(ctx.value))
+        raise ConversionError.expected(self, ctx, decimal.Decimal, type(ctx.value))
       return str(ctx.value)
 
 
@@ -200,7 +200,7 @@ class EnumConverter(Converter):
 
     if self.direction == Direction.SERIALIZE:
       if type(value) is not enum_type:
-        raise ConversionError.expected(ctx, enum_type, type(value))
+        raise ConversionError.expected(self, ctx, enum_type, type(value))
       if issubclass(enum_type, enum.IntEnum):
         return value.value
       if issubclass(enum_type, enum.Enum):
@@ -213,14 +213,14 @@ class EnumConverter(Converter):
     else:
       if issubclass(enum_type, enum.IntEnum):
         if not isinstance(value, int):
-          raise ConversionError.expected(ctx, int, type(value))
+          raise ConversionError.expected(self, ctx, int, type(value))
         try:
           return enum_type(value)
         except ValueError as exc:
-          raise ConversionError(ctx, str(exc))
+          raise ConversionError(self, ctx, str(exc))
       if issubclass(enum_type, enum.Enum):
         if not isinstance(value, str):
-          raise ConversionError.expected(ctx, str, type(value))
+          raise ConversionError.expected(self, ctx, str, type(value))
         for enum_value in enum_type:
           alias = self._discover_alias(enum_type, enum_value.name)
           if alias and value in alias.aliases:
@@ -228,7 +228,7 @@ class EnumConverter(Converter):
         try:
           return enum_type[value]
         except KeyError:
-          raise ConversionError(ctx, f'{value!r} is not a member of enumeration {datatype}')
+          raise ConversionError(self, ctx, f'{value!r} is not a member of enumeration {datatype}')
       assert False, enum_type
 
 
@@ -254,7 +254,7 @@ class MappingConverter(Converter):
       key_type, value_type = datatype.args
 
     if not isinstance(ctx.value, collections.abc.Mapping):
-      raise ConversionError.expected(ctx, collections.abc.Mapping)
+      raise ConversionError.expected(self, ctx, collections.abc.Mapping)
 
     result = {}
     for key, value in ctx.value.items():
@@ -345,12 +345,12 @@ class PlainDatatypeConverter(Converter):
 
     if adapter is None:
       msg = f'unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}'
-      raise ConversionError(ctx, msg)
+      raise ConversionError(self, ctx, msg)
 
     try:
       return adapter(ctx.value)
     except ValueError as exc:
-      raise ConversionError(ctx, str(exc)) from exc
+      raise ConversionError(self, ctx, str(exc)) from exc
 
 
 class SchemaConverter(Converter):
@@ -386,7 +386,7 @@ class SchemaConverter(Converter):
       pass
     else:
       if not is_instance:
-        raise ConversionError.expected(ctx, schema.type)
+        raise ConversionError.expected(self, ctx, schema.type)
 
     serialize_defaults = (ctx.get_setting(SerializeDefaults) or SerializeDefaults(self.serialize_defaults)).enabled
     result = self.json_mapping_type()
@@ -405,7 +405,7 @@ class SchemaConverter(Converter):
       remainder = field_ctx.get_setting(Remainder)
       if remainder and remainder.enabled:
         if remainder_field is not None:
-          raise ConversionError(ctx, f'found at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
+          raise ConversionError(self, ctx, f'found at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
         # We look at the remainder field later.
         remainder_field = field_name, field
         assert not field.flattened, "remainder field cannot be flattened"
@@ -413,6 +413,7 @@ class SchemaConverter(Converter):
       if field.flattened:
         if not isinstance(value, t.Mapping):
           raise ConversionError(
+            self,
             field_ctx,
             f'field {field_name!r} is flattened but its serialized form is not '
             f'a mapping (got {type(value).__name__!r})',
@@ -424,7 +425,7 @@ class SchemaConverter(Converter):
           alias = self._get_alias_setting(field_ctx, field_name).aliases[0]
           if remainder and remainder.enabled:
             if not isinstance(value, t.Mapping):
-              raise ConversionError(ctx, f'cannot expand remainder field {field_name!r} of type {type(value).__name__}')
+              raise ConversionError(self, ctx, f'cannot expand remainder field {field_name!r} of type {type(value).__name__}')
             remainder_values = value
           else:
             result[alias] = value
@@ -433,14 +434,14 @@ class SchemaConverter(Converter):
       assert remainder_values is not None
       duplicate_keys = result.keys() & remainder_values.keys()
       if duplicate_keys:
-        raise ConversionError(ctx, f'keys in remainder field collide with other fields in the schema: {duplicate_keys}')
+        raise ConversionError(self, ctx, f'keys in remainder field collide with other fields in the schema: {duplicate_keys}')
       result.update(remainder_values)
 
     return result
 
   def deserialize(self, ctx: Context, schema: Schema) -> t.Any:
     if not isinstance(ctx.value, t.Mapping):
-      raise ConversionError.expected(ctx, collections.abc.Mapping)
+      raise ConversionError.expected(self, ctx, collections.abc.Mapping)
 
     source = ctx.value
     used_keys = set()
@@ -453,7 +454,7 @@ class SchemaConverter(Converter):
       remainder = field_ctx.get_setting(Remainder)
       if remainder and remainder.enabled:
         if remainder_field is not None:
-          raise ConversionError(ctx, f'encountered at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
+          raise ConversionError(self, ctx, f'encountered at least two remainder fields ({remainder_field[0]!r}, {field_name!r})')
         remainder_field = (field_name, field)
         return result
 
@@ -466,7 +467,7 @@ class SchemaConverter(Converter):
       else:
         if field.required:
           other_aliases = f' (or {", ".join(map(repr, aliases[1:]))})' if len(aliases) > 1 else ''
-          raise ConversionError(ctx, f'missing required field: {aliases[0]!r}{other_aliases}')
+          raise ConversionError(self, ctx, f'missing required field: {aliases[0]!r}{other_aliases}')
       return result
 
     def _extract_fields(fields: t.Dict[str, Field]) -> t.Dict[str, t.Any]:
@@ -497,7 +498,7 @@ class SchemaConverter(Converter):
       result[remainder_field[0]] = ctx.spawn(remainders, remainder_field[1].datatype, remainder_field[0]).convert()
     elif unused_keys:
       extra_keys = ctx.get_setting(ExtraKeys) or ExtraKeys(False)
-      extra_keys.inform(ctx, unused_keys)
+      extra_keys.inform(self, ctx, unused_keys)
 
     return schema.constructor(**result)
 
@@ -538,15 +539,15 @@ class StringifyConverter(Converter):
 
     if self.direction == Direction.DESERIALIZE:
       if not isinstance(ctx.value, str):
-        raise ConversionError.expected(ctx, str)
+        raise ConversionError.expected(self, ctx, str)
       try:
         return self.parser(ctx.value)
       except (TypeError, ValueError) as exc:
-        raise ConversionError(ctx, str(exc))
+        raise ConversionError(self, ctx, str(exc))
 
     else:
       if not isinstance(ctx.value, datatype.type):
-        raise ConversionError.expected(ctx, datatype.type)
+        raise ConversionError.expected(self, ctx, datatype.type)
       return self.formatter(ctx.value)
 
 
@@ -623,24 +624,24 @@ class UnionConverter(Converter):
     # TODO (@NiklasRosenstein): Support Union.BEST_MATCH
     if style in (Union.NESTED, Union.FLAT):
       if discriminator_key not in value:
-        raise ConversionError(ctx, f'missing discriminator key {discriminator_key!r} in mapping')
+        raise ConversionError(self, ctx, f'missing discriminator key {discriminator_key!r} in mapping')
       member_name = value[discriminator_key]
       if not isinstance(member_name, str):
-        raise ConversionError.expected(ctx.spawn(member_name, str, discriminator_key), str)
+        raise ConversionError.expected(self, ctx.spawn(member_name, str, discriminator_key), str)
     elif style == Union.KEYED:
       if len(value) != 1:
-        raise ConversionError(ctx, f'expected exactly one key to act as the discriminator, got {len(value)} key(s)')
+        raise ConversionError(self, ctx, f'expected exactly one key to act as the discriminator, got {len(value)} key(s)')
       member_name = next(iter(value))
       assert isinstance(member_name, str)
     else:
-      raise ConversionError(ctx, f'unsupported Union.style: {style!r}')
+      raise ConversionError(self, ctx, f'unsupported Union.style: {style!r}')
 
     assert isinstance(member_name, str), (member_name, value)
     return member_name
 
   def _check_style_compatibility(self, ctx: Context, style: str, value: t.Any) -> None:
     if not isinstance(value, t.MutableMapping) and style in (Union.FLAT,):
-      raise ConversionError(ctx, f'The Union.{style.upper()} style is not supported for plain member types')
+      raise ConversionError(self, ctx, f'The Union.{style.upper()} style is not supported for plain member types')
 
   def convert(self, ctx: Context) -> t.Any:
     datatype = ctx.datatype
@@ -668,7 +669,7 @@ class UnionConverter(Converter):
     if is_deserialize:
       # Identify the member type to deserialize to.
       if not isinstance(ctx.value, t.Mapping):
-        raise ConversionError.expected(ctx, t.Mapping)
+        raise ConversionError.expected(self, ctx, t.Mapping)
       member_name = self._get_deserialize_member_name(ctx, ctx.value, style, discriminator_key)
       member_type = union.members.get_type_by_id(member_name)
 
@@ -685,7 +686,7 @@ class UnionConverter(Converter):
       # TODO (@NiklasRosenstein): Support Union.BEST_MATCH.
       if style == Union.NESTED:
         if nesting_key not in ctx.value:
-          raise ConversionError(ctx, f'missing nesting key {nesting_key!r} in mapping')
+          raise ConversionError(self, ctx, f'missing nesting key {nesting_key!r} in mapping')
         child_context = ctx.spawn(ctx.value[nesting_key], type_hint, nesting_key)
       elif style == Union.FLAT:
         child_context = ctx.spawn(dict(ctx.value), type_hint, None)
@@ -694,7 +695,7 @@ class UnionConverter(Converter):
       elif style == Union.KEYED:
         child_context = ctx.spawn(ctx.value[member_name], type_hint, member_name)
       else:
-        raise ConversionError(ctx, f'unsupported union style: {style!r}')
+        raise ConversionError(self, ctx, f'unsupported union style: {style!r}')
 
     else:
       child_context = ctx.spawn(ctx.value, type_hint, None)
@@ -717,6 +718,6 @@ class UnionConverter(Converter):
       elif style == Union.BEST_MATCH:
         pass
       else:
-        raise ConversionError(ctx, f'unsupported union style: {style!r}')
+        raise ConversionError(self, ctx, f'unsupported union style: {style!r}')
 
     return result
