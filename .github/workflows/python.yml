@@ -12,12 +12,12 @@ jobs:
       matrix:
         python-version: [ "3.7", "3.8", "3.9", "3.10", "3.x" ]
     steps:
-    - uses: actions/checkout@v2
-    - uses: NiklasRosenstein/slap@gha/install/v1
-    - uses: actions/setup-python@v2
-      with: { python-version: "${{ matrix.python-version }}" }
-    - run: slap install -vv --no-venv-check
-    - run: slap test
+      - uses: actions/checkout@v2
+      - uses: NiklasRosenstein/slap@gha/install/v1
+      - uses: actions/setup-python@v2
+        with: { python-version: "${{ matrix.python-version }}" }
+      - run: slap install -vv --no-venv-check
+      - run: slap test
 
   update-changelog:
     runs-on: ubuntu-latest
@@ -25,3 +25,15 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: NiklasRosenstein/slap@gha/changelog/update/v1
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: NiklasRosenstein/slap@gha/install/v1
+      - uses: actions/setup-python@v2
+        with: { python-version: "3.10" }
+      - run: slap install --only-extras docs
+      - run: slap run docs:build
+      - uses: JamesIves/github-pages-deploy-action@4.1.4
+        with: { branch: gh-pages, folder: docs/_site, ssh-key: "${{ secrets.DEPLOY_KEY }}" }
