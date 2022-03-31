@@ -14,6 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: NiklasRosenstein/slap@gha/install/v1
+        with: { version: "1.4.2" }
       - uses: actions/setup-python@v2
         with: { python-version: "${{ matrix.python-version }}" }
       - run: slap install -vv --no-venv-check
@@ -25,12 +26,14 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: NiklasRosenstein/slap@gha/changelog/update/v1
+        with: { version: "1.4.2" }
 
   docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: NiklasRosenstein/slap@gha/install/v1
+        with: { version: "1.4.2" }
       - uses: actions/setup-python@v2
         with: { python-version: "3.10" }
       - run: slap install --only-extras docs
