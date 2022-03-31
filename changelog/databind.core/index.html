@@ -1,0 +1,1493 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.8">
+    
+    
+      
+        <title>databind.core - python-databind</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.644de097.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.e6a45f82.min.css">
+        
+          
+          
+          <meta name="theme-color" content="#2094f3">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="amber">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#200-alpha4-2022-03-29" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="python-databind" class="md-header__button md-logo" aria-label="python-databind" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            python-databind
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              databind.core
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/NiklasRosenstein/python-databind" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="python-databind" class="md-nav__button md-logo" aria-label="python-databind" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    python-databind
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/NiklasRosenstein/python-databind" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../databind.core/" class="md-nav__link">
+        databind.core
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../databind.json/" class="md-nav__link">
+        databind.json
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="API" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.context/" class="md-nav__link">
+        databind.core.context
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.converter/" class="md-nav__link">
+        databind.core.converter
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.dataclasses/" class="md-nav__link">
+        databind.core.dataclasses
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.mapper/" class="md-nav__link">
+        databind.core.mapper
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.schema/" class="md-nav__link">
+        databind.core.schema
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.settings/" class="md-nav__link">
+        databind.core.settings
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.core.union/" class="md-nav__link">
+        databind.core.union
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.json/" class="md-nav__link">
+        databind.json
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.json.converters/" class="md-nav__link">
+        databind.json.converters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.json.direction/" class="md-nav__link">
+        databind.json.direction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/databind.json.module/" class="md-nav__link">
+        databind.json.module
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          Changelogs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Changelogs" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Changelogs
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          databind.core
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        databind.core
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#200-alpha4-2022-03-29" class="md-nav__link">
+    2.0.0-alpha.4 (2022-03-29)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200a2-2022-03-24" class="md-nav__link">
+    2.0.0a2 (2022-03-24)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152-2022-03-23" class="md-nav__link">
+    1.5.2 (2022-03-23)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#151-2022-02-26" class="md-nav__link">
+    1.5.1 (2022-02-26)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#150-2022-02-26" class="md-nav__link">
+    1.5.0 (2022-02-26)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140-2022-01-22" class="md-nav__link">
+    1.4.0 (2022-01-22)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#132-2022-01-10" class="md-nav__link">
+    1.3.2 (2022-01-10)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#131-2022-01-08" class="md-nav__link">
+    1.3.1 (2022-01-08)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130-2022-01-06" class="md-nav__link">
+    1.3.0 (2022-01-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#126-2021-12-29" class="md-nav__link">
+    1.2.6 (2021-12-29)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#125-2021-10-24" class="md-nav__link">
+    1.2.5 (2021-10-24)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#123-2021-09-06" class="md-nav__link">
+    1.2.3 (2021-09-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122-2021-09-01" class="md-nav__link">
+    1.2.2 (2021-09-01)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2021-08-20" class="md-nav__link">
+    1.2.0 (2021-08-20)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#116-2021-08-18" class="md-nav__link">
+    1.1.6 (2021-08-18)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#115-2021-08-16" class="md-nav__link">
+    1.1.5 (2021-08-16)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#113-2021-08-10" class="md-nav__link">
+    1.1.3 (2021-08-10)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#112-2021-08-06" class="md-nav__link">
+    1.1.2 (2021-08-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111-2021-08-03" class="md-nav__link">
+    1.1.1 (2021-08-03)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2021-08-03" class="md-nav__link">
+    1.1.0 (2021-08-03)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-2021-07-23" class="md-nav__link">
+    1.0.1 (2021-07-23)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2021-07-20" class="md-nav__link">
+    1.0.0 (2021-07-20)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-2021-04-08" class="md-nav__link">
+    0.11.0 (2021-04-08)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-2021-03-05" class="md-nav__link">
+    0.10.0 (2021-03-05)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2020-12-30" class="md-nav__link">
+    0.9.0 (2020-12-30)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-2020-11-24" class="md-nav__link">
+    0.8.0 (2020-11-24)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#071-2020-11-20" class="md-nav__link">
+    0.7.1 (2020-11-20)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2020-10-02" class="md-nav__link">
+    0.7.0 (2020-10-02)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2020-09-14" class="md-nav__link">
+    0.6.0 (2020-09-14)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2020-09-10" class="md-nav__link">
+    0.5.0 (2020-09-10)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#042-2020-09-09" class="md-nav__link">
+    0.4.2 (2020-09-09)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#041-2020-09-08" class="md-nav__link">
+    0.4.1 (2020-09-08)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2020-09-06" class="md-nav__link">
+    0.4.0 (2020-09-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2020-08-29" class="md-nav__link">
+    0.3.0 (2020-08-29)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2020-08-29" class="md-nav__link">
+    0.2.0 (2020-08-29)
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../databind.json/" class="md-nav__link">
+        databind.json
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#200-alpha4-2022-03-29" class="md-nav__link">
+    2.0.0-alpha.4 (2022-03-29)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#200a2-2022-03-24" class="md-nav__link">
+    2.0.0a2 (2022-03-24)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#152-2022-03-23" class="md-nav__link">
+    1.5.2 (2022-03-23)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#151-2022-02-26" class="md-nav__link">
+    1.5.1 (2022-02-26)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#150-2022-02-26" class="md-nav__link">
+    1.5.0 (2022-02-26)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#140-2022-01-22" class="md-nav__link">
+    1.4.0 (2022-01-22)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#132-2022-01-10" class="md-nav__link">
+    1.3.2 (2022-01-10)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#131-2022-01-08" class="md-nav__link">
+    1.3.1 (2022-01-08)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#130-2022-01-06" class="md-nav__link">
+    1.3.0 (2022-01-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#126-2021-12-29" class="md-nav__link">
+    1.2.6 (2021-12-29)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#125-2021-10-24" class="md-nav__link">
+    1.2.5 (2021-10-24)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#123-2021-09-06" class="md-nav__link">
+    1.2.3 (2021-09-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#122-2021-09-01" class="md-nav__link">
+    1.2.2 (2021-09-01)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#120-2021-08-20" class="md-nav__link">
+    1.2.0 (2021-08-20)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#116-2021-08-18" class="md-nav__link">
+    1.1.6 (2021-08-18)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#115-2021-08-16" class="md-nav__link">
+    1.1.5 (2021-08-16)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#113-2021-08-10" class="md-nav__link">
+    1.1.3 (2021-08-10)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#112-2021-08-06" class="md-nav__link">
+    1.1.2 (2021-08-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#111-2021-08-03" class="md-nav__link">
+    1.1.1 (2021-08-03)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#110-2021-08-03" class="md-nav__link">
+    1.1.0 (2021-08-03)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101-2021-07-23" class="md-nav__link">
+    1.0.1 (2021-07-23)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#100-2021-07-20" class="md-nav__link">
+    1.0.0 (2021-07-20)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0110-2021-04-08" class="md-nav__link">
+    0.11.0 (2021-04-08)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0100-2021-03-05" class="md-nav__link">
+    0.10.0 (2021-03-05)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#090-2020-12-30" class="md-nav__link">
+    0.9.0 (2020-12-30)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#080-2020-11-24" class="md-nav__link">
+    0.8.0 (2020-11-24)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#071-2020-11-20" class="md-nav__link">
+    0.7.1 (2020-11-20)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#070-2020-10-02" class="md-nav__link">
+    0.7.0 (2020-10-02)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#060-2020-09-14" class="md-nav__link">
+    0.6.0 (2020-09-14)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#050-2020-09-10" class="md-nav__link">
+    0.5.0 (2020-09-10)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#042-2020-09-09" class="md-nav__link">
+    0.4.2 (2020-09-09)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#041-2020-09-08" class="md-nav__link">
+    0.4.1 (2020-09-08)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2020-09-06" class="md-nav__link">
+    0.4.0 (2020-09-06)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#030-2020-08-29" class="md-nav__link">
+    0.3.0 (2020-08-29)
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#020-2020-08-29" class="md-nav__link">
+    0.2.0 (2020-08-29)
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+<a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/content/changelog/databind.core.md" title="Edit this page" class="md-content__button md-icon">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+</a>
+
+
+
+  <h1>databind.core</h1>
+
+<h2 id="200-alpha4-2022-03-29">2.0.0-alpha.4 (2022-03-29)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+Fix error in `ConversionError.expected()` if the `types` parameter was a type hint</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Breaking change</td><td>
+
+add `ConversionError()` `origin` and `errors` parameter</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="200a2-2022-03-24">2.0.0a2 (2022-03-24)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+move `ExtraKeys` and `Remainder` setting from `databind.json` to `databind.core`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+make `ExtraKeys` setting a subclass of `ClassDecoratorSetting`, allowing it to be used to mark an entire class and allowing extra keys</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="152-2022-03-23">1.5.2 (2022-03-23)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+add `nesting_key` parameter to `union()` annotation</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="151-2022-02-26">1.5.1 (2022-02-26)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Refactor</td><td>
+
+migrate to `nr.util` package</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="150-2022-02-26">1.5.0 (2022-02-26)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+support resolution of type variables as they are encountered in unspecialized form</td><td></td><td><a href="https://github.com/NiklasRosenstein/databind/issues/25">NiklasRosenstein/databind#25</a></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+fix `unpack_type_hints()` to return args for a parametrized special generic alias (like `typing.List[T]` returning `(list, (T,))`)</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="140-2022-01-22">1.4.0 (2022-01-22)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+add `union.Style.keyed`</td><td></td><td><a href="https://github.com/NiklasRosenstein/databind/issues/21">NiklasRosenstein/databind#21</a></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="132-2022-01-10">1.3.2 (2022-01-10)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+make `databind.core.annotations` hashable for use in `typing.Annotations`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="131-2022-01-08">1.3.1 (2022-01-08)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+Dataclass adapted to ObjectType with no schema fields if a field cannot be adapted</td><td></td><td><a href="https://github.com/NiklasRosenstein/databind/issues/23">NiklasRosenstein/databind#23</a></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+support resolving forward references in PEP585 generic aliases</td><td></td><td><a href="https://github.com/NiklasRosenstein/databind/issues/24">NiklasRosenstein/databind#24</a></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+change `ConverterProvider.get_converter()` to `ConverterProvider.get_converters()` and `ConversionNotApplicable` error type, allowing to test multiple converters for a type</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="130-2022-01-06">1.3.0 (2022-01-06)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+improve readability of `ConversionError` by changing `Location.format()`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="126-2021-12-29">1.2.6 (2021-12-29)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+correctly support Python 3.10 `types.UnionType`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="125-2021-10-24">1.2.5 (2021-10-24)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+add missing nr.pylang.utils dependency (was introduced transtively before so it was no crucial bug)</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="123-2021-09-06">1.2.3 (2021-09-06)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+allow datetime objects as value during deserialization</td><td></td><td><a href="https://github.com/NiklasRosenstein/databind/issues/19">NiklasRosenstein/databind#19</a></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="122-2021-09-01">1.2.2 (2021-09-01)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+`DefaultTypeHintAdapter` no longer raises an exception upon receiving a BaseType instance</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+`dataclass_to_schema(type_adapter)` argument is now optional and defaults to a `DefaultTypeHintAdapter` instance</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="120-2021-08-20">1.2.0 (2021-08-20)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+add `Direction.is_serialize()` and `Direction.is_deserialize()`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+add `AnnotationsRegistry.add_type_annotation()` and `AnnotationsRegistry.add_field_annotation()`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+`DefaultAnnotationsProvider` now supports finding annotations in `Enum` members when annotated with `te.Annotated`, `DefaultAnnotationsProvider` is now registered to an `ObjectMapper` by default</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="116-2021-08-18">1.1.6 (2021-08-18)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+fix case where DefaultTypeHintAdapter does not continue adaptation dynamically upon encountering a fixed type object</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="115-2021-08-16">1.1.5 (2021-08-16)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+normal type with `Annotated[MyType, union(...)]` is now correctly interpreted as `UnionType`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="113-2021-08-10">1.1.3 (2021-08-10)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+`ObjectType` and `ConcreteType` now show the class fqn on repr()</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+fix support for special generic subclasses (like `List` or `Dict`) with another generic base class (eg. `Generic`)</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="112-2021-08-06">1.1.2 (2021-08-06)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+fix `@A.union` types to accept `ObjectType`s</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="111-2021-08-03">1.1.1 (2021-08-03)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+fix `EntrypointSubtypes()` constructor which used to accidentally accept a `TypeHintAdapter` argument</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="110-2021-08-03">1.1.0 (2021-08-03)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+remove `AnnotatedType`, add `BaseType.annotations` instead.</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Breaking change</td><td>
+
+Reorganize a lot of internal APIs and some public APIs (e.g. renamed `ITypeHintConverter` to `TypeHintAdapter`, `IConverter` to `Converter` + respective module name changes, deprecated `ObjectMapper.default()`, remove `IObjectMapper` and replace `Context.mapper` with `Context.converters` and `Context.annotations`.</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Breaking change</td><td>
+
+replace `Schema.flat_fields()` with `Schema.flattened()`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+only import members from sub-modules where they are expected to be used from (ie. `databind.core`, `databind.core.annotations`, `databind.core.dataclasses`, `databind.json`)</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+add support for `fieldinfo(flat=True)` marked `MapType` fields</td><td></td><td><a href="https://github.com/NiklasRosenstein/databind/issues/7">NiklasRosenstein/databind#7</a></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="101-2021-07-23">1.0.1 (2021-07-23)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+import `dataclass_to_schema` into `databind.core` top-level package</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+fix type hints to pass mypy checks</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="100-2021-07-20">1.0.0 (2021-07-20)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Breaking change</td><td>
+
+Full rewrite</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="0110-2021-04-08">0.11.0 (2021-04-08)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+`enumerate_fields()` now works with uniontype instances and classes</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+update `@uniontype` generated `__repr__()` method</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+add support for member aliasing in `UnionResolver`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+add `Context.closed_field_metadata()` function</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="0100-2021-03-05">0.10.0 (2021-03-05)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+classes decorated with `@uniontype(container=True)` must now be constructed using a single keyword argument as in `MyUnion(member1=Member1Value())`
+</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="090-2020-12-30">0.9.0 (2020-12-30)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+add `ImportingUnionResolver` and `EntrypointUnionResolver`, both which can also be used with the `@interface` decorator. The `resolver` argument now accepts a string which will be converted into a `UnionResolver` (supported formats are `import` and `entrypoint:<group-name>`)</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+`@implementation()` can now be used without explicitly specifying the `for_` parameter when decorating a class with multiple bases where only one base is a `@uniontype`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+fix inheritance of fields from `@dataclass` parent classes</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="080-2020-11-24">0.8.0 (2020-11-24)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+`@implementation()` now sets the databind metadata field to `None` if no explicit metadata is already set on the type. `Registry.get_converter()` recognizes this case and stops checking the base classes. This is to avoid a confusing error when the type decorated with `@implementation()` seems to inherit the `UnionMetadata` from the parent class (because of the `Registry.get_converter()` base class check) but actually does not provide a metadata. Now we see "no converter found for type XYZ" instead "expected UnionMetadata to be provided by XYZ" in `databind.json`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="071-2020-11-20">0.7.1 (2020-11-20)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+Python 3.9 support in type hint normalization</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+fix mypy errors</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="070-2020-10-02">0.7.0 (2020-10-02)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+`@dataclasses.dataclass()` classes can now be converted as a data model automatically, `BaseMetadata.for_type()` now returns an optional</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="060-2020-09-14">0.6.0 (2020-09-14)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+`Registry.get_converter()` now looks for a converter in the base classes only if it could not find it for the normalized version of the current type, making converter resolution more predictable</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+Add `ClassUnionResolver` which evaluates type hints dynamically, allowing to use forward references in the type hints of a `@uniontype()`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+Add `@interface()` and `@implementation()` decorators</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="050-2020-09-10">0.5.0 (2020-09-10)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+</table>
+
+<h2 id="042-2020-09-09">0.4.2 (2020-09-09)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Hygiene</td><td>
+
+Move `type_repr()` declaration to `databind.core.utils` and add `find_orig_base()` function</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="041-2020-09-08">0.4.1 (2020-09-08)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Fix</td><td>
+
+Re-render setup file, materializing missing dependency on `dataclasses`. This fixes using the module in Python 3.6.</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="040-2020-09-06">0.4.0 (2020-09-06)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Feature</td><td>
+
+add `ModelMetadata.serialize_as` (which translates into a keyword argument for `@datamodel()`) to specify a type hint that should be used instead of the type itself when serializing/deserializing it</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+add `Context.coerce_errors()` context manager</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Feature</td><td>
+
+add `TypeHint` variable which should be used in places where a type hint is expected</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="030-2020-08-29">0.3.0 (2020-08-29)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+ensure that non-default arguments do not have a class attribute of type `object` (which is used as a workaround to support non-default fields following default fields in `dataclasses`)</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+raise for uninitialized fields inherited from parent datamodels</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+<h2 id="020-2020-08-29">0.2.0 (2020-08-29)</h2>
+<table><tr><th>Type</th><th>Description</th><th>PR</th><th>Issues</th><th>Author</th></tr>
+  <tr><td>Improvement</td><td>
+
+update type hints to pass mypy checks</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+`FieldMetadata` now keeps a reference to the `dataclasses.Field` object and it's' metadata</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+</table>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../../api/databind.json.module/" class="md-footer__link md-footer__link--prev" aria-label="Previous: databind.json.module" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              databind.json.module
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../databind.json/" class="md-footer__link md-footer__link--next" aria-label="Next: databind.json" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              databind.json
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c44cc438.min.js"></script>
+      
+    
+  </body>
+</html>
