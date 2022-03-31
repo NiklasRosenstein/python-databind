@@ -2,7 +2,7 @@ nav:
   - Home: index.md
   - databind.core.md
   - databind.json.md
-  - API: []
+  - API: []  # Updated by build.novella
   - Changelogs:
     - changelog/databind.core.md
     - changelog/databind.json.md
