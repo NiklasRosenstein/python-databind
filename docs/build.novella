@@ -21,7 +21,7 @@ action "mkdocs-update-config" {
   update '$.theme.palette' set: {'scheme': 'slate', 'primary': 'blue', 'accent': 'amber'}
   update_with config -> {
     for module in databind_modules:
-      config['nav'][1]['API'].append('api/' + module + '.md')
+      config['nav'][-2]['API'].append('api/' + module + '.md')
   }
 }
 
