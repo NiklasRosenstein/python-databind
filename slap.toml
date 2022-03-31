@@ -2,7 +2,7 @@
 enabled = false
 
 [run]
-"docs:build" = "cd docs && novella --base-url databind/"
+"docs:build" = "cd docs && novella --base-url python-databind/"
 "docs:dev" = "cd docs && novella --serve"
 
 [test]
