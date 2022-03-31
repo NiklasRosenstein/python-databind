@@ -11,12 +11,11 @@ import pytest
 import typeapi
 from databind.core.converter import Converter, ConversionError
 from databind.core.mapper import ObjectMapper
-from databind.core.settings import Alias, Flattened, SerializeDefaults, Strict, Union
+from databind.core.settings import Alias, ExtraKeys, Flattened, Remainder, SerializeDefaults, Strict, Union
 from databind.json.converters import AnyConverter, CollectionConverter, DatetimeConverter, DecimalConverter, \
     EnumConverter, MappingConverter, OptionalConverter, PlainDatatypeConverter, SchemaConverter, StringifyConverter, \
     UnionConverter
 from databind.json.direction import Direction
-from databind.json.settings import ExtraKeys, Remainder
 from nr.util.date import duration
 
 
