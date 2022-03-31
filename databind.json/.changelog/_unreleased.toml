@@ -1,0 +1,5 @@
+[[entries]]
+id = "c84b03be-9143-48bb-846d-5330a0665f45"
+type = "breaking change"
+description = "Remove `databind.json.settings` module"
+author = "@NiklasRosenstein"
