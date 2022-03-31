@@ -1,10 +1,28 @@
 
 template "mkdocs"
 
+def databind_modules = [
+  'databind.core.context',
+  'databind.core.converter',
+  'databind.core.dataclasses',
+  'databind.core.mapper',
+  'databind.core.schema',
+  'databind.core.settings',
+  'databind.core.union',
+  'databind.json',
+  'databind.json.converters',
+  'databind.json.direction',
+  'databind.json.module',
+]
+
 action "mkdocs-update-config" {
   site_name = "python-databind"
   update '$.theme.features' add: []
   update '$.theme.palette' set: {'scheme': 'slate', 'primary': 'blue', 'accent': 'amber'}
+  update_with config -> {
+    for module in databind_modules:
+      config['nav'][1]['API'].append('api/' + module + '.md')
+  }
 }
 
 action "preprocess-markdown" {
@@ -13,3 +31,15 @@ action "preprocess-markdown" {
     loader().packages = [ "databind.core", "databind.json" ]
   }
 }
+
+do
+  name: "generate-api-pages"
+  closure: {
+    precedes "preprocess-markdown"
+  }
+  action: {
+    for module in databind_modules:
+      def filename = directory / 'content' / 'api'/ (module + '.md')
+      filename.parent.mkdir parents: True exist_ok: True
+      filename.write_text '---\ntitle: {0}\n---\n@pydoc {0}\n'.format(module)
+  }
