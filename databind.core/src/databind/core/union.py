@@ -190,10 +190,10 @@ class ImportUnionMembers(UnionMembers):
     for offset, part in enumerate(parts[offset:], offset):
       target = getattr(target, part)
 
-    if not isinstance(target, type):
+    if not isinstance(target, type):  # type: ignore[unreachable]
       raise ValueError(f'{type_id!r} does not point to a type (got {type(target).__name__} instead)')
 
-    return target
+    return target  # type: ignore[unreachable]
 
   def get_type_ids(self) -> t.List[str]:
     raise NotImplementedError
