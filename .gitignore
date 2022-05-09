@@ -1,8 +1,9 @@
-.vscode/
+.dmypy.json
+.python-version
 .venv*/
-dist/
-build/
-*.py[cod]
-*.egg-info
+.vscode/
 *.egg
-/.python-version
+*.egg-info
+*.py[cod]
+build/
+dist/

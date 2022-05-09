@@ -15,6 +15,9 @@ typeapi = ">=0.1.5,<0.2.0"
 typing-extensions = ">=3.10.0"
 
 [tool.poetry.dev-dependencies]
+black = "*"
+flake8 = "*"
+isort = "*"
 pytest = "*"
 mypy = "*"
 types-dataclasses = "*"
@@ -25,20 +28,38 @@ types-termcolor = "*"
 [tool.slap]
 typed = true
 
-[tool.slap.test]
-mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
-pytest = "pytest test/ -vv"
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.slap.test]
+check = "slap check"
+mypy = "dmypy run src/"
+pytest = "pytest tests/ -vv"
+black = "black --check src/ tests/"
+isort = "isort --check-only src/ tests/"
+flake8 = "flake8 src/ tests/"
+
+[tool.slap.run]
+fmt = "black src/ tests/ && isort src/ tests/"
+
 [tool.mypy]
-pretty = true
+python_version = "3.7"
+explicit_package_bases = true
+mypy_path = ["src"]
 namespace_packages = true
-warn_redundant_casts = true
-# warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-show_error_context = true
+pretty = true
 show_error_codes = true
+show_error_context = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
+combine_as_imports = true
+
+[tool.black]
+line-length = 120

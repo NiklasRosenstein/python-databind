@@ -3,3 +3,9 @@ id = "e13ad790-4e0a-44fb-afec-3ecc7c6b9ad8"
 type = "improvement"
 description = "Loosen requirement on `typing-extensions` from `^3.10.0` to `>=3.10.0`"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "b537c6b7-fa06-41b4-a452-8edb5b0f6fe4"
+type = "refactor"
+description = "Use Black and isort for code formatting, Flake8 for linting"
+author = "@NiklasRosenstein"

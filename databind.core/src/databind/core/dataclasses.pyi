@@ -4,7 +4,22 @@
 # * adding ANNOTATIONS_METADATA_KEY
 
 import sys
-from typing import Any, Callable, Dict, Generic, Iterable, List, Mapping, Optional, Tuple, Type, TypeVar, Union, overload
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
+
 from typing_extensions import Protocol
 
 if sys.version_info >= (3, 9):
@@ -58,7 +73,13 @@ elif sys.version_info >= (3, 8):
     def dataclass(__cls: None) -> Callable[[Type[_T]], Type[_T]]: ...
     @overload
     def dataclass(
-        *, init: bool = ..., repr: bool = ..., eq: bool = ..., order: bool = ..., unsafe_hash: bool = ..., frozen: bool = ...
+        *,
+        init: bool = ...,
+        repr: bool = ...,
+        eq: bool = ...,
+        order: bool = ...,
+        unsafe_hash: bool = ...,
+        frozen: bool = ...,
     ) -> Callable[[Type[_T]], Type[_T]]: ...
 
 else:
@@ -68,7 +89,13 @@ else:
     def dataclass(_cls: None) -> Callable[[Type[_T]], Type[_T]]: ...
     @overload
     def dataclass(
-        *, init: bool = ..., repr: bool = ..., eq: bool = ..., order: bool = ..., unsafe_hash: bool = ..., frozen: bool = ...
+        *,
+        init: bool = ...,
+        repr: bool = ...,
+        eq: bool = ...,
+        order: bool = ...,
+        unsafe_hash: bool = ...,
+        frozen: bool = ...,
     ) -> Callable[[Type[_T]], Type[_T]]: ...
 
 # See https://github.com/python/mypy/issues/10750
