@@ -42,7 +42,8 @@ class ObjectMapper:
           location: The location of where *value* is coming from. Useful to specify to make debugging easier.
           settings: A list of settings, in which case they will be treated as global settings in addition to the
             mapper's #settings, or an entirely different #SettingsProvider instance (for which it is recommended that
-            it is taking the ObjectMapper's #settings into account, for example by passing them for the #Settings.parent).
+            it is taking the ObjectMapper's #settings into account, for example by passing them for the
+            #Settings.parent).
         Raises:
           ConversionError: For more generic errosr during the conversion process.
           NoMatchingConverter: If at any point during the conversion a datatype was encountered for which no matching

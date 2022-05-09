@@ -618,8 +618,8 @@ class UnionConverter(Converter):
     !!! note
 
         Note that the union members should be concrete types, not generic aliases, because the converter cannot check
-        if an object is an instance of an alias. This is an implementation detail of the #databind.core.union.UnionMembers
-        implementations.
+        if an object is an instance of an alias. This is an implementation detail of the
+        #databind.core.union.UnionMembers implementations.
 
     More Examples:
 

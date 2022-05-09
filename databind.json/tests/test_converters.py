@@ -119,7 +119,7 @@ def test_enum_converter(direction: Direction):
 def test_optional_converter():
     mapper = make_mapper([OptionalConverter(), PlainDatatypeConverter(Direction.SERIALIZE)])
     assert mapper.convert(42, t.Optional[int]) == 42
-    assert mapper.convert(None, t.Optional[int]) == None
+    assert mapper.convert(None, t.Optional[int]) is None
     assert mapper.convert(42, int) == 42
     with pytest.raises(ConversionError):
         assert mapper.convert(None, int)

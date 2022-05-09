@@ -106,8 +106,9 @@ class Settings(SettingsProvider):
         4. Look for it in the global settings.
         5. Delegate to the #parent settings provider (if any).
 
-        If multiple settings are find using any of these steps, the setting with the highest priority among the settings
-        is returned. If multiple settings have the same priority, the setting found first via the above order is returned.
+        If multiple settings are find using any of these steps, the setting with the highest priority among the
+        settings is returned. If multiple settings have the same priority, the setting found first via the above order
+        is returned.
         """
 
         from nr.util.stream import Stream
@@ -176,7 +177,7 @@ class ClassDecoratorSetting(Setting):
 
         assert isinstance(type_, type), type_
         if self.bound_to is not None:
-            raise RuntimeError(f"cannot decorate multiple types with the same setting instance")
+            raise RuntimeError("cannot decorate multiple types with the same setting instance")
 
         self.bound_to = type_
         settings = getattr(type_, "__databind_settings__", None)
@@ -323,9 +324,9 @@ class Strict(BooleanSetting):
 
 class SerializeDefaults(BooleanSetting):
     """Control whether default values are to be encoded in the serialized form of a structure. The default behaviour
-    is up to the serializer implementation, though we consider it good practices to include values that match the default
-    value of a field by default. However, using the setting defaults to #enabled having a value of `True` due to how the
-    name of the setting appears assertive of the fact that the instance indicates the setting is enabled."""
+    is up to the serializer implementation, though we consider it good practices to include values that match the
+    default value of a field by default. However, using the setting defaults to #enabled having a value of `True` due
+    to how the name of the setting appears assertive of the fact that the instance indicates the setting is enabled."""
 
 
 @dataclasses.dataclass
@@ -587,7 +588,8 @@ class DateFormat(Setting):
         """Format a date/time value to a string.
 
         Arguments:
-          value: The date/time value to format (i.e. an instance of #datetime.date, #datetime.time or #datetime.datetime).
+          value: The date/time value to format (i.e. an instance of #datetime.date, #datetime.time or
+            #datetime.datetime).
         Raises:
           ValueError: If no date format to format the type of *value* is available.
         Returns:

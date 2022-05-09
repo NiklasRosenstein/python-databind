@@ -60,7 +60,7 @@ class Field:
         elif self.default_factory is not NotSet.Value:
             return self.default_factory()
         else:
-            raise RuntimeError(f"Field does not have a default value")
+            raise RuntimeError("Field does not have a default value")
 
     @property
     def aliases(self) -> t.Tuple[str, ...]:

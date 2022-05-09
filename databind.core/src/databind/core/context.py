@@ -7,7 +7,6 @@ import typing as t
 import typeapi
 
 if t.TYPE_CHECKING:
-    from databind.core.converter import ConversionError
     from databind.core.settings import SettingsProvider, T_Setting
 
 
