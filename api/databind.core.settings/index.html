@@ -1271,14 +1271,15 @@ that the setting is looked for are, in order:</p>
 <li>Look for it in the global settings.</li>
 <li>Delegate to the <a href="/python-databind/api/databind.core.context#pydoc:databind.core.context.Context.parent">parent</a> settings provider (if any).</li>
 </ol>
-<p>If multiple settings are find using any of these steps, the setting with the highest priority among the settings
-is returned. If multiple settings have the same priority, the setting found first via the above order is returned.</p>
+<p>If multiple settings are find using any of these steps, the setting with the highest priority among the
+settings is returned. If multiple settings have the same priority, the setting found first via the above order
+is returned.</p>
 <p><a id="databind.core.settings.Priority"></a></p>
 <p><a id="pydoc:databind.core.settings.Priority"></a></p>
 <h2 id="class-priority">Class Priority</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Priority</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">IntEnum</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L134">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L135">[view_source]</a></p>
 <p>The priority for settings determines their order in the presence of multiple conflicting settings. Settings
 should default to using the <code>NORMAL</code> priority. The other priorities are used to either prevent overriding a field
 setting globally or to enforce overriding of local field settings globally using <a href="#pydoc:databind.core.settings.Settings">Settings</a>.</p>
@@ -1287,7 +1288,7 @@ setting globally or to enforce overriding of local field settings globally using
 <h2 id="class-setting">Class Setting</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Setting</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L145">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L146">[view_source]</a></p>
 <p>Base class for types of which instances represent a setting to be taken into account during data conversion.
 Every setting has a priority that is used to construct and order or to determine the single setting to use in
 the presence of multiple instances of the same setting type being present.</p>
@@ -1301,13 +1302,13 @@ should inherit from <code>DecoratorSetting</code> instead.</p>
 <h2 id="class-classdecoratorsetting">Class ClassDecoratorSetting</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ClassDecoratorSetting</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L163">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L164">[view_source]</a></p>
 <p><a id="databind.core.settings.ClassDecoratorSetting.__call__"></a></p>
 <p><a id="pydoc:databind.core.settings.ClassDecoratorSetting.__call__"></a></p>
 <h4 id="__call__">__call__</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L172">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L173">[view_source]</a></p>
 <p>Decorate the class <em>type_</em> with this setting, adding the setting to its <code>__databind_settings__</code> list
 (which is created if it does not exist) and sets <code>bound_to</code>. The same setting instance cannot decorate multiple
 types.</p>
@@ -1316,7 +1317,7 @@ types.</p>
 <h4 id="get_highest_setting">get_highest_setting</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_highest_setting</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="n">T_Setting</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T_Setting</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L191">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L192">[view_source]</a></p>
 <p>Return the first, highest setting of <em>settings</em>.</p>
 <p><a id="databind.core.settings.get_class_settings"></a></p>
 <p><a id="pydoc:databind.core.settings.get_class_settings"></a></p>
@@ -1325,7 +1326,7 @@ types.</p>
     <span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L200">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L201">[view_source]</a></p>
 <p>Returns all matching settings on <em>type_</em>.</p>
 <p><a id="databind.core.settings.get_class_setting"></a></p>
 <p><a id="pydoc:databind.core.settings.get_class_setting"></a></p>
@@ -1334,7 +1335,7 @@ types.</p>
     <span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_ClassDecoratorSetting</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L210">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L211">[view_source]</a></p>
 <p>Returns the first instance of the given <em>setting_type</em> on <em>type_</em>.</p>
 <p><a id="databind.core.settings.get_annotation_setting"></a></p>
 <p><a id="pydoc:databind.core.settings.get_annotation_setting"></a></p>
@@ -1343,7 +1344,7 @@ types.</p>
         <span class="n">type_</span><span class="p">:</span> <span class="n">typeapi</span><span class="o">.</span><span class="n">Hint</span><span class="p">,</span>
         <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_Setting</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">T_Setting</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L216">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L217">[view_source]</a></p>
 <p>Returns the first setting of the given <em>setting_type</em> from the given type hint from inspecting the metadata
 of the <code>typeapi.Annotated</code>. Returns <code>None</code> if no such setting exists or if <em>type_</em> is not an <code>typeapi.Annotated</code>
 instance.</p>
@@ -1353,14 +1354,14 @@ instance.</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">BooleanSetting</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L227">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L228">[view_source]</a></p>
 <p>Base class for boolean settings.</p>
 <p><a id="databind.core.settings.Alias"></a></p>
 <p><a id="pydoc:databind.core.settings.Alias"></a></p>
 <h2 id="class-alias">Class Alias</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Alias</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L238">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L239">[view_source]</a></p>
 <p>The <a href="#pydoc:databind.core.settings.Alias">Alias</a> setting is used to attach one or more alternative names to a dataclass field that should be used
 instead of the field's name in the code.</p>
 <p><strong>Example</strong>:</p>
@@ -1384,7 +1385,7 @@ instead of the field's name in the code.</p>
 <h2 id="class-required">Class Required</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Required</span><span class="p">(</span><span class="n">BooleanSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L271">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L272">[view_source]</a></p>
 <p>Indicates whether a field is required during deserialization, even if it's type specifies that it is an
 optional field.</p>
 <p><strong>Example</strong>:</p>
@@ -1401,7 +1402,7 @@ optional field.</p>
 <h2 id="class-flattened">Class Flattened</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Flattened</span><span class="p">(</span><span class="n">BooleanSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L289">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L290">[view_source]</a></p>
 <p>Indicates whether a field should be "flattened" by virtually expanding it's sub fields into the parent
 datastructure's serialized form.</p>
 <p><strong>Example</strong>:</p>
@@ -1426,7 +1427,7 @@ datastructure's serialized form.</p>
 <h2 id="class-strict">Class Strict</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Strict</span><span class="p">(</span><span class="n">BooleanSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L317">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L318">[view_source]</a></p>
 <p>Enable strict conversion of the field during conversion (this should be the default for converters unless
 some maybe available option to affect the strictness in a converter is changed). This setting should particularly
 affect only loss-less type conversions (such as <code>int</code> to <code>string</code> and the reverse being allowed when strict
@@ -1436,18 +1437,18 @@ handling is disabled).</p>
 <h2 id="class-serializedefaults">Class SerializeDefaults</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SerializeDefaults</span><span class="p">(</span><span class="n">BooleanSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L324">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L325">[view_source]</a></p>
 <p>Control whether default values are to be encoded in the serialized form of a structure. The default behaviour
-is up to the serializer implementation, though we consider it good practices to include values that match the default
-value of a field by default. However, using the setting defaults to <code>enabled</code> having a value of <code>True</code> due to how the
-name of the setting appears assertive of the fact that the instance indicates the setting is enabled.</p>
+is up to the serializer implementation, though we consider it good practices to include values that match the
+default value of a field by default. However, using the setting defaults to <code>enabled</code> having a value of <code>True</code> due
+to how the name of the setting appears assertive of the fact that the instance indicates the setting is enabled.</p>
 <p><a id="databind.core.settings.Precision"></a></p>
 <p><a id="pydoc:databind.core.settings.Precision"></a></p>
 <h2 id="class-precision">Class Precision</h2>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Precision</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L332">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L333">[view_source]</a></p>
 <p>A setting to describe the precision for <code>decimal.Decimal</code> fields.</p>
 <p><a id="databind.core.settings.Union"></a></p>
 <p><a id="pydoc:databind.core.settings.Union"></a></p>
@@ -1455,7 +1456,7 @@ name of the setting appears assertive of the fact that the instance indicates th
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Union</span><span class="p">(</span><span class="n">ClassDecoratorSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L355">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L356">[view_source]</a></p>
 <p>A setting that decorates a class or can be attached to the <code>typing.Annotated</code> metadata of a <code>typing.Union</code>
 type hint to specify that the type should be regarded as a union of more than one types. Which concrete type
 is to be used at the point of deserialization is usually clarified through a discriminator key. Unions may be
@@ -1515,7 +1516,7 @@ the union member's type ID is used as the key.</p>
 <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">extends</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span>
              <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L446">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L447">[view_source]</a></p>
 <p>A convenience method to use as a decorator for classes that should be registered as members of a <a href="#pydoc:databind.core.settings.Union">Union</a>
 setting that is attached to the type <em>extends</em>. The <a href="#pydoc:databind.core.settings.Union">Union</a> setting on <em>extends</em> must have a <a href="/python-databind/api/databind.core.union#pydoc:databind.core.union.StaticUnionMembers">StaticUnionMembers</a>
 <a href="#pydoc:databind.core.settings.Union.members">members</a> object. The decorated class must also be a subclass of <em>extends</em>.</p>
@@ -1541,7 +1542,7 @@ setting that is attached to the type <em>extends</em>. The <a href="#pydoc:datab
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">DateFormat</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L501">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L502">[view_source]</a></p>
 <p>The <a href="#pydoc:databind.core.settings.DateFormat">DateFormat</a> setting is used to describe the date format to use for <code>datetime.datetime</code>, <code>datetime.date</code>
 and <code>datetime.time</code> values when formatting them as a string, i.e. usually when the date/time is serialized, and
 when parsing them.</p>
@@ -1567,7 +1568,7 @@ when parsing them.</p>
 <h4 id="parse">parse</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_Dtype</span><span class="p">],</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_Dtype</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L559">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L560">[view_source]</a></p>
 <p>Parse a date/time value from a string.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
@@ -1585,11 +1586,12 @@ when parsing them.</p>
 <h4 id="format">format</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="n">dt</span><span class="p">:</span> <span class="n">T_Dtype</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L586">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L587">[view_source]</a></p>
 <p>Format a date/time value to a string.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
-<li><code>value</code> - The date/time value to format (i.e. an instance of <code>datetime.date</code>, <code>datetime.time</code> or <code>datetime.datetime</code>).</li>
+<li><code>value</code> - The date/time value to format (i.e. an instance of <code>datetime.date</code>, <code>datetime.time</code> or
+  <code>datetime.datetime</code>).</li>
 </ul>
 <p><strong>Raises</strong>:</p>
 <ul>
@@ -1602,7 +1604,7 @@ when parsing them.</p>
 <h2 id="class-extrakeys">Class ExtraKeys</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ExtraKeys</span><span class="p">(</span><span class="n">ClassDecoratorSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L619">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L621">[view_source]</a></p>
 <p>If discovered while deserializing a <code>databind.core.schema.Schema</code>, it's callback is used to inform when extras
 keys are encountered. If the setting is not available, or if the arg is set to <code>False</code> (the default), it will
 cause an error.</p>
@@ -1619,7 +1621,7 @@ if the <a href="#pydoc:databind.core.settings.ExtraKeys">ExtraKeys</a> setting y
 <h2 id="class-remainder">Class Remainder</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Remainder</span><span class="p">(</span><span class="n">BooleanSetting</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L650">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L652">[view_source]</a></p>
 <p>This setting can be used to indicate on a field of a schema that is of a mapping type that it consumes any
 extra keys that are not otherwise understood by the schema. Note that there can only be a maximum of 1 remainder
 field in the same schema.</p>
