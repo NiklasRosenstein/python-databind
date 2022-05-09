@@ -1,0 +1,5 @@
+[[entries]]
+id = "e13ad790-4e0a-44fb-afec-3ecc7c6b9ad8"
+type = "improvement"
+description = "Loosen requirement on `typing-extensions` from `^3.10.0` to `>=3.10.0`"
+author = "@NiklasRosenstein"
