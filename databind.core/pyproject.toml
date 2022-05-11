@@ -7,6 +7,12 @@ license = "MIT"
 readme = "readme.md"
 packages = [{include = "databind/core", from = "src"}]
 
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/NiklasRosenstein/python-databind/issues"
+Documentation = "https://niklasrosenstein.github.io/python-databind/"
+# Homepage = ""
+Repository = "https://github.com/NiklasRosenstein/python-databind"
+
 [tool.poetry.dependencies]
 python = "^3.7"
 Deprecated = "^1.2.12"
