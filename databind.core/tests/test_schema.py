@@ -437,3 +437,17 @@ def test_convert_typed_dict_with_optional_field_has_none_as_default():
         A,
         A,
     )
+
+
+@dataclasses.dataclass
+class ClassWithForwardRef:
+    a: "int"
+    b: t.List["int"]
+
+
+def test_parse_dataclass_with_forward_ref():
+    assert convert_dataclass_to_schema(ClassWithForwardRef) == Schema(
+        {"a": Field(typeapi.of(int), True), "b": Field(typeapi.of(t.List[int]), True)},
+        ClassWithForwardRef,
+        ClassWithForwardRef,
+    )
