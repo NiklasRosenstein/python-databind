@@ -3,3 +3,9 @@ id = "2b9885cd-5196-45dd-8b3e-3b8d10d8f708"
 type = "docs"
 description = "Add URLs to project metadata."
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "a37639a0-d0bd-40e1-8b8b-06dbd6b96d9e"
+type = "improvement"
+description = "Use a fields default value if it is available when deserializing schemas"
+author = "@NiklasRosenstein"
