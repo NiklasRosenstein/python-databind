@@ -494,8 +494,6 @@ class SchemaConverter(Converter):
                 if field.required:
                     other_aliases = f' (or {", ".join(map(repr, aliases[1:]))})' if len(aliases) > 1 else ""
                     raise ConversionError(self, ctx, f"missing required field: {aliases[0]!r}{other_aliases}")
-                if field.has_default():
-                    result[field_name] = field.get_default()
             return result
 
         def _extract_fields(fields: t.Dict[str, Field]) -> t.Dict[str, t.Any]:
@@ -514,6 +512,8 @@ class SchemaConverter(Converter):
                 container = _extract_field({}, field_name, field, False)
                 if not container:
                     assert not field.required or (remainder_field and remainder_field[0] == field_name)
+                    if field.has_default():
+                        result[field_name] = field.get_default()
                     continue
                 value = ctx.spawn(container[field_name], field.datatype, field_name).convert()
             result[field_name] = value
