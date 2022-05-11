@@ -174,7 +174,6 @@ def test_convert_dataclass_with_optional_field_has_none_as_default():
             "a": Field(typeapi.of(t.Optional[int]), False, None),
             "c": Field(typeapi.of(te.Annotated[t.Optional[int], "foo"]), False, None),
             "e": Field(typeapi.of(te.Annotated[t.Optional[int], Required()]), True),
-
             "b": Field(typeapi.of(t.Optional[int]), False, 42),
             "d": Field(typeapi.of(te.Annotated[t.Optional[int], "foo"]), False, 42),
             "f": Field(typeapi.of(te.Annotated[t.Optional[int], Required()]), True, 42),
