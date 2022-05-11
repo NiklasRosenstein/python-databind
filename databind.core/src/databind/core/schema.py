@@ -254,7 +254,12 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
     annotations = typeapi.get_annotations(typed_dict)
     fields: t.Dict[str, Field] = {}
     for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
-        datatype = typeapi.eval_types(typeapi.of(annotations[key]), globalns=typeapi.scope(t.cast(type, typed_dict)))
+        globalns = typeapi.scope(t.cast(type, typed_dict))
+        datatype = typeapi.eval_types(
+            typeapi.of(annotations[key]),
+            module=getattr(typed_dict, "__module__", None) if globalns is None else None,
+            globalns=globalns,
+        )
         has_default = hasattr(typed_dict, key)
         required = _is_required(datatype, not has_default)
         fields[key] = Field(
