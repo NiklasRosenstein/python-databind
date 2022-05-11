@@ -158,6 +158,32 @@ def test_convert_dataclass_to_schema_with_defaults():
     )
 
 
+def test_convert_dataclass_with_optional_field_has_none_as_default():
+    @dataclasses.dataclass
+    class A:
+        a: t.Optional[int]
+        c: te.Annotated[t.Optional[int], "foo"]
+        e: te.Annotated[t.Optional[int], Required()]
+
+        b: t.Optional[int] = 42
+        d: te.Annotated[t.Optional[int], "foo"] = 42
+        f: te.Annotated[t.Optional[int], Required()] = 42
+
+    assert convert_dataclass_to_schema(A) == Schema(
+        {
+            "a": Field(typeapi.of(t.Optional[int]), False, None),
+            "c": Field(typeapi.of(te.Annotated[t.Optional[int], "foo"]), False, None),
+            "e": Field(typeapi.of(te.Annotated[t.Optional[int], Required()]), True),
+
+            "b": Field(typeapi.of(t.Optional[int]), False, 42),
+            "d": Field(typeapi.of(te.Annotated[t.Optional[int], "foo"]), False, 42),
+            "f": Field(typeapi.of(te.Annotated[t.Optional[int], Required()]), True, 42),
+        },
+        A,
+        A,
+    )
+
+
 def test_convert_dataclass_to_schema_nested():
     @dataclasses.dataclass
     class A:
@@ -394,4 +420,21 @@ def test_convert_typed_dict_to_schema_not_total():
         },
         Movie,
         Movie,
+    )
+
+
+def test_convert_typed_dict_with_optional_field_has_none_as_default():
+    class A(te.TypedDict, total=False):
+        a: t.Optional[int]
+        c: te.Annotated[t.Optional[int], "foo"]
+        e: te.Annotated[t.Optional[int], Required()]
+
+    assert convert_typed_dict_to_schema(A) == Schema(
+        {
+            "a": Field(typeapi.of(t.Optional[int]), False, None),
+            "c": Field(typeapi.of(te.Annotated[t.Optional[int], "foo"]), False, None),
+            "e": Field(typeapi.of(te.Annotated[t.Optional[int], Required()]), False),
+        },
+        A,
+        A,
     )

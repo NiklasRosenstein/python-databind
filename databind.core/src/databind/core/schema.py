@@ -191,7 +191,8 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
         datatype = typeapi.eval_types(typeapi.of(annotations[field.name]), globalns=typeapi.scope(dataclass_type))
         default = NotSet.Value if field.default == MISSING else field.default
         default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
-        required = _is_required(datatype, default == NotSet.Value and default_factory == NotSet.Value)
+        has_default = default != NotSet.Value or default_factory != NotSet.Value
+        required = _is_required(datatype, not has_default)
 
         # Infuse type parameters, if applicable. We may not have type parameters for the field's origin type if that
         # origin is not a generic type.
@@ -201,7 +202,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
         fields[field.name] = Field(
             datatype=datatype,
             required=required,
-            default=default,
+            default=None if not required and not has_default else default,
             default_factory=default_factory,
             flattened=_is_flat(datatype, False),
         )
@@ -250,11 +251,11 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
     for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
         datatype = typeapi.eval_types(typeapi.of(annotations[key]), globalns=typeapi.scope(t.cast(type, typed_dict)))
         has_default = hasattr(typed_dict, key)
-        required = _is_required(datatype, False if has_default else typed_dict.__total__)
+        required = _is_required(datatype, not has_default)
         fields[key] = Field(
             datatype=datatype,
-            required=required,
-            default=getattr(typed_dict, key) if has_default else NotSet.Value,
+            required=required and typed_dict.__total__,
+            default=getattr(typed_dict, key) if has_default else None if not required else NotSet.Value,
             flattened=_is_flat(datatype, False),
         )
 
@@ -266,7 +267,17 @@ def _is_required(datatype: typeapi.Hint, default: bool) -> bool:
     that instances #Required.enabled value. Otherwise, it returns *default*."""
     from databind.core.settings import Required, get_annotation_setting
 
-    return (get_annotation_setting(datatype, Required) or Required(default)).enabled
+    required = get_annotation_setting(datatype, Required)
+    if required:
+        return required.enabled
+
+    if isinstance(datatype, typeapi.Annotated):
+        datatype = datatype.wrapped
+
+    if isinstance(datatype, typeapi.Union) and datatype.has_none_type():
+        return False
+
+    return default
 
 
 def _is_flat(datatype: typeapi.Hint, default: bool) -> bool:
