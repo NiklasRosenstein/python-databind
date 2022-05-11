@@ -188,10 +188,11 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
             # exclude it from the definition of the type for de-/serializing.
             continue
 
+        globalns = typeapi.scope(dataclass_type)
         datatype = typeapi.eval_types(
             typeapi.of(annotations[field.name]),
-            module=dataclass_type.__module__,
-            globalns=typeapi.scope(dataclass_type),
+            module=dataclass_type.__module__ if globalns is None else None,
+            globalns=globalns,
         )
         default = NotSet.Value if field.default == MISSING else field.default
         default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
