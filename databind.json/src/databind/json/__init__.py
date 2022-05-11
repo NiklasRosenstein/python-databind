@@ -11,7 +11,7 @@ if t.TYPE_CHECKING:
     from databind.core.mapper import BiObjectMapper
     from databind.core.settings import Setting, Settings
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 
 JsonType = t.Union[
     None,

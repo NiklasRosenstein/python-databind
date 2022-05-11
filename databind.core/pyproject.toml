@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "databind.core"
-version = "2.0.1"
+version = "2.0.2"
 description = "Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.7 and newer."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
