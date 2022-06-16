@@ -41,12 +41,12 @@ class JsonModule(Module):
         self.register(MappingConverter(direction))
         self.register(OptionalConverter())
         self.register(PlainDatatypeConverter(direction))
+        self.register(UnionConverter(direction))
         self.register(SchemaConverter(direction))
         self.register(StringifyConverter(direction, uuid.UUID))
         self.register(StringifyConverter(direction, pathlib.Path))
         self.register(StringifyConverter(direction, pathlib.PurePath))
         self.register(StringifyConverter(direction, duration, duration.parse))
-        self.register(UnionConverter(direction))
 
     @staticmethod
     def serializing() -> JsonModule:

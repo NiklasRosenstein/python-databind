@@ -203,7 +203,7 @@ def get_class_settings(
 ) -> t.Iterable[T_ClassDecoratorSetting]:
     """Returns all matching settings on *type_*."""
 
-    for item in getattr(type_, "__databind_settings__", []):
+    for item in vars(type_).get("__databind_settings__", []):
         if isinstance(item, setting_type):
             yield item
 

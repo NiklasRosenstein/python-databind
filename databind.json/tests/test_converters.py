@@ -348,3 +348,22 @@ def test_schema_converter_remainder_field(direction):
         assert mapper.convert(A(1, {"spam": 2}), A) == {"a": 1, "spam": 2}
     else:
         assert mapper.convert({"a": 1, "spam": 2}, A) == A(1, {"spam": 2})
+
+
+def test_deserialize_union_dataclass_subclass():
+    """Tests that a subclass of a dataclass marked as a union is deserialized as a dataclass."""
+
+    @dataclasses.dataclass
+    @Union(style=Union.FLAT)
+    class A:
+        id: int
+
+    @Union.register(A)
+    @dataclasses.dataclass
+    class B(A):
+        name: str
+
+    from databind.json import load
+
+    assert load({"type": "B", "id": 0, "name": "spam"}, A) == B(0, "spam")
+    assert load({"id": 0, "name": "spam"}, B) == B(0, "spam")
