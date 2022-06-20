@@ -1,5 +1,7 @@
+release-date = "2022-06-20"
+
 [[entries]]
-id = "df546027-bed8-46e1-8e9d-caa6447142bf"
+id = "56621ccd-8ec3-409a-84f6-9ec4ce1a052f"
 type = "improvement"
 description = "Enable Mypy strict type checking mode"
 author = "@NiklasRosenstein"
