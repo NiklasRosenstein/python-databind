@@ -943,7 +943,7 @@ Python type object.</p>
 <p><a id="pydoc:databind.core.schema.convert_dataclass_to_schema"></a></p>
 <h4 id="convert_dataclass_to_schema">convert_dataclass_to_schema</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_dataclass_to_schema</span><span class="p">(</span>
-        <span class="n">dataclass_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">GenericAlias</span><span class="p">,</span> <span class="n">typeapi</span><span class="o">.</span><span class="n">Type</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
+        <span class="n">dataclass_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">GenericAlias</span><span class="p">,</span> <span class="n">typeapi</span><span class="o">.</span><span class="n">Type</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L130">[view_source]</a></p>
 <p>Converts a Python class that is decorated with <code>dataclasses.dataclass()</code>.</p>

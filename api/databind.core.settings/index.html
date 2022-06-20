@@ -1233,7 +1233,7 @@ based on the type that is being looked at by the <a href="/python-databind/api/d
 <p><a id="databind.core.settings.Settings.add_local"></a></p>
 <p><a id="pydoc:databind.core.settings.Settings.add_local"></a></p>
 <h4 id="add_local">add_local</h4>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_local</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">setting</span><span class="p">:</span> <span class="n">Setting</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_local</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">setting</span><span class="p">:</span> <span class="n">Setting</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L67">[view_source]</a></p>
 <p>Add a setting locally for a particular Python type. If that Python type is encountered, the settings are
@@ -1307,7 +1307,7 @@ should inherit from <code>DecoratorSetting</code> instead.</p>
 <p><a id="databind.core.settings.ClassDecoratorSetting.__call__"></a></p>
 <p><a id="pydoc:databind.core.settings.ClassDecoratorSetting.__call__"></a></p>
 <h4 id="__call__">__call__</h4>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L173">[view_source]</a></p>
 <p>Decorate the class <em>type_</em> with this setting, adding the setting to its <code>__databind_settings__</code> list
@@ -1324,7 +1324,7 @@ types.</p>
 <p><a id="pydoc:databind.core.settings.get_class_settings"></a></p>
 <h4 id="get_class_settings">get_class_settings</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_class_settings</span><span class="p">(</span>
-    <span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
+    <span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Iterable</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L201">[view_source]</a></p>
@@ -1333,7 +1333,7 @@ types.</p>
 <p><a id="pydoc:databind.core.settings.get_class_setting"></a></p>
 <h4 id="get_class_setting">get_class_setting</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_class_setting</span><span class="p">(</span>
-    <span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
+    <span class="n">type_</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T_ClassDecoratorSetting</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_ClassDecoratorSetting</span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L211">[view_source]</a></p>
@@ -1514,8 +1514,9 @@ the union member's type ID is used as the key.</p>
 <p><a id="pydoc:databind.core.settings.Union.register"></a></p>
 <h4 id="register">register</h4>
 <div class="highlight"><pre><span></span><code><span class="nd">@staticmethod</span>
-<span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="n">extends</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">,</span>
-             <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span>
+<span class="k">def</span> <span class="nf">register</span><span class="p">(</span>
+        <span class="n">extends</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]],</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">T</span><span class="p">]]</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L447">[view_source]</a></p>
 <p>A convenience method to use as a decorator for classes that should be registered as members of a <a href="#pydoc:databind.core.settings.Union">Union</a>
