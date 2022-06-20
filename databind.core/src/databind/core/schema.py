@@ -251,7 +251,7 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
 
     assert typeapi.utils.is_typed_dict(typed_dict), typed_dict
 
-    annotations = typeapi.get_annotations(typed_dict)
+    annotations = typeapi.get_annotations(t.cast(type, typed_dict))
     fields: t.Dict[str, Field] = {}
     for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
         globalns = typeapi.scope(t.cast(type, typed_dict))
