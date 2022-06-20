@@ -90,7 +90,7 @@ class Schema:
     constructor: Constructor
 
     #: The underlying native Python type associated with the schema.
-    type: t.Type
+    type: type
 
     #: Annotation metadata that goes with the schema, possibly derived from a #typeapi.Annotated hint or the underlying
     #: Python type object.
@@ -127,7 +127,7 @@ def convert_to_schema(hint: typeapi.Hint) -> Schema:
     return schema
 
 
-def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, typeapi.Type]) -> Schema:
+def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, typeapi.Type]) -> Schema:
     """Converts a Python class that is decorated with #dataclasses.dataclass().
 
     The function will respect the #Required setting if it is present in a field's datatype if and only if the
@@ -171,8 +171,8 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[t.Type, GenericAlias, ty
         t.__origin__: v.get_parameter_mapping() for t, v in hint.get_orig_bases_parametrized(True).items()
     }
     type_parameters[hint.type] = hint.get_parameter_mapping()
-    type_annotations: t.Dict[t.Type, t.Dict[str, t.Any]] = {}
-    field_origins: t.Dict[str, t.Type] = {}
+    type_annotations: t.Dict[type, t.Dict[str, t.Any]] = {}
+    field_origins: t.Dict[str, type] = {}
     for base in hint.type.__mro__:
         if dataclasses.is_dataclass(base):
             type_annotations[base] = typeapi.get_annotations(base)
@@ -269,7 +269,7 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
             flattened=_is_flat(datatype, False),
         )
 
-    return Schema(fields, t.cast("Constructor", typed_dict), t.cast(t.Type, typed_dict))
+    return Schema(fields, t.cast("Constructor", typed_dict), t.cast(type, typed_dict))
 
 
 def _is_required(datatype: typeapi.Hint, default: bool) -> bool:

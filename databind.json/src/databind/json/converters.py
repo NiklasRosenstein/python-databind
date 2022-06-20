@@ -57,7 +57,9 @@ class AnyConverter(Converter):
 
 
 class CollectionConverter(Converter):
-    def __init__(self, direction: Direction, json_collection_type: t.Type[collections.abc.Collection] = list) -> None:
+    def __init__(
+        self, direction: Direction, json_collection_type: t.Type[collections.abc.Collection[t.Any]] = list
+    ) -> None:
         self.direction = direction
         self.json_collection_type = json_collection_type
 
@@ -73,7 +75,7 @@ class CollectionConverter(Converter):
 
         python_type = datatype.type
         item_type = datatype.args[0] if datatype.args else t.Any
-        values: t.Iterable = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
+        values: t.Iterable[t.Any] = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
 
         if self.direction == Direction.SERIALIZE:
             if not isinstance(ctx.value, python_type):
@@ -131,7 +133,7 @@ class DatetimeConverter(Converter):
                 return ctx.value
             elif isinstance(ctx.value, str):
                 try:
-                    dt = datefmt.parse(date_type, ctx.value)
+                    dt: t.Any = datefmt.parse(date_type, ctx.value)
                 except ValueError as exc:
                     raise ConversionError(self, ctx, str(exc))
                 assert isinstance(dt, date_type)
@@ -141,7 +143,7 @@ class DatetimeConverter(Converter):
         else:
             if not isinstance(ctx.value, date_type):
                 raise ConversionError.expected(self, ctx, date_type, type(ctx.value))
-            return datefmt.format(ctx.value)
+            return datefmt.format(ctx.value)  # type: ignore[type-var]
 
 
 class DecimalConverter(Converter):
@@ -246,7 +248,9 @@ class EnumConverter(Converter):
 
 
 class MappingConverter(Converter):
-    def __init__(self, direction: Direction, json_mapping_type: t.Type[collections.abc.Mapping] = dict) -> None:
+    def __init__(
+        self, direction: Direction, json_mapping_type: t.Type[collections.abc.Mapping[str, t.Any]] = dict
+    ) -> None:
         self.direction = direction
         self.json_mapping_type = json_mapping_type
 
@@ -312,7 +316,7 @@ class PlainDatatypeConverter(Converter):
     """
 
     # Map for (source_type, target_type)
-    _strict_adapters: t.Dict[t.Tuple[t.Type, t.Type], t.Callable[[t.Any], t.Any]] = {
+    _strict_adapters: t.Dict[t.Tuple[type, type], t.Callable[[t.Any], t.Any]] = {
         (bytes, bytes): lambda d: base64.b64encode(d).decode("ascii"),
         (str, bytes): base64.b64decode,
         (str, str): str,
@@ -379,7 +383,7 @@ class SchemaConverter(Converter):
     def __init__(
         self,
         direction: Direction,
-        json_mapping_type: t.Type[collections.abc.MutableMapping] = dict,
+        json_mapping_type: t.Type[collections.abc.MutableMapping[str, t.Any]] = dict,
         convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
         serialize_defaults: bool = True,
     ) -> None:
@@ -645,7 +649,9 @@ class UnionConverter(Converter):
     def __init__(self, direction: Direction) -> None:
         self.direction = direction
 
-    def _get_deserialize_member_name(self, ctx: Context, value: t.Mapping, style: str, discriminator_key: str) -> str:
+    def _get_deserialize_member_name(
+        self, ctx: Context, value: t.Mapping[str, t.Any], style: str, discriminator_key: str
+    ) -> str:
         """Identify the name of the union member of the given serialized *value* and return it. How that name is
         determined depends on the *style*."""
 
@@ -737,7 +743,7 @@ class UnionConverter(Converter):
             elif style == Union.FLAT:
                 child_context = ctx.spawn(dict(ctx.value), type_hint, None)
                 # Don't pass down the discriminator key.
-                t.cast(t.Dict, child_context.value).pop(discriminator_key)
+                t.cast(t.Dict[str, t.Any], child_context.value).pop(discriminator_key)
             elif style == Union.KEYED:
                 child_context = ctx.spawn(ctx.value[member_name], type_hint, member_name)
             else:

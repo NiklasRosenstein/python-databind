@@ -71,7 +71,7 @@ class StaticUnionMembers(UnionMembers):
     The #register() method is also exposed for your convenience on the #Union settings type (see #Union.register()).
     """
 
-    _TypeType = t.Union[t.Type, typeapi.Hint, t.Any]
+    _TypeType = t.Union[type, typeapi.Hint, t.Any]
     _TypeProvider = t.Union[_TypeType, t.Callable[[], _TypeType]]
     _MembersMappingType = t.Mapping[str, _TypeProvider]
     _MembersDictType = t.Dict[str, _TypeProvider]

@@ -98,7 +98,7 @@ class BiObjectMapper(t.Generic[T]):
 
         from databind.core.context import Location
 
-        return self.serializer.convert(value, datatype, Location(filename, None, None), settings)
+        return t.cast(T, self.serializer.convert(value, datatype, Location(filename, None, None), settings))
 
     def deserialize(
         self,
@@ -111,4 +111,4 @@ class BiObjectMapper(t.Generic[T]):
 
         from databind.core.context import Location
 
-        return self.deserializer.convert(value, datatype, Location(filename, None, None), settings)
+        return t.cast(T, self.deserializer.convert(value, datatype, Location(filename, None, None), settings))

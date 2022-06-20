@@ -56,7 +56,7 @@ class Settings(SettingsProvider):
     ) -> None:
         self.parent = parent
         self.global_settings: t.List[Setting] = list(global_settings) if global_settings else []
-        self.local_settings: t.Dict[t.Type, t.List[Setting]] = {}
+        self.local_settings: t.Dict[type, t.List[Setting]] = {}
         self.providers: t.List[t.Callable[[Context], t.List[Setting]]] = []
 
     def add_global(self, setting: Setting) -> None:
@@ -64,7 +64,7 @@ class Settings(SettingsProvider):
 
         self.global_settings.append(setting)
 
-    def add_local(self, type_: t.Type, setting: Setting) -> None:
+    def add_local(self, type_: type, setting: Setting) -> None:
         """Add a setting locally for a particular Python type. If that Python type is encountered, the settings are
         combined with any other settings that are found for the type."""
 
@@ -113,13 +113,13 @@ class Settings(SettingsProvider):
 
         from nr.util.stream import Stream
 
-        def _all_settings():
+        def _all_settings() -> t.Iterator[t.Any]:
             datatype = context.datatype
             if isinstance(datatype, typeapi.Annotated):
                 yield from (s for s in datatype.metadata if isinstance(s, setting_type))
                 datatype = datatype.wrapped
             if isinstance(datatype, typeapi.Type):
-                yield from get_class_settings(datatype.type, setting_type)
+                yield from get_class_settings(datatype.type, setting_type)  # type: ignore[type-var]
                 yield from self.local_settings.get(datatype.type, [])
             for provider in self.providers:
                 yield from provider(context)
@@ -163,14 +163,14 @@ class Setting:
 
 class ClassDecoratorSetting(Setting):
 
-    bound_to: t.Optional[t.Type] = None
+    bound_to: t.Optional[type] = None
 
     def __init__(self) -> None:
         if type(self) is ClassDecoratorSetting:
             raise TypeError("ClassDecoratorSetting cannot be directly instantiated")
         super().__init__()
 
-    def __call__(self, type_: t.Type) -> t.Type:
+    def __call__(self, type_: type) -> type:
         """Decorate the class *type_* with this setting, adding the setting to its `__databind_settings__` list
         (which is created if it does not exist) and sets #bound_to. The same setting instance cannot decorate multiple
         types."""
@@ -199,7 +199,7 @@ def get_highest_setting(settings: t.Iterable[T_Setting]) -> T_Setting | None:
 
 
 def get_class_settings(
-    type_: t.Type, setting_type: t.Type[T_ClassDecoratorSetting]
+    type_: type, setting_type: t.Type[T_ClassDecoratorSetting]
 ) -> t.Iterable[T_ClassDecoratorSetting]:
     """Returns all matching settings on *type_*."""
 
@@ -208,7 +208,7 @@ def get_class_settings(
             yield item
 
 
-def get_class_setting(type_: t.Type, setting_type: t.Type[T_ClassDecoratorSetting]) -> T_ClassDecoratorSetting | None:
+def get_class_setting(type_: type, setting_type: t.Type[T_ClassDecoratorSetting]) -> T_ClassDecoratorSetting | None:
     """Returns the first instance of the given *setting_type* on *type_*."""
 
     return get_highest_setting(get_class_settings(type_, setting_type))
@@ -444,7 +444,7 @@ class Union(ClassDecoratorSetting):
         self.nesting_key = nesting_key
 
     @staticmethod
-    def register(extends: t.Type, name: str = None) -> t.Callable[[t.Type[T]], t.Type[T]]:
+    def register(extends: type, name: t.Optional[str] = None) -> t.Callable[[t.Type[T]], t.Type[T]]:
         """A convenience method to use as a decorator for classes that should be registered as members of a #Union
         setting that is attached to the type *extends*. The #Union setting on *extends* must have a #StaticUnionMembers
         #members object. The decorated class must also be a subclass of *extends*.
@@ -579,7 +579,7 @@ class DateFormat(Setting):
         }[type_]
         for fmt in self.__iter_formats(format_t):
             try:
-                return getattr(fmt, method_name)(value)
+                return t.cast(DateFormat.T_Dtype, getattr(fmt, method_name)(value))
             except ValueError:
                 pass
         raise self._formulate_parse_error(list(self.__iter_formats(format_t)), value)
@@ -606,7 +606,7 @@ class DateFormat(Setting):
         }[type(dt)]
         for fmt in self.__iter_formats(format_t):
             try:
-                return getattr(fmt, method_name)(dt)
+                return t.cast(str, getattr(fmt, method_name)(dt))
             except ValueError:
                 pass
         raise self._formulate_parse_error(list(self.__iter_formats(format_t)), dt)

@@ -91,8 +91,8 @@ class ConversionError(Exception):
     def expected(
         origin: Converter,
         ctx: Context,
-        types: t.Union[t.Type, t.Sequence[t.Type]],
-        got: t.Optional[t.Type] = None,
+        types: t.Union[type, t.Sequence[type]],
+        got: t.Optional[type] = None,
     ) -> ConversionError:
         if not isinstance(types, t.Sequence):
             types = (types,)

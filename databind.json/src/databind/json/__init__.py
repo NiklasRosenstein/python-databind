@@ -91,7 +91,7 @@ def loads(
     filename: t.Optional[str] = None,
     settings: t.Optional[t.List[Setting]] = None,
 ) -> T:
-    return load(json.loads(value), type_, filename, settings)
+    return t.cast(T, load(json.loads(value), type_, filename, settings))
 
 
 def dump(
