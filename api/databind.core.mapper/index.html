@@ -704,7 +704,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-  <a href="https://github.com/NiklasRosenstein/python-databind/blob/None/docs/content/api/databind.core.mapper.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/content/api/databind.core.mapper.md" title="Edit this page" class="md-content__button md-icon">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
@@ -717,7 +717,7 @@
 <h2 id="class-objectmapper">Class ObjectMapper</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ObjectMapper</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0ffa90a9992ac75128fb1b4e82a9e6f189eac5f/docs/../databind.core/src/databind/core/mapper.py#L13">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L13">[view_source]</a></p>
 <p>The object mapper is responsible for constructing a conversion <a href="/python-databind/api/databind.core.context#pydoc:databind.core.context.Context">Context</a> and dispatching it for conversion to
 a matching <a href="/python-databind/api/databind.core.converter#pydoc:databind.core.converter.Converter">Converter</a> implementation.</p>
 <p><a id="databind.core.mapper.ObjectMapper.convert"></a></p>
@@ -730,7 +730,7 @@ a matching <a href="/python-databind/api/databind.core.converter#pydoc:databind.
     <span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Setting</span><span class="p">],</span>
                       <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0ffa90a9992ac75128fb1b4e82a9e6f189eac5f/docs/../databind.core/src/databind/core/mapper.py#L30">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L30">[view_source]</a></p>
 <p>Convert a value according to the given datatype.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
@@ -753,7 +753,7 @@ a matching <a href="/python-databind/api/databind.core.converter#pydoc:databind.
 <h2 id="class-biobjectmapper">Class BiObjectMapper</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">BiObjectMapper</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">])</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0ffa90a9992ac75128fb1b4e82a9e6f189eac5f/docs/../databind.core/src/databind/core/mapper.py#L74">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L74">[view_source]</a></p>
 <p>A convenience helper that manages two object mappers, one for serialization and another for deserialization.</p>
 <p>Type arguments:
   T: Narrows the return type of <a href="#pydoc:databind.core.mapper.BiObjectMapper.serialize">serialize()</a> and <em>value</em> parameter of <a href="#pydoc:databind.core.mapper.BiObjectMapper.deserialize">deserialize()</a>.</p>
@@ -762,7 +762,7 @@ a matching <a href="/python-databind/api/databind.core.converter#pydoc:databind.
 <h4 id="__init__">__init__</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="n">serializer</span><span class="p">:</span> <span class="n">ObjectMapper</span><span class="p">,</span> <span class="n">deserializer</span><span class="p">:</span> <span class="n">ObjectMapper</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0ffa90a9992ac75128fb1b4e82a9e6f189eac5f/docs/../databind.core/src/databind/core/mapper.py#L81">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L81">[view_source]</a></p>
 <p><strong>Arguments</strong>:</p>
 <ul>
 <li><code>serializer</code> - The <a href="#pydoc:databind.core.mapper.ObjectMapper">ObjectMapper</a> to use in <a href="#pydoc:databind.core.mapper.BiObjectMapper.serialize">serialize()</a>.</li>
@@ -778,7 +778,7 @@ a matching <a href="/python-databind/api/databind.core.converter#pydoc:databind.
         <span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Setting</span><span class="p">],</span>
                           <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0ffa90a9992ac75128fb1b4e82a9e6f189eac5f/docs/../databind.core/src/databind/core/mapper.py#L90">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L90">[view_source]</a></p>
 <p>Serialize <em>value</em> according to the its <em>datatype</em>.</p>
 <p><a id="databind.core.mapper.BiObjectMapper.deserialize"></a></p>
 <p><a id="pydoc:databind.core.mapper.BiObjectMapper.deserialize"></a></p>
@@ -790,7 +790,7 @@ a matching <a href="/python-databind/api/databind.core.converter#pydoc:databind.
         <span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Setting</span><span class="p">],</span>
                           <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0ffa90a9992ac75128fb1b4e82a9e6f189eac5f/docs/../databind.core/src/databind/core/mapper.py#L103">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L103">[view_source]</a></p>
 <p>Deserialize <em>value</em> according to the its <em>datatype</em>.</p>
 
               
