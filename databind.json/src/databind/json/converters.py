@@ -1,5 +1,4 @@
 import base64
-import collections.abc
 import datetime
 import decimal
 import enum
@@ -57,15 +56,13 @@ class AnyConverter(Converter):
 
 
 class CollectionConverter(Converter):
-    def __init__(
-        self, direction: Direction, json_collection_type: t.Type[collections.abc.Collection[t.Any]] = list
-    ) -> None:
+    def __init__(self, direction: Direction, json_collection_type: t.Type[t.Collection[t.Any]] = list) -> None:
         self.direction = direction
         self.json_collection_type = json_collection_type
 
     def convert(self, ctx: Context) -> t.Any:
         datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, collections.abc.Collection):
+        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, t.Collection):
             raise NotImplementedError
 
         if datatype.nparams != 1:
@@ -84,7 +81,7 @@ class CollectionConverter(Converter):
 
         else:
             if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
-                raise ConversionError.expected(self, ctx, collections.abc.Collection)
+                raise ConversionError.expected(self, ctx, t.Collection)
             values = list(values)
             if python_type == list:
                 return values
@@ -248,15 +245,13 @@ class EnumConverter(Converter):
 
 
 class MappingConverter(Converter):
-    def __init__(
-        self, direction: Direction, json_mapping_type: t.Type[collections.abc.Mapping[str, t.Any]] = dict
-    ) -> None:
+    def __init__(self, direction: Direction, json_mapping_type: t.Type[t.Mapping[str, t.Any]] = dict) -> None:
         self.direction = direction
         self.json_mapping_type = json_mapping_type
 
     def convert(self, ctx: Context) -> t.Any:
         datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, collections.abc.Mapping):
+        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, t.Mapping):
             raise NotImplementedError
 
         if datatype.nparams != 2:
@@ -269,8 +264,8 @@ class MappingConverter(Converter):
         else:
             key_type, value_type = datatype.args
 
-        if not isinstance(ctx.value, collections.abc.Mapping):
-            raise ConversionError.expected(self, ctx, collections.abc.Mapping)
+        if not isinstance(ctx.value, t.Mapping):
+            raise ConversionError.expected(self, ctx, t.Mapping)
 
         result = {}
         for key, value in ctx.value.items():
@@ -284,7 +279,7 @@ class MappingConverter(Converter):
                 return datatype.type(result)  # type: ignore[call-arg]
             except TypeError:
                 # We expect this exception to occur for example if the annotated type is an abstract class like
-                # collections.abc.Mapping; in which case we just assume that "dict' is a fine type to return.
+                # t.Mapping; in which case we just assume that "dict' is a fine type to return.
                 return result
         elif self.direction == Direction.SERIALIZE and self.json_mapping_type != dict:
             # Same for the JSON output type.
@@ -383,7 +378,7 @@ class SchemaConverter(Converter):
     def __init__(
         self,
         direction: Direction,
-        json_mapping_type: t.Type[collections.abc.MutableMapping[str, t.Any]] = dict,
+        json_mapping_type: t.Type[t.MutableMapping[str, t.Any]] = dict,
         convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
         serialize_defaults: bool = True,
     ) -> None:
@@ -467,7 +462,7 @@ class SchemaConverter(Converter):
 
     def deserialize(self, ctx: Context, schema: Schema) -> t.Any:
         if not isinstance(ctx.value, t.Mapping):
-            raise ConversionError.expected(self, ctx, collections.abc.Mapping)
+            raise ConversionError.expected(self, ctx, t.Mapping)
 
         source = ctx.value
         used_keys = set()
