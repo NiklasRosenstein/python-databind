@@ -2,4 +2,4 @@
 enabled = false
 
 [test]
-check = "slam check"
+check = "slap check"

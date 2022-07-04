@@ -17,10 +17,10 @@ packages = [{include = "databind/json", from = "src"}]
   pytest = "*"
   mypy = "*"
 
-[tool.slam]
+[tool.slap]
 typed = true
 
-  [tool.slam.test]
+  [tool.slap.test]
   pytest = "pytest src/"
   mypy = "MYPYPATH=src mypy src/ --namespace-packages --explicit-package-bases"
 

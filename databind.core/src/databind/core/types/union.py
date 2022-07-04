@@ -205,7 +205,7 @@ class ImportSubtypes(UnionSubtypes):
     parts = name.split('.')
     offset = 1
     module_name = parts[0]
-    module = importlib.import_module(module_name)
+    module: t.Any = importlib.import_module(module_name)
 
     # Import as many modules as we can.
     for offset, part in enumerate(parts[offset:], offset):
