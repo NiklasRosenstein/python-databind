@@ -25,6 +25,7 @@ class JsonModule(Module):
             DatetimeConverter,
             DecimalConverter,
             EnumConverter,
+            LiteralConverter,
             MappingConverter,
             OptionalConverter,
             PlainDatatypeConverter,
@@ -47,6 +48,7 @@ class JsonModule(Module):
         self.register(StringifyConverter(direction, pathlib.Path))
         self.register(StringifyConverter(direction, pathlib.PurePath))
         self.register(StringifyConverter(direction, duration, duration.parse))
+        self.register(LiteralConverter())
 
     @staticmethod
     def serializing() -> JsonModule:

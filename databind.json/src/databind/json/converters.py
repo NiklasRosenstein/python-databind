@@ -768,3 +768,23 @@ class UnionConverter(Converter):
                 raise ConversionError(self, ctx, f"unsupported union style: {style!r}")
 
         return result
+
+
+class LiteralConverter(Converter):
+    """A converter for #typing.Literal type hints. A literal value in the definition must simply match the literal
+    value in the context being serialized/deserialized, otherwise a #ConversionError is raised. Currently, literal
+    values must be of a plain data type that natively maps to a JSON type, like a boolean, integer, float, string
+    or #None."""
+
+    def convert(self, ctx: Context) -> t.Any:
+        if not isinstance(ctx.datatype, typeapi.Literal):
+            raise NotImplementedError
+
+        if ctx.value not in ctx.datatype.values:
+            raise ConversionError(
+                self,
+                ctx,
+                f"literal value mismatch: got {ctx.value!r}, expected {'|'.join(map(repr, ctx.datatype.values))}",
+            )
+
+        return ctx.value

@@ -367,3 +367,34 @@ def test_deserialize_union_dataclass_subclass():
 
     assert load({"type": "B", "id": 0, "name": "spam"}, A) == B(0, "spam")
     assert load({"id": 0, "name": "spam"}, B) == B(0, "spam")
+
+
+def test_deserialize_and_serialize_literal_union():
+    from databind.json import load, dump
+
+    @dataclasses.dataclass
+    class AwsMachine:
+        region: str
+        name: str
+        instance_id: str
+        provider: te.Literal["aws"] = "aws"
+
+    @dataclasses.dataclass
+    class AzureMachine:
+        resource_group: str
+        name: str
+        provider: te.Literal["azure"] = "azure"
+
+    Machine = AwsMachine | AzureMachine
+
+    aws_payload = {"provider": "aws", "region": "eu-central-1", "name": "bar", "instance_id": "42"}
+    aws_machine = AwsMachine("eu-central-1", "bar", "42")
+    assert load(aws_payload, Machine) == aws_machine
+    assert dump(aws_machine, Machine) == aws_payload
+    assert dump(aws_machine, AwsMachine) == aws_payload
+
+    azure_payload = {"provider": "azure", "resource_group": "foo", "name": "bar"}
+    azure_machine = AzureMachine("foo", "bar")
+    assert load(azure_payload, Machine) == azure_machine
+    assert dump(azure_machine, Machine) == azure_payload
+    assert dump(azure_machine, AzureMachine) == azure_payload
