@@ -46,9 +46,12 @@ class Module(Converter):
         assert isinstance(converter, Converter), converter
         self.converters.append(converter)
 
+    def get_converters(self, ctx: Context) -> t.Iterator[Converter]:
+        yield from self.converters
+
     def convert(self, ctx: Context) -> t.Any:
         errors: t.List[t.Tuple[Converter, Exception]] = []
-        for converter in self.converters:
+        for converter in self.get_converters(ctx):
             try:
                 return converter.convert(ctx)
             except NotImplementedError as exc:

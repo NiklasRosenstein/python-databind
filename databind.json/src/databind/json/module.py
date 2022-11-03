@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from databind.core.converter import Module
+from typing import Iterator
+
+from databind.core.context import Context
+from databind.core.converter import Converter, Module
 
 from databind.json.direction import Direction
+from databind.json.settings import JsonConverter
 
 
 class JsonModule(Module):
@@ -49,6 +53,12 @@ class JsonModule(Module):
         self.register(StringifyConverter(direction, pathlib.PurePath))
         self.register(StringifyConverter(direction, duration, duration.parse))
         self.register(LiteralConverter())
+
+    def get_converters(self, ctx: Context) -> Iterator[Converter]:
+        converter_setting = ctx.get_setting(JsonConverter)
+        if converter_setting is not None:
+            yield converter_setting.factory(self.direction)
+        yield from super().get_converters(ctx)
 
     @staticmethod
     def serializing() -> JsonModule:

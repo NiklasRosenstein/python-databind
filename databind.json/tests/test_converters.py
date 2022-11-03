@@ -8,7 +8,8 @@ import uuid
 import pytest
 import typeapi
 import typing_extensions as te
-from databind.core.converter import ConversionError, Converter
+from databind.core.context import Context
+from databind.core.converter import ConversionError, Converter, NoMatchingConverter
 from databind.core.mapper import ObjectMapper
 from databind.core.settings import Alias, ExtraKeys, Flattened, Remainder, SerializeDefaults, Strict, Union
 from nr.util.date import duration
@@ -27,6 +28,7 @@ from databind.json.converters import (
     UnionConverter,
 )
 from databind.json.direction import Direction
+from databind.json.settings import JsonConverter
 
 
 def make_mapper(converters: t.List[Converter]) -> ObjectMapper:
@@ -370,7 +372,7 @@ def test_deserialize_union_dataclass_subclass():
 
 
 def test_deserialize_and_serialize_literal_union():
-    from databind.json import load, dump
+    from databind.json import dump, load
 
     @dataclasses.dataclass
     class AwsMachine:
@@ -398,3 +400,48 @@ def test_deserialize_and_serialize_literal_union():
     assert load(azure_payload, Machine) == azure_machine
     assert dump(azure_machine, Machine) == azure_payload
     assert dump(azure_machine, AzureMachine) == azure_payload
+
+
+def test_json_converter_setting() -> None:
+    from databind.json import dump, load
+
+    class MyConverter(Converter):
+        def __init__(self, return_value: t.Any, skip: bool = False) -> None:
+            self.return_value = return_value
+            self.skip = skip
+            super().__init__()
+
+        def convert(self, ctx: Context) -> t.Any:
+            if self.skip:
+                raise NotImplementedError
+            return self.return_value
+
+    @JsonConverter(lambda _direction: MyConverter("Oh HELLO"))
+    @dataclasses.dataclass
+    class MyClass1:
+        a: int
+
+    assert load({"a": 42}, MyClass1) == "Oh HELLO"
+    assert load({}, MyClass1) == "Oh HELLO"
+    assert (
+        load({}, te.Annotated[MyClass1, JsonConverter(lambda _direction: MyConverter("I am better"))]) == "I am better"
+    )
+
+    class AnotherClass:
+        ...
+
+    with pytest.raises(NoMatchingConverter):
+        assert dump(None, AnotherClass)
+
+    assert dump(None, te.Annotated[AnotherClass, JsonConverter(lambda _direction: MyConverter(42))]) == 42
+
+    @dataclasses.dataclass
+    class MyClass2:
+        a: int
+
+    assert load({"a": 42}, MyClass1) == "Oh HELLO"
+    assert load({"a": 42}, MyClass2) == MyClass2(42)
+    assert load({"a": 42}, te.Annotated[MyClass2, JsonConverter(lambda _d: MyConverter("foo"))]) == "foo"
+    assert load({"a": 42}, te.Annotated[MyClass2, JsonConverter(lambda _d: MyConverter(None, skip=True))]) == MyClass2(
+        42
+    )

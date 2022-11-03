@@ -558,7 +558,7 @@ class StringifyConverter(Converter):
         assert isinstance(type_, type), type_
         self.direction = direction
         self.type_ = type_
-        self.parser = t.cast(t.Callable[[str], T], parser or type_)
+        self.parser: t.Callable[[str], T] = parser or type_
         self.formatter = formatter
 
     def convert(self, ctx: Context) -> t.Any:
