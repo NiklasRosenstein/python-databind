@@ -11,7 +11,7 @@ if t.TYPE_CHECKING:
     from databind.core.mapper import ObjectMapper
     from databind.core.settings import Setting, Settings
 
-__version__ = "2.0.9"
+__version__ = "3.0.0"
 
 JsonType = t.Union[
     None,
