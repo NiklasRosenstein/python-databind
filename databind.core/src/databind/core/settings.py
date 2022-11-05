@@ -635,18 +635,22 @@ class ExtraKeys(ClassDecoratorSetting):
     """
 
     def __init__(
-        self, arg: t.Union[bool, t.Callable[[Context, t.Set[str]], t.Any]], priority: Priority = Priority.NORMAL
+        self,
+        allow: bool = True,
+        recorder: t.Callable[[Context, t.Set[str]], t.Any] | None = None,
+        priority: Priority = Priority.NORMAL,
     ) -> None:
-        self.arg = arg
+        self.allow = allow
+        self.recorder = recorder
         self.priority = priority
 
     def inform(self, origin: Converter, ctx: Context, extra_keys: t.Set[str]) -> None:
         from databind.core.converter import ConversionError
 
-        if self.arg is False:
+        if self.allow is False:
             raise ConversionError(origin, ctx, f"encountered extra keys: {extra_keys}")
-        elif self.arg is not True:
-            self.arg(ctx, extra_keys)
+        elif self.recorder is not None:
+            self.recorder(ctx, extra_keys)
 
 
 class Remainder(BooleanSetting):

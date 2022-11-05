@@ -1,0 +1,47 @@
+[[entries]]
+id = "16443154-fd91-4685-a66a-0bec2b277aa4"
+type = "breaking change"
+description = "add `Direction` as a concept to `databind.core` (previously only in `databind.json`) which can be imported from `databind.core.context`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "2658cbe1-c2d3-48e2-9dc1-94f72b4206b7"
+type = "feature"
+description = "add `Context.direction` member"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "7b9e9a77-f3be-4159-8dc8-7876feb009fd"
+type = "feature"
+description = "add `ObjectMapper.serialize()` and `ObjectMapper.deserialize()`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "4ac0f272-c68f-40f5-9130-fc0f648008a7"
+type = "breaking change"
+description = "remove `BiObjectMapper` class"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "d19a3728-9cb3-44b0-b85e-edcde9d31865"
+type = "breaking change"
+description = "add `direction` argument to `ObjectMapper.convert()`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "e11ca3ed-6c24-4a55-bac5-6f930c905b23"
+type = "feature"
+description = "add `Converter.serialize()` and `Converter.deserialize()`, add default implementation for `Converter.convert()` to dispatch to the respective member based on the `Context.direction`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "76610cad-ef0c-40d0-8436-9ec3a84b076c"
+type = "breaking change"
+description = "`ObjectMapper` is now a generic with parameters `T` (the deserialized representation of the type) and `U` (the serialized representation of the type)"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "48b7f1b9-5931-4b66-b6af-d4d35ca2d621"
+type = "breaking change"
+description = "Change `ExtraKeys` setting signature from `(arg: bool | callable)` to `(allow: bool = True, recorder: callable | None = None)`"
+author = "@NiklasRosenstein"

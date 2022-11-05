@@ -1,0 +1,17 @@
+[[entries]]
+id = "1cecb7ce-6876-4d0f-8904-81258863f3a7"
+type = "docs"
+description = "add Examples page to docs"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "fa76a6be-5af0-46f6-88af-c81fb5ccb31d"
+type = "breaking change"
+description = "remove `get_bimapper()` and replace it with `get_object_mapper()`"
+author = "@NiklasRosenstein"
+
+[[entries]]
+id = "837d04da-6025-4800-b822-445bfe382727"
+type = "breaking change"
+description = "remove `Direction` concept from this package as it is now part of `databind.core`, removed it from `JsonModule` and all `Converter` implementations"
+author = "@NiklasRosenstein"

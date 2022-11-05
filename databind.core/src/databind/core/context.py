@@ -35,6 +35,17 @@ class Location:
 Location.EMPTY = Location(None, None, None)
 
 
+class Direction(enum.Enum):
+    SERIALIZE = enum.auto()
+    DESERIALIZE = enum.auto()
+
+    def is_serialize(self) -> bool:
+        return self == Direction.SERIALIZE
+
+    def is_deserialize(self) -> bool:
+        return self == Direction.DESERIALIZE
+
+
 @dataclasses.dataclass
 class Context:
     """The context is constructed by the #ObjectMapper and passed to an applicable #Converter to convert #value
@@ -42,6 +53,9 @@ class Context:
 
     #: The parent context.
     parent: t.Optional[Context] = dataclasses.field(repr=False)
+
+    #: The direction (i.e. deserialization or serialization).
+    direction: Direction
 
     #: The value to convert.
     value: t.Any = dataclasses.field(repr=False)
@@ -104,7 +118,7 @@ class Context:
         if location is None:
             location = Location(self.location.filename, None, None)
 
-        return Context(self, value, datatype, self.settings, key, location, self.convert_func)
+        return Context(self, self.direction, value, datatype, self.settings, key, location, self.convert_func)
 
     def convert(self) -> t.Any:
         """Invoke the #convert_func with *self*."""

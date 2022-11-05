@@ -8,7 +8,7 @@ import typing as t
 from nr.util.generic import T
 
 if t.TYPE_CHECKING:
-    from databind.core.mapper import BiObjectMapper
+    from databind.core.mapper import ObjectMapper
     from databind.core.settings import Setting, Settings
 
 __version__ = "2.0.9"
@@ -24,16 +24,14 @@ JsonType = t.Union[
 ]
 
 
-def get_bimapper(settings: t.Optional[Settings] = None) -> BiObjectMapper[JsonType]:
-    from databind.core.mapper import BiObjectMapper, ObjectMapper
+def get_object_mapper(settings: t.Optional[Settings] = None) -> ObjectMapper[t.Any, JsonType]:
+    from databind.core.mapper import ObjectMapper
 
     from databind.json.module import JsonModule
 
-    serializer = ObjectMapper(settings)
-    serializer.module.register(JsonModule.serializing())
-    deserializer = ObjectMapper(settings)
-    deserializer.module.register(JsonModule.deserializing())
-    return BiObjectMapper(serializer, deserializer)
+    mapper = ObjectMapper[t.Any, JsonType](settings)
+    mapper.module.register(JsonModule())
+    return mapper
 
 
 @t.overload
@@ -62,7 +60,7 @@ def load(
     filename: t.Optional[str] = None,
     settings: t.Optional[t.List[Setting]] = None,
 ) -> t.Any:
-    return get_bimapper().deserialize(value, type_, filename, settings)
+    return get_object_mapper().deserialize(value, type_, filename, settings)
 
 
 @t.overload
@@ -100,7 +98,7 @@ def dump(
     filename: t.Optional[str] = None,
     settings: t.Optional[t.List[Setting]] = None,
 ) -> JsonType:
-    return get_bimapper().serialize(value, type_, filename, settings)
+    return get_object_mapper().serialize(value, type_, filename, settings)
 
 
 def dumps(

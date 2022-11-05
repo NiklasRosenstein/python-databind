@@ -16,20 +16,38 @@ logger = logging.getLogger(__name__)
 class Converter(abc.ABC):
     """Interface for converting a value from one representation to another."""
 
-    @abc.abstractmethod
     def convert(self, ctx: Context) -> t.Any:
         """Convert the value in *ctx* to another value.
 
+        The default implementation will dispatch to #serialize() and #deserialize() depending on the direction
+        given by the context. Because these methods raise #NotImplementedError, an instance of #Converter without
+        custom logic will effectively be a no-op.
+
         Argument:
-          ctx: The conversion context that contains the value, datatype, settings, location and allows you to
-            recursively continue the conversion process for sub values.
+          ctx: The conversion context that contains the direction, value, datatype, settings, location and allows
+            you to recursively continue the conversion process for sub values.
+
         Raises:
           NotImplementedError: If the converter does not support the conversion for the given context.
           NoMatchingConverter: If the converter is delegating to other converters, to point out that none
             of its delegates can convert the value.
+
         Returns:
           The new value.
         """
+
+        if ctx.direction.is_serialize():
+            return self.serialize(ctx)
+        elif ctx.direction.is_deserialize():
+            return self.deserialize(ctx)
+        else:
+            raise RuntimeError(f"unexpected direction: {ctx.direction!r}")
+
+    def serialize(self, ctx: Context) -> t.Any:
+        raise NotImplementedError
+
+    def deserialize(self, ctx: Context) -> t.Any:
+        raise NotImplementedError
 
 
 class Module(Converter):

@@ -4,7 +4,7 @@ Databind is a library inspired by jackson-databind to de-/serialise Python datac
 will install the full suite of databind packages. Compatible with Python 3.7 and newer.
 
 * [databind.core](https://pypi.org/project/databind.core/) &ndash; Provides the core framework.
-* [databind.json](https://pypi.org/project/databind.json/) &ndash; De-/serialise dataclasses to/from JSON payloads.
+* [databind.json](https://pypi.org/project/databind.json/) &ndash; De-/serialize dataclasses to/from JSON payloads.
 
 ## Supported features
 

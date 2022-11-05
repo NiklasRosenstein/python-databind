@@ -1,13 +1,9 @@
+import typing as t
+
 from databind.core.converter import Converter
 from databind.core.settings import ClassDecoratorSetting
-from typing_extensions import Protocol
 
-from databind.json.direction import Direction
-
-
-class _JsonConverterFactor(Protocol):
-    def __call__(self, direction: Direction) -> Converter:
-        ...
+ConverterSupplier = t.Callable[[], Converter]
 
 
 class JsonConverter(ClassDecoratorSetting):
@@ -22,7 +18,7 @@ class JsonConverter(ClassDecoratorSetting):
     from databind.json.settings import JsonConverter
     from typing import Any
 
-    class MyCustomConverter(Converter):
+    class MyCustomConverter(JsonConverter.Base):
         def __init__(self, direction: Direction) -> None:
             self.direction = direction
         def convert(self, ctx: Context) -> Any:
@@ -37,6 +33,11 @@ class JsonConverter(ClassDecoratorSetting):
     Annotated[MyCustomType, JsonConverter(MyCustomConverter)]
     ```"""
 
-    def __init__(self, factory: _JsonConverterFactor) -> None:
+    supplier: ConverterSupplier
+
+    def __init__(self, supplier: t.Union[ConverterSupplier, Converter]) -> None:
         super().__init__()
-        self.factory = factory
+        if isinstance(supplier, Converter):
+            self.supplier = lambda: t.cast(Converter, supplier)
+        else:
+            self.supplier = supplier

@@ -6,7 +6,7 @@ import types
 import typing as t
 
 import typeapi
-from databind.core.context import Context
+from databind.core.context import Context, Direction
 from databind.core.converter import ConversionError, Converter
 from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
 from databind.core.settings import (
@@ -21,8 +21,6 @@ from databind.core.settings import (
     get_annotation_setting,
 )
 from nr.util.generic import T
-
-from databind.json.direction import Direction
 
 
 def _int_lossless(v: float) -> int:
@@ -56,8 +54,7 @@ class AnyConverter(Converter):
 
 
 class CollectionConverter(Converter):
-    def __init__(self, direction: Direction, json_collection_type: t.Type[t.Collection[t.Any]] = list) -> None:
-        self.direction = direction
+    def __init__(self, json_collection_type: t.Type[t.Collection[t.Any]] = list) -> None:
         self.json_collection_type = json_collection_type
 
     def convert(self, ctx: Context) -> t.Any:
@@ -74,7 +71,7 @@ class CollectionConverter(Converter):
         item_type = datatype.args[0] if datatype.args else t.Any
         values: t.Iterable[t.Any] = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
 
-        if self.direction == Direction.SERIALIZE:
+        if ctx.direction == Direction.SERIALIZE:
             if not isinstance(ctx.value, python_type):
                 raise ConversionError.expected(self, ctx, python_type)
             return self.json_collection_type(values)  # type: ignore[call-arg]
@@ -102,9 +99,6 @@ class DatetimeConverter(Converter):
     DEFAULT_TIME_FMT = DEFAULT_DATE_FMT
     DEFAULT_DATETIME_FMT = DEFAULT_DATE_FMT
 
-    def __init__(self, direction: Direction) -> None:
-        self.direction = direction
-
     def convert(self, ctx: Context) -> t.Any:
         datatype = typeapi.unwrap(ctx.datatype)[0]
         if not isinstance(datatype, typeapi.Type):
@@ -125,7 +119,7 @@ class DatetimeConverter(Converter):
         )
         assert datefmt is not None
 
-        if self.direction == Direction.DESERIALIZE:
+        if ctx.direction == Direction.DESERIALIZE:
             if isinstance(ctx.value, date_type):
                 return ctx.value
             elif isinstance(ctx.value, str):
@@ -146,8 +140,7 @@ class DatetimeConverter(Converter):
 class DecimalConverter(Converter):
     """A converter for #decimal.Decimal values to and from JSON as strings."""
 
-    def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
-        self.direction = direction
+    def __init__(self, strict_by_default: bool = True) -> None:
         self.strict_by_default = strict_by_default
 
     def convert(self, ctx: Context) -> t.Any:
@@ -159,7 +152,7 @@ class DecimalConverter(Converter):
         precision = ctx.get_setting(Precision)
         context = precision.to_decimal_context() if precision else None
 
-        if self.direction == Direction.DESERIALIZE:
+        if ctx.direction == Direction.DESERIALIZE:
             if (not strict.enabled and isinstance(ctx.value, (int, float))) or isinstance(ctx.value, str):
                 return decimal.Decimal(ctx.value, context)
             raise ConversionError.expected(self, ctx, str, type(ctx.value))
@@ -192,9 +185,6 @@ class EnumConverter(Converter):
     ```
     """
 
-    def __init__(self, direction: Direction) -> None:
-        self.direction = direction
-
     def _discover_alias(self, enum_type: t.Type[enum.Enum], member_name: str) -> t.Optional[Alias]:
         # TODO (@NiklasRosenstein): Take into account annotations of the base classes?
         hint = typeapi.of(typeapi.get_annotations(enum_type).get(member_name))
@@ -210,7 +200,7 @@ class EnumConverter(Converter):
         value = ctx.value
         enum_type = datatype.type
 
-        if self.direction == Direction.SERIALIZE:
+        if ctx.direction == Direction.SERIALIZE:
             if type(value) is not enum_type:
                 raise ConversionError.expected(self, ctx, enum_type, type(value))
             if issubclass(enum_type, enum.IntEnum):
@@ -245,8 +235,7 @@ class EnumConverter(Converter):
 
 
 class MappingConverter(Converter):
-    def __init__(self, direction: Direction, json_mapping_type: t.Type[t.Mapping[str, t.Any]] = dict) -> None:
-        self.direction = direction
+    def __init__(self, json_mapping_type: t.Type[t.Mapping[str, t.Any]] = dict) -> None:
         self.json_mapping_type = json_mapping_type
 
     def convert(self, ctx: Context) -> t.Any:
@@ -273,7 +262,7 @@ class MappingConverter(Converter):
             key = ctx.spawn(key, key_type, f"Key({key!r})").convert()
             result[key] = value
 
-        if self.direction == Direction.DESERIALIZE and datatype.type != dict:
+        if ctx.direction == Direction.DESERIALIZE and datatype.type != dict:
             # We assume that the runtime type is constructible from a plain dictionary.
             try:
                 return datatype.type(result)  # type: ignore[call-arg]
@@ -281,7 +270,7 @@ class MappingConverter(Converter):
                 # We expect this exception to occur for example if the annotated type is an abstract class like
                 # t.Mapping; in which case we just assume that "dict' is a fine type to return.
                 return result
-        elif self.direction == Direction.SERIALIZE and self.json_mapping_type != dict:
+        elif ctx.direction == Direction.SERIALIZE and self.json_mapping_type != dict:
             # Same for the JSON output type.
             return self.json_mapping_type(result)  # type: ignore[call-arg]
 
@@ -335,8 +324,7 @@ class PlainDatatypeConverter(Converter):
         }
     )
 
-    def __init__(self, direction: Direction, strict_by_default: bool = True) -> None:
-        self.direction = direction
+    def __init__(self, strict_by_default: bool = True) -> None:
         self.strict_by_default = strict_by_default
 
     def convert(self, ctx: Context) -> t.Any:
@@ -350,14 +338,14 @@ class PlainDatatypeConverter(Converter):
         target_type = datatype.type
         strict = (
             (ctx.get_setting(Strict) or Strict(self.strict_by_default))
-            if self.direction == Direction.DESERIALIZE
+            if ctx.direction == Direction.DESERIALIZE
             else Strict(True)
         )
         adapters = self._strict_adapters if strict.enabled else self._nonstrict_adapters
         adapter = adapters.get((source_type, target_type))
 
         if adapter is None:
-            msg = f"unable to {self.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}"
+            msg = f"unable to {ctx.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}"
             raise ConversionError(self, ctx, msg)
 
         try:
@@ -377,12 +365,10 @@ class SchemaConverter(Converter):
 
     def __init__(
         self,
-        direction: Direction,
         json_mapping_type: t.Type[t.MutableMapping[str, t.Any]] = dict,
         convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
         serialize_defaults: bool = True,
     ) -> None:
-        self.direction = direction
         self.json_mapping_type = json_mapping_type
         self.convert_to_schema = convert_to_schema
         self.serialize_defaults = serialize_defaults
@@ -391,7 +377,16 @@ class SchemaConverter(Converter):
     def _get_alias_setting(ctx: Context, field_name: str) -> Alias:
         return ctx.get_setting(Alias) or Alias(field_name)
 
-    def serialize(self, ctx: Context, schema: Schema) -> t.MutableMapping[str, t.Any]:
+    def _get_schema(self, ctx: Context) -> Schema:
+        datatype = typeapi.unwrap(ctx.datatype)[0]
+        try:
+            return self.convert_to_schema(datatype)
+        except ValueError as exc:
+            raise NotImplementedError(str(exc))
+
+    def serialize(self, ctx: Context) -> t.MutableMapping[str, t.Any]:
+        schema = self._get_schema(ctx)
+
         try:
             is_instance = isinstance(ctx.value, schema.type)
         except TypeError:
@@ -460,7 +455,9 @@ class SchemaConverter(Converter):
 
         return result
 
-    def deserialize(self, ctx: Context, schema: Schema) -> t.Any:
+    def deserialize(self, ctx: Context) -> t.Any:
+        schema = self._get_schema(ctx)
+
         if not isinstance(ctx.value, t.Mapping):
             raise ConversionError.expected(self, ctx, t.Mapping)
 
@@ -531,18 +528,6 @@ class SchemaConverter(Converter):
 
         return schema.constructor(**result)
 
-    def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        try:
-            schema = self.convert_to_schema(datatype)
-        except ValueError as exc:
-            raise NotImplementedError(str(exc))
-
-        if self.direction == Direction.SERIALIZE:
-            return self.serialize(ctx, schema)
-        else:
-            return self.deserialize(ctx, schema)
-
 
 class StringifyConverter(Converter):
     """A useful helper converter that matches on a given type or its subclasses and converts them to a string for
@@ -550,13 +535,11 @@ class StringifyConverter(Converter):
 
     def __init__(
         self,
-        direction: Direction,
         type_: t.Type[T],
         parser: t.Optional[t.Callable[[str], T]] = None,
         formatter: t.Callable[[T], str] = str,
     ) -> None:
         assert isinstance(type_, type), type_
-        self.direction = direction
         self.type_ = type_
         self.parser: t.Callable[[str], T] = parser or type_
         self.formatter = formatter
@@ -566,7 +549,7 @@ class StringifyConverter(Converter):
         if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, self.type_):
             raise NotImplementedError
 
-        if self.direction == Direction.DESERIALIZE:
+        if ctx.direction == Direction.DESERIALIZE:
             if not isinstance(ctx.value, str):
                 raise ConversionError.expected(self, ctx, str)
             try:
@@ -641,9 +624,6 @@ class UnionConverter(Converter):
     ```
     """
 
-    def __init__(self, direction: Direction) -> None:
-        self.direction = direction
-
     def _get_deserialize_member_name(
         self, ctx: Context, value: t.Mapping[str, t.Any], style: str, discriminator_key: str
     ) -> str:
@@ -707,11 +687,11 @@ class UnionConverter(Converter):
             raise ConversionError(
                 self,
                 ctx,
-                f"unable to {self.direction.name.lower()} any union member",
+                f"unable to {ctx.direction.name.lower()} any union member",
             )
 
         discriminator_key = union.discriminator_key
-        is_deserialize = self.direction == Direction.DESERIALIZE
+        is_deserialize = ctx.direction == Direction.DESERIALIZE
 
         if is_deserialize:
             # Identify the member type to deserialize to.

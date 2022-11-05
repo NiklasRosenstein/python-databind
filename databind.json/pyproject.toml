@@ -36,7 +36,7 @@ typed = true
 [tool.slap.test]
 check = "slap check"
 mypy = "dmypy run src/"
-pytest = "pytest tests/ -vv"
+pytest = "pytest tests/ -vv $PYTEST_FLAGS"
 black = "black --check src/ tests/"
 isort = "isort --check-only src/ tests/"
 flake8 = "flake8 src/ tests/"

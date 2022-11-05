@@ -2,7 +2,7 @@ import typing as t
 
 import typeapi
 
-from databind.core.context import Context, Location, format_context_trace
+from databind.core.context import Context, Direction, Location, format_context_trace
 from databind.core.settings import Settings
 
 
@@ -13,7 +13,25 @@ def test_format_context_trace():
     def no_convert(*a):
         raise NotImplementedError
 
-    ctx1 = Context(None, {"a": 1}, typeapi.of(t.Dict[str, int]), settings, Context.ROOT, location, no_convert)
-    ctx2 = Context(ctx1, 1, typeapi.of(int), settings, "a", location, no_convert)
+    ctx1 = Context(
+        parent=None,
+        direction=Direction.SERIALIZE,
+        value={"a": 1},
+        datatype=typeapi.of(t.Dict[str, int]),
+        settings=settings,
+        key=Context.ROOT,
+        location=location,
+        convert_func=no_convert,
+    )
+    ctx2 = Context(
+        parent=ctx1,
+        direction=Direction.SERIALIZE,
+        value=1,
+        datatype=typeapi.of(int),
+        settings=settings,
+        key="a",
+        location=location,
+        convert_func=no_convert,
+    )
     assert format_context_trace(ctx1) == ("  $: Type(dict, nparams=2, args=(Type(str), Type(int)))")
     assert format_context_trace(ctx2) == ("  $: Type(dict, nparams=2, args=(Type(str), Type(int)))\n" "  .a: Type(int)")
