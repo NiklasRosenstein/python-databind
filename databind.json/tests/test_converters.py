@@ -386,7 +386,7 @@ def test_deserialize_and_serialize_literal_union():
         name: str
         provider: te.Literal["azure"] = "azure"
 
-    Machine = AwsMachine | AzureMachine
+    Machine = t.Union[AwsMachine, AzureMachine]
 
     aws_payload = {"provider": "aws", "region": "eu-central-1", "name": "bar", "instance_id": "42"}
     aws_machine = AwsMachine("eu-central-1", "bar", "42")
