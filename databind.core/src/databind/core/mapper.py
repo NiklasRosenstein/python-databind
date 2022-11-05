@@ -40,7 +40,7 @@ class ObjectMapper(t.Generic[T, U]):
         """Convert a value according to the given datatype.
 
         Arguments:
-          direction: (Added in databind.core 0.3.0) The direction (i.e. either deserialization or serialization).
+          direction: The direction, i.e. either deserialization or serialization.
           value: The value to convert.
           datatype: The datatype. If not already a #typeapi.Hint instance, it will be converted using #typeapi.of().
           location: The location of where *value* is coming from. Useful to specify to make debugging easier.
