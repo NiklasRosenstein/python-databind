@@ -43,13 +43,15 @@ Note that any extra keys that are not expected per the schema will raise a `data
 
 !!! danger Runtime type introspection
 
-    Databind uses Python runtime type annotation introspection using the [`typeapi`][0] package. This requires that
-    all type annotations that databind comes in contact with must be valid expressions in the current Python version,
-    even if `from __future__ import annotations` is used.
+    Databind uses Python runtime type annotation introspection using the [`typeapi`][typeapi] package. This requires
+    that all type annotations that databind comes in contact with must be valid expressions in the current Python
+    version, even if `from __future__ import annotations` is used.
 
     This means if your code needs to be compatible with Python versions lower than 3.10 or 3.9 that you can not
     use the new type union syntax (`a | b`) or built-in generic aliases (such as `list[int]`) and need to continue
     to use `typing.Union`, `typing.Optional` and `typing.List`, etc.
+
+[typeapi]: https://pypi.org/project/typeapi/
 
 ## Permitting unknown keys
 
