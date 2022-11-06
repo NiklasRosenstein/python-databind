@@ -235,8 +235,12 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
                 .parameterize(parameter_map)
             )
 
+            # NOTE(NiklasRosenstein): In Python 3.6, Mypy complains about "Callable does not accept self argument",
+            #       but we also cannot ignore it because of warn_unused_ignores.
+            _field_default_factory = getattr(field, "default_factory")
+
             default = NotSet.Value if field.default == MISSING else field.default
-            default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory  # type: ignore  # Attribute function "default_factory" with type "Callable[[], _T]" does not accept self argument  # Non-overlapping equality check (left operand type: "Callable[[], Any]", right operand type: "_MISSING_TYPE")  # noqa: E501
+            default_factory = NotSet.Value if _field_default_factory == MISSING else _field_default_factory
             has_default = default != NotSet.Value or default_factory != NotSet.Value
             required = _is_required(field_hint, not has_default)
 
