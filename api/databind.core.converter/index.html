@@ -710,14 +710,14 @@
 <h2 id="class-converter">Class Converter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Converter</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/72be01d87fad6ebb38de015e7667ff02a83cae85/docs/../databind.core/src/databind/core/converter.py#L16">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/0f6c80690b56b49b5e60560eb8c18765a683c62d/docs/../databind.core/src/databind/core/converter.py#L16">[view_source]</a></p>
 <p>Interface for converting a value from one representation to another.</p>
 <p><a id="databind.core.converter.Converter.convert"></a></p>
 <p><a id="pydoc:databind.core.converter.Converter.convert"></a></p>
 <h4 id="convert">convert</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="s2">&quot;Context&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/72be01d87fad6ebb38de015e7667ff02a83cae85/docs/../databind.core/src/databind/core/converter.py#L19">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/0f6c80690b56b49b5e60560eb8c18765a683c62d/docs/../databind.core/src/databind/core/converter.py#L19">[view_source]</a></p>
 <p>Convert the value in <em>ctx</em> to another value.</p>
 <p>The default implementation will dispatch to <a href="/python-databind/api/databind.core.mapper#pydoc:databind.core.mapper.ObjectMapper.serialize">serialize()</a> and <a href="/python-databind/api/databind.core.mapper#pydoc:databind.core.mapper.ObjectMapper.deserialize">deserialize()</a> depending on the direction
 given by the context. Because these methods raise <code>NotImplementedError</code>, an instance of <a href="#pydoc:databind.core.converter.Converter">Converter</a> without
@@ -738,21 +738,21 @@ you to recursively continue the conversion process for sub values.</p>
 <h2 id="class-module">Class Module</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Module</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/72be01d87fad6ebb38de015e7667ff02a83cae85/docs/../databind.core/src/databind/core/converter.py#L53">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/0f6c80690b56b49b5e60560eb8c18765a683c62d/docs/../databind.core/src/databind/core/converter.py#L53">[view_source]</a></p>
 <p>A module is a collection of <a href="#pydoc:databind.core.converter.Converter">Converters</a>.</p>
 <p><a id="databind.core.converter.ConversionError"></a></p>
 <p><a id="pydoc:databind.core.converter.ConversionError"></a></p>
 <h2 id="class-conversionerror">Class ConversionError</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ConversionError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/72be01d87fad6ebb38de015e7667ff02a83cae85/docs/../databind.core/src/databind/core/converter.py#L82">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/0f6c80690b56b49b5e60560eb8c18765a683c62d/docs/../databind.core/src/databind/core/converter.py#L82">[view_source]</a></p>
 <p>For any errors that occur during conversion.</p>
 <p><a id="databind.core.converter.NoMatchingConverter"></a></p>
 <p><a id="pydoc:databind.core.converter.NoMatchingConverter"></a></p>
 <h2 id="class-nomatchingconverter">Class NoMatchingConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">NoMatchingConverter</span><span class="p">(</span><span class="n">ConversionError</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/72be01d87fad6ebb38de015e7667ff02a83cae85/docs/../databind.core/src/databind/core/converter.py#L125">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/0f6c80690b56b49b5e60560eb8c18765a683c62d/docs/../databind.core/src/databind/core/converter.py#L125">[view_source]</a></p>
 <p>If no converter matched to convert the value and datatype in the context.</p>
 
 

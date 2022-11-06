@@ -788,7 +788,7 @@ JSON, YAMl or TOML file.</p>
 that all type annotations that databind comes in contact with must be valid expressions in the current Python
 version, even if <code>from __future__ import annotations</code> is used.</p>
 <p>This means if your code needs to be compatible with Python versions lower than 3.10 or 3.9 that you can not
-use the new type union syntax (<code>a | b</code>) or built-in generic aliases (such as <code>list[int]</code>) and need to continue
+use the new type union syntax (<code>a | b</code>) or built-in generic aliases (such as <code>t.List[int]</code>) and need to continue
 to use <code>typing.Union</code>, <code>typing.Optional</code> and <code>typing.List</code>, etc.</p>
 </div>
 <h2 id="permitting-unknown-keys">Permitting unknown keys</h2>
