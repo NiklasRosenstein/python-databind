@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 import abc
 import logging
 import typing as t
 
 import typeapi
-from nr.util.exceptions import safe_str
+
+from databind.core.utils import exception_safe_str
 
 if t.TYPE_CHECKING:
     from databind.core.context import Context
@@ -94,7 +93,7 @@ class ConversionError(Exception):
         self.message = message
         self.errors = errors or []
 
-    @safe_str
+    @exception_safe_str
     def __str__(self) -> str:
         import textwrap
 
@@ -114,7 +113,7 @@ class ConversionError(Exception):
         ctx: Context,
         types: t.Union[type, t.Sequence[type]],
         got: t.Optional[type] = None,
-    ) -> ConversionError:
+    ) -> "ConversionError":
         if not isinstance(types, t.Sequence):
             types = (types,)
         expected = "|".join(typeapi.type_repr(t) for t in types)

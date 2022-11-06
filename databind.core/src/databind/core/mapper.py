@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import typing as t
 
-import typeapi
-from nr.util.generic import T, U
+from typeapi import TypeHint
+
+from databind.core.utils import T, U
 
 if t.TYPE_CHECKING:
     from databind.core.context import Direction, Location
@@ -24,7 +23,7 @@ class ObjectMapper(t.Generic[T, U]):
         self.module = Module("ObjectMapper.module")
         self.settings = settings or Settings()
 
-    def copy(self) -> ObjectMapper[T, U]:
+    def copy(self) -> "ObjectMapper[T, U]":
         new = type(self)(self.settings.copy())
         new.module.converters.extend(self.module.converters)
         return new
@@ -33,7 +32,7 @@ class ObjectMapper(t.Generic[T, U]):
         self,
         direction: Direction,
         value: t.Any,
-        datatype: t.Union[typeapi.Hint, t.Any],
+        datatype: t.Union[TypeHint, t.Any],
         location: t.Optional[Location] = None,
         settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
     ) -> t.Any:
@@ -42,7 +41,7 @@ class ObjectMapper(t.Generic[T, U]):
         Arguments:
           direction: The direction, i.e. either deserialization or serialization.
           value: The value to convert.
-          datatype: The datatype. If not already a #typeapi.Hint instance, it will be converted using #typeapi.of().
+          datatype: The datatype. If not already a #TypeHint instance, it will be converted using #typeapi.of().
           location: The location of where *value* is coming from. Useful to specify to make debugging easier.
           settings: A list of settings, in which case they will be treated as global settings in addition to the
             mapper's #settings, or an entirely different #SettingsProvider instance (for which it is recommended that
@@ -58,7 +57,7 @@ class ObjectMapper(t.Generic[T, U]):
         from databind.core.context import Context, Location
         from databind.core.settings import Settings
 
-        if not isinstance(datatype, typeapi.Hint):
+        if not isinstance(datatype, TypeHint):
             datatype = typeapi.of(datatype)
         if isinstance(settings, list):
             settings = Settings(self.settings, global_settings=settings)
@@ -79,7 +78,7 @@ class ObjectMapper(t.Generic[T, U]):
     def serialize(
         self,
         value: T,
-        datatype: t.Union[typeapi.Hint, t.Any],
+        datatype: t.Union[TypeHint, t.Any],
         filename: t.Optional[str] = None,
         settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
     ) -> U:
@@ -92,7 +91,7 @@ class ObjectMapper(t.Generic[T, U]):
     def deserialize(
         self,
         value: U,
-        datatype: t.Union[typeapi.Hint, t.Any],
+        datatype: t.Union[TypeHint, t.Any],
         filename: t.Optional[str] = None,
         settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
     ) -> T:

@@ -12,7 +12,7 @@ from databind.core.context import Context, Direction
 from databind.core.converter import ConversionError, Converter, NoMatchingConverter
 from databind.core.mapper import ObjectMapper
 from databind.core.settings import Alias, ExtraKeys, Flattened, Remainder, SerializeDefaults, Strict, Union
-from nr.util.date import duration
+from nr.date import duration
 
 from databind.json.converters import (
     AnyConverter,

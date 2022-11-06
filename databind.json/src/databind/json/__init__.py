@@ -1,11 +1,9 @@
 """ The #databind.json package implements the capabilities to bind JSON payloads to objects and the reverse. """
 
-from __future__ import annotations
-
 import json
 import typing as t
 
-from nr.util.generic import T
+from databind.core.utils import T
 
 if t.TYPE_CHECKING:
     from databind.core.mapper import ObjectMapper

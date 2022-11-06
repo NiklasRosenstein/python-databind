@@ -25,7 +25,7 @@ from dataclasses import (
     replace,
 )
 
-from nr.util.singleton import NotSet
+from databind.core.utils import NotSet
 
 __all__ = [
     "ANNOTATIONS_METADATA_KEY",

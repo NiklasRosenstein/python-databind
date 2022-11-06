@@ -3,7 +3,6 @@ import typing as t
 
 import typeapi
 import typing_extensions as te
-from nr.util.generic import T, U
 
 from databind.core.schema import (
     Field,
@@ -14,6 +13,7 @@ from databind.core.schema import (
     get_fields_expanded,
 )
 from databind.core.settings import Flattened, Required
+from databind.core.utils import T, U
 
 
 def test_convert_to_schema():
@@ -258,7 +258,7 @@ def test_convert_dataclass_overriden_field_type():
 def test_convert_dataclass_to_schema_type_var_without_generic():
     @dataclasses.dataclass
     class A:
-        a: T  # type: ignore[valid-type]  # Type variable "nr.util.generic.T" is unbound
+        a: T  # type: ignore[valid-type]
 
     @dataclasses.dataclass
     class B(A, t.Generic[T]):

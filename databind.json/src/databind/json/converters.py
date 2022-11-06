@@ -20,7 +20,7 @@ from databind.core.settings import (
     Union,
     get_annotation_setting,
 )
-from nr.util.generic import T
+from databind.core.utils import T
 
 
 def _int_lossless(v: float) -> int:
@@ -93,7 +93,7 @@ class CollectionConverter(Converter):
 
 class DatetimeConverter(Converter):
     """A converter for #datetime.datetime, #datetime.date and #datetime.time that represents the serialized form as
-    strings formatted using the #nr.util.date module. The converter respects the #DateFormat setting."""
+    strings formatted using the #nr.date module. The converter respects the #DateFormat setting."""
 
     DEFAULT_DATE_FMT = DateFormat(".ISO_8601")
     DEFAULT_TIME_FMT = DEFAULT_DATE_FMT
@@ -366,7 +366,7 @@ class SchemaConverter(Converter):
     def __init__(
         self,
         json_mapping_type: t.Type[t.MutableMapping[str, t.Any]] = dict,
-        convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
+        convert_to_schema: t.Callable[[TypeHint], Schema] = convert_to_schema,
         serialize_defaults: bool = True,
     ) -> None:
         self.json_mapping_type = json_mapping_type
@@ -706,7 +706,7 @@ class UnionConverter(Converter):
             member_type = union.members.get_type_by_id(member_name)
 
         nesting_key = union.nesting_key or member_name
-        type_hint = typeapi.of(member_type) if not isinstance(member_type, typeapi.Hint) else member_type
+        type_hint = typeapi.of(member_type) if not isinstance(member_type, TypeHint) else member_type
 
         if is_deserialize:
             # Forward deserialization of the value using the newly identified type hint.

@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import dataclasses
 import enum
 import typing as t
 
-import typeapi
+from typeapi import TypeHint
 
 if t.TYPE_CHECKING:
     from databind.core.settings import SettingsProvider, T_Setting
@@ -29,7 +27,7 @@ class Location:
     #: The column number in the file.
     column: t.Optional[int]
 
-    EMPTY: t.ClassVar[Location]
+    EMPTY: t.ClassVar["Location"]
 
 
 Location.EMPTY = Location(None, None, None)
@@ -52,7 +50,7 @@ class Context:
     according to the #datatype."""
 
     #: The parent context.
-    parent: t.Optional[Context] = dataclasses.field(repr=False)
+    parent: t.Optional["Context"] = dataclasses.field(repr=False)
 
     #: The direction (i.e. deserialization or serialization).
     direction: Direction
@@ -61,7 +59,7 @@ class Context:
     value: t.Any = dataclasses.field(repr=False)
 
     #: The expected datatype of the value to inform the converter of what to convert the #value from or to.
-    datatype: typeapi.Hint
+    datatype: TypeHint
 
     #: A list of #Setting#s that are to be taken into account by the converter which can potentialy impact
     #: the conversion process.
@@ -76,12 +74,12 @@ class Context:
     location: Location
 
     #: A function to dispatch the further conversion of a #Context.
-    convert_func: t.Callable[[Context], t.Any] = dataclasses.field(repr=False)
+    convert_func: t.Callable[["Context"], t.Any] = dataclasses.field(repr=False)
 
     ROOT: t.ClassVar = Root.Value
 
     def __post_init__(self) -> None:
-        assert isinstance(self.datatype, typeapi.Hint), self.datatype
+        assert isinstance(self.datatype, TypeHint), self.datatype
         assert isinstance(self.key, (int, str, Root)) or self.key is None, self.key
         assert self.location is not None
         assert self.parent is not None or self.key == Context.ROOT
@@ -94,16 +92,16 @@ class Context:
     def spawn(
         self,
         value: t.Any,
-        datatype: t.Union[typeapi.Hint, t.Any],
+        datatype: t.Union[TypeHint, t.Any],
         key: t.Union[int, str, None],
         location: t.Optional[Location] = None,
-    ) -> Context:
+    ) -> "Context":
         """Spawn a sub context with a new value, datatype, key and optionally a new location. If the location is
         not overwritten, the parent filename is inherited, but not line number and column.
 
         Arguments:
           value: The value to convert.
-          datatype: The datatype of *value*. If this is not already a #typeapi.Hint, it will be converted to one
+          datatype: The datatype of *value*. If this is not already a #TypeHint, it will be converted to one
             using #typeapi.of().
           key: The key or index at which the *value* can be found relative to the parent.
           location: The location of the new value. If not specified, the parent filename is inherited but not the
@@ -112,8 +110,8 @@ class Context:
           A new #Context object that has *self* as its #parent.
         """
 
-        if not isinstance(datatype, typeapi.Hint):
-            datatype = typeapi.of(datatype)
+        if not isinstance(datatype, TypeHint):
+            datatype = TypeHint(datatype)
 
         if location is None:
             location = Location(self.location.filename, None, None)
@@ -125,7 +123,7 @@ class Context:
 
         return self.convert_func(self)
 
-    def iter_hierarchy_up(self) -> t.Iterable[Context]:
+    def iter_hierarchy_up(self) -> t.Iterable["Context"]:
         current: t.Optional[Context] = self
         while current:
             yield current

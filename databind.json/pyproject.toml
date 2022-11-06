@@ -16,8 +16,8 @@ Repository = "https://github.com/NiklasRosenstein/python-databind"
 [tool.poetry.dependencies]
 python = "^3.7"
 "databind.core" = "^3.0.0"
-"nr.util" = ">=0.8.6,<1.0.0"
 typing-extensions = ">=3.10.0"
+nr-date = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -45,7 +45,7 @@ flake8 = "flake8 src/ tests/"
 fmt = "black src/ tests/ && isort src/ tests/"
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.6"
 explicit_package_bases = true
 mypy_path = ["src"]
 namespace_packages = true

@@ -1,11 +1,10 @@
-from __future__ import annotations
-
 import dataclasses
 import sys
 import typing as t
 
-import typeapi
-from nr.util.singleton import NotSet
+from typeapi import TypeHint, AnnotatedTypeHint, ClassTypeHint, is_typed_dict, get_annotations
+
+from databind.core.utils import NotSet
 
 if sys.version_info[:2] <= (3, 8):
     GenericAlias = t.Any
@@ -34,7 +33,7 @@ class Field:
     """Describes a field in a schema."""
 
     #: The datatype of the field.
-    datatype: typeapi.Hint
+    datatype: TypeHint
 
     #: Whether the field is required to be present, if this is `False` and the field does not have a #default or
     #: #default_factorty, the field value will not be passed to the schema constructor. Even if a #default or
@@ -97,7 +96,7 @@ class Schema:
     annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
 
-def convert_to_schema(hint: typeapi.Hint) -> Schema:
+def convert_to_schema(hint: TypeHint) -> Schema:
     """Convert the given type hint to a #Schema.
 
     The function delegates to #convert_dataclass_to_schema() or #convert_typed_dict_to_schema().
@@ -108,17 +107,17 @@ def convert_to_schema(hint: typeapi.Hint) -> Schema:
       ValueError: If the type hint is not supported.
     """
 
-    assert isinstance(hint, typeapi.Hint), hint
+    assert isinstance(hint, TypeHint), hint
     original_hint = hint
 
     annotations = []
-    if isinstance(hint, typeapi.Annotated):
+    if isinstance(hint, AnnotatedTypeHint):
         annotations = list(hint.metadata)
         hint = hint.wrapped
 
-    if isinstance(hint, typeapi.Type) and dataclasses.is_dataclass(hint.type):
+    if isinstance(hint, ClassTypeHint) and dataclasses.is_dataclass(hint.type):
         schema = convert_dataclass_to_schema(hint.type)
-    elif isinstance(hint, typeapi.Type) and typeapi.utils.is_typed_dict(hint.type):
+    elif isinstance(hint, ClassTypeHint) and is_typed_dict(hint.type):
         schema = convert_typed_dict_to_schema(hint.type)
     else:
         raise ValueError(f"cannot be converted to a schema: {original_hint}")
@@ -127,7 +126,7 @@ def convert_to_schema(hint: typeapi.Hint) -> Schema:
     return schema
 
 
-def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, typeapi.Type]) -> Schema:
+def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, ClassTypeHint]) -> Schema:
     """Converts a Python class that is decorated with #dataclasses.dataclass().
 
     The function will respect the #Required setting if it is present in a field's datatype if and only if the
@@ -156,11 +155,11 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, type
 
     from dataclasses import MISSING
 
-    if isinstance(dataclass_type, typeapi.Type):
+    if isinstance(dataclass_type, ClassTypeHint):
         hint = dataclass_type
     else:
-        hint = t.cast(typeapi.Type, typeapi.of(dataclass_type))
-        assert isinstance(hint, typeapi.Type), hint
+        hint = TypeHint(dataclass_type)
+        assert isinstance(hint, ClassTypeHint), hint
 
     dataclass_type = hint.type
     assert isinstance(dataclass_type, type), repr(dataclass_type)
@@ -175,12 +174,12 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, type
     field_origins: t.Dict[str, type] = {}
     for base in hint.type.__mro__:
         if dataclasses.is_dataclass(base):
-            type_annotations[base] = typeapi.get_annotations(base)
+            type_annotations[base] = get_annotations(base)
             for field in dataclasses.fields(base):
                 if field.name in type_annotations[base] and field.name not in field_origins:
                     field_origins[field.name] = base
 
-    annotations = typeapi.get_annotations(dataclass_type, include_bases=True)
+    annotations = get_annotations(dataclass_type, include_bases=True)
     fields: t.Dict[str, Field] = {}
     for field in dataclasses.fields(dataclass_type):
         if not field.init:
@@ -190,7 +189,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, type
 
         globalns = typeapi.scope(dataclass_type)
         datatype = typeapi.eval_types(
-            typeapi.of(annotations[field.name]),
+            TypeHint(annotations[field.name]),
             module=dataclass_type.__module__ if globalns is None else None,
             globalns=globalns,
         )
@@ -272,7 +271,7 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
     return Schema(fields, t.cast("Constructor", typed_dict), t.cast(type, typed_dict))
 
 
-def _is_required(datatype: typeapi.Hint, default: bool) -> bool:
+def _is_required(datatype: TypeHint, default: bool) -> bool:
     """If *datatype* is a #typeapi.Annotated instance, it will look for a #Required settings instance and returns
     that instances #Required.enabled value. Otherwise, it returns *default*."""
     from databind.core.settings import Required, get_annotation_setting
@@ -290,7 +289,7 @@ def _is_required(datatype: typeapi.Hint, default: bool) -> bool:
     return default
 
 
-def _is_flat(datatype: typeapi.Hint, default: bool) -> bool:
+def _is_flat(datatype: TypeHint, default: bool) -> bool:
     from databind.core.settings import Flattened, get_annotation_setting
 
     return (get_annotation_setting(datatype, Flattened) or Flattened(default)).enabled
@@ -298,7 +297,7 @@ def _is_flat(datatype: typeapi.Hint, default: bool) -> bool:
 
 def get_fields_expanded(
     schema: Schema,
-    convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
+    convert_to_schema: t.Callable[[TypeHint], Schema] = convert_to_schema,
 ) -> t.Dict[str, t.Dict[str, Field]]:
     """Returns a dictionary that contains an entry for each flattened field in the schema, mapping to another
     dictionary that contains _all_ fields expanded from the flattened field's sub-schema.
@@ -332,7 +331,7 @@ def get_fields_expanded(
 
     Arguments:
       schema: The schema to compile the expanded fields for.
-      convert_to_schema: A function that accepts a #typeapi.Hint and converts it to a schema.
+      convert_to_schema: A function that accepts a #TypeHint and converts it to a schema.
         Defaults to the #convert_to_schema() function.
 
     !!! note

@@ -1,7 +1,5 @@
 """ Provides the interface and implementations for representing the members of a union type. """
 
-from __future__ import annotations
-
 import abc
 import dataclasses
 import importlib
@@ -10,7 +8,8 @@ import typing as t
 
 import pkg_resources
 import typeapi
-from nr.util.generic import T
+
+from databind.core.utils import T
 
 __all__ = ["UnionMembers", "StaticUnionMembers", "EntrypointUnionMembers", "ImportUnionMembers", "ChainUnionMembers"]
 
@@ -71,7 +70,7 @@ class StaticUnionMembers(UnionMembers):
     The #register() method is also exposed for your convenience on the #Union settings type (see #Union.register()).
     """
 
-    _TypeType = t.Union[type, typeapi.Hint, t.Any]
+    _TypeType = t.Union[type, TypeHint, t.Any]
     _TypeProvider = t.Union[_TypeType, t.Callable[[], _TypeType]]
     _MembersMappingType = t.Mapping[str, _TypeProvider]
     _MembersDictType = t.Dict[str, _TypeProvider]
@@ -228,7 +227,7 @@ class ChainUnionMembers(UnionMembers):
         raise ValueError(f"{type_id!r} type ID is not a member of {self}\n" + "- \n".join(map(str, errors)))
 
     def get_type_ids(self) -> t.List[str]:
-        from nr.util.stream import Stream
+        from nr.stream import Stream
 
         def _gen() -> t.Iterator[str]:
             for delegate in self.delegates:
