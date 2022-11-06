@@ -6,12 +6,19 @@ import typing as t
 import uuid
 
 import pytest
-import typeapi
 import typing_extensions as te
 from databind.core.context import Context, Direction
 from databind.core.converter import ConversionError, Converter, NoMatchingConverter
 from databind.core.mapper import ObjectMapper
-from databind.core.settings import Alias, ExtraKeys, Flattened, Remainder, SerializeDefaults, Strict, Union
+from databind.core.settings import (  # noqa: F401
+    Alias,
+    ExtraKeys,
+    Flattened,
+    Remainder,
+    SerializeDefaults,
+    Strict,
+    Union,
+)
 from nr.date import duration
 
 from databind.json.converters import (
@@ -303,7 +310,7 @@ def test_union_converter_flat_plain_types_not_supported(direction):
 #         assert mapper.convert(direction, obj, Class4) == serialized
 
 #         # Test with serializing defaults disabled.
-#         assert mapper.convert(direction, obj, Class4, settings=[SerializeDefaults(False)]) == {"b": "Universe", "c": 99}
+#         assert mapper.convert(direction, obj, Class4, settings=[SerializeDefaults(False)]) == {"b": "Universe", "c": 99}  # noqa: E501
 
 #     elif direction == Direction.DESERIALIZE:
 #         assert mapper.convert(direction, serialized, Class4) == obj
