@@ -1,6 +1,6 @@
 import typing as t
 
-import typeapi
+from typeapi import TypeHint
 
 from databind.core.context import Context, Direction, Location, format_context_trace
 from databind.core.settings import Settings
@@ -17,7 +17,7 @@ def test_format_context_trace():
         parent=None,
         direction=Direction.SERIALIZE,
         value={"a": 1},
-        datatype=typeapi.of(t.Dict[str, int]),
+        datatype=TypeHint(t.Dict[str, int]),
         settings=settings,
         key=Context.ROOT,
         location=location,
@@ -27,11 +27,11 @@ def test_format_context_trace():
         parent=ctx1,
         direction=Direction.SERIALIZE,
         value=1,
-        datatype=typeapi.of(int),
+        datatype=TypeHint(int),
         settings=settings,
         key="a",
         location=location,
         convert_func=no_convert,
     )
-    assert format_context_trace(ctx1) == ("  $: Type(dict, nparams=2, args=(Type(str), Type(int)))")
-    assert format_context_trace(ctx2) == ("  $: Type(dict, nparams=2, args=(Type(str), Type(int)))\n" "  .a: Type(int)")
+    assert format_context_trace(ctx1) == "  $: TypeHint(typing.Dict[str, int])"
+    assert format_context_trace(ctx2) == "  $: TypeHint(typing.Dict[str, int])\n" "  .a: TypeHint(int)"

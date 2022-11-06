@@ -15,7 +15,7 @@ class ObjectMapper(t.Generic[T, U]):
     The type parameter *T* represents the deserialized type, while *U* represents the serialized type.
     """
 
-    def __init__(self, settings: t.Optional[Settings] = None) -> None:
+    def __init__(self, settings: t.Optional["Settings"] = None) -> None:
         from databind.core.converter import Module
         from databind.core.settings import Settings
 
@@ -30,11 +30,11 @@ class ObjectMapper(t.Generic[T, U]):
 
     def convert(
         self,
-        direction: Direction,
+        direction: "Direction",
         value: t.Any,
-        datatype: t.Union[TypeHint, t.Any],
-        location: t.Optional[Location] = None,
-        settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
+        datatype: "TypeHint | t.Any",
+        location: "Location | None" = None,
+        settings: "SettingsProvider | list[Setting] | None" = None,
     ) -> t.Any:
         """Convert a value according to the given datatype.
 
@@ -58,7 +58,7 @@ class ObjectMapper(t.Generic[T, U]):
         from databind.core.settings import Settings
 
         if not isinstance(datatype, TypeHint):
-            datatype = typeapi.of(datatype)
+            datatype = TypeHint(datatype)
         if isinstance(settings, list):
             settings = Settings(self.settings, global_settings=settings)
 
@@ -78,9 +78,9 @@ class ObjectMapper(t.Generic[T, U]):
     def serialize(
         self,
         value: T,
-        datatype: t.Union[TypeHint, t.Any],
-        filename: t.Optional[str] = None,
-        settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
+        datatype: "TypeHint | t.Any",
+        filename: "str | None" = None,
+        settings: "SettingsProvider | list[Setting] | None" = None,
     ) -> U:
         """Serialize *value* according to the its *datatype*."""
 
@@ -91,9 +91,9 @@ class ObjectMapper(t.Generic[T, U]):
     def deserialize(
         self,
         value: U,
-        datatype: t.Union[TypeHint, t.Any],
-        filename: t.Optional[str] = None,
-        settings: t.Union[SettingsProvider, t.List[Setting], None] = None,
+        datatype: "TypeHint | t.Any",
+        filename: "str | None" = None,
+        settings: "SettingsProvider | list[Setting] | None" = None,
     ) -> T:
         """Deserialize *value* according to the its *datatype*."""
 

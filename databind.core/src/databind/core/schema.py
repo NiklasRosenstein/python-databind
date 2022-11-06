@@ -2,7 +2,16 @@ import dataclasses
 import sys
 import typing as t
 
-from typeapi import TypeHint, AnnotatedTypeHint, ClassTypeHint, is_typed_dict, get_annotations
+from typeapi import (
+    AnnotatedTypeHint,
+    ClassTypeHint,
+    TypedDictProtocol,
+    TypeHint,
+    UnionTypeHint,
+    get_annotations,
+    is_typed_dict,
+    type_repr,
+)
 
 from databind.core.utils import NotSet
 
@@ -86,14 +95,14 @@ class Schema:
     #: A function that constructs an instance of a Python object that this schema represents given a dictionary as
     #: keyword arguments of the deserialized field values. Fields that are not present in the source payload and a that
     #: do not have a default value will not be present in the passed dictionary.
-    constructor: Constructor
+    constructor: "Constructor"
 
     #: The underlying native Python type associated with the schema.
     type: type
 
-    #: Annotation metadata that goes with the schema, possibly derived from a #typeapi.Annotated hint or the underlying
+    #: Annotation metadata that goes with the schema, possibly derived from a #AnnotatedTypeHint hint or the underlying
     #: Python type object.
-    annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
+    annotations: "list[t.Any]" = dataclasses.field(default_factory=list)
 
 
 def convert_to_schema(hint: TypeHint) -> Schema:
@@ -102,7 +111,7 @@ def convert_to_schema(hint: TypeHint) -> Schema:
     The function delegates to #convert_dataclass_to_schema() or #convert_typed_dict_to_schema().
 
     Arguments:
-      hint: The type hint to convert. If it is a #typeapi.Annotated hint, it will be unwrapped.
+      hint: The type hint to convert. If it is a #AnnotatedTypeHint hint, it will be unwrapped.
     Raises:
       ValueError: If the type hint is not supported.
     """
@@ -113,24 +122,24 @@ def convert_to_schema(hint: TypeHint) -> Schema:
     annotations = []
     if isinstance(hint, AnnotatedTypeHint):
         annotations = list(hint.metadata)
-        hint = hint.wrapped
+        hint = hint[0]
 
     if isinstance(hint, ClassTypeHint) and dataclasses.is_dataclass(hint.type):
         schema = convert_dataclass_to_schema(hint.type)
     elif isinstance(hint, ClassTypeHint) and is_typed_dict(hint.type):
         schema = convert_typed_dict_to_schema(hint.type)
     else:
-        raise ValueError(f"cannot be converted to a schema: {original_hint}")
+        raise ValueError(f"cannot be converted to a schema (not a dataclass or TypedDict): {type_repr(original_hint)}")
 
     schema.annotations.extend(annotations)
     return schema
 
 
 def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, ClassTypeHint]) -> Schema:
-    """Converts a Python class that is decorated with #dataclasses.dataclass().
+    """Converts a Python class that is decorated with #dataclasses.dataclass() to a Schema.
 
-    The function will respect the #Required setting if it is present in a field's datatype if and only if the
-    setting occurs in the root type hint, which must be a #typing.Annotated hint.
+    The function will respect the #Required setting if it is present in a field's datatype if,
+    and only if, the setting occurs in the root type hint, which must be a #typing.Annotated hint.
 
     Arguments:
       dataclass_type: A Python type that is a dataclass, or a generic alias of a dataclass.
@@ -142,19 +151,20 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
 
     ```py
     import dataclasses
-    import typing as t
-    import typeapi
+    from typing import Generic, TypeVar
+    from typeapi import TypeHint
     from databind.core.schema import convert_dataclass_to_schema, Field, Schema
-    T = t.TypeVar('T')
+    T = TypeVar('T')
     @dataclasses.dataclass
-    class A(t.Generic[T]):
+    class A(Generic[T]):
       a: T
-    assert convert_dataclass_to_schema(A[int]) == Schema({'a': Field(typeapi.of(int))}, A)
+    assert convert_dataclass_to_schema(A[int]) == Schema({'a': Field(TypeHint(int))}, A)
     ```
     """
 
     from dataclasses import MISSING
 
+    hint: ClassTypeHint
     if isinstance(dataclass_type, ClassTypeHint):
         hint = dataclass_type
     else:
@@ -163,58 +173,92 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
 
     dataclass_type = hint.type
     assert isinstance(dataclass_type, type), repr(dataclass_type)
-    assert dataclasses.is_dataclass(dataclass_type), "expected @dataclasses.dataclass type"
+    assert dataclasses.is_dataclass(
+        dataclass_type
+    ), f"expected a @dataclass type, but {type_repr(dataclass_type)} is not such a type"
 
-    # Collect the type parameters of all involved generic classes and which field was declared in which class.
-    type_parameters = {
-        t.__origin__: v.get_parameter_mapping() for t, v in hint.get_orig_bases_parametrized(True).items()
+    # Figure out which field is defined on which dataclass in the class hierarchy.
+    # This is important because we need to use the correct context when evaluating
+    # forward references in field annotations; we can't just use the target
+    # dataclass if it was defined in a different module.
+    field_origin: t.Dict[str, type] = {}
+    base_queue = [hint.type]
+    while base_queue:
+        base_type = base_queue.pop(0)
+        if dataclasses.is_dataclass(base_type):
+            annotations = get_annotations(base_type)
+            for field in dataclasses.fields(base_type):
+                if field.name in annotations and field.name not in field_origin:
+                    field_origin[field.name] = base_type
+        base_queue += base_type.__bases__
+
+    # Retrieve the context in which type hints from each field origin type need to be
+    # evaluated.
+    eval_context_by_type: t.Dict[type, t.Mapping[str, t.Any]] = {
+        type_: vars(sys.modules[type_.__module__]) for type_ in set(field_origin.values())
     }
-    type_parameters[hint.type] = hint.get_parameter_mapping()
-    type_annotations: t.Dict[type, t.Dict[str, t.Any]] = {}
-    field_origins: t.Dict[str, type] = {}
-    for base in hint.type.__mro__:
-        if dataclasses.is_dataclass(base):
-            type_annotations[base] = get_annotations(base)
-            for field in dataclasses.fields(base):
-                if field.name in type_annotations[base] and field.name not in field_origins:
-                    field_origins[field.name] = base
 
-    annotations = get_annotations(dataclass_type, include_bases=True)
+    # import pdb; pdb.set_trace()
+
+    # Collect the members from the dataclass and its base classes.
+    queue = [hint]
     fields: t.Dict[str, Field] = {}
-    for field in dataclasses.fields(dataclass_type):
-        if not field.init:
-            # If we cannot initialize the field in the constructor, we should also
-            # exclude it from the definition of the type for de-/serializing.
+    while queue:
+        hint = queue.pop(0)
+
+        if hint.type not in eval_context_by_type:
+            # This could mean that a base class is a dataclass but all of its members
+            # are overwritten by other fields.
             continue
 
-        globalns = typeapi.scope(dataclass_type)
-        datatype = typeapi.eval_types(
-            TypeHint(annotations[field.name]),
-            module=dataclass_type.__module__ if globalns is None else None,
-            globalns=globalns,
-        )
-        default = NotSet.Value if field.default == MISSING else field.default
-        default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
-        has_default = default != NotSet.Value or default_factory != NotSet.Value
-        required = _is_required(datatype, not has_default)
+        # Make sure forward references are resolved.
+        hint = hint.evaluate(eval_context_by_type[hint.type])
+        assert isinstance(hint, ClassTypeHint)
 
-        # Infuse type parameters, if applicable. We may not have type parameters for the field's origin type if that
-        # origin is not a generic type.
-        field_origin = field_origins[field.name]
-        datatype = typeapi.infuse_type_parameters(datatype, type_parameters.get(field_origin, {}))
+        parameter_map = hint.get_parameter_map()
 
-        fields[field.name] = Field(
-            datatype=datatype,
-            required=required,
-            default=None if not required and not has_default else default,
-            default_factory=default_factory,
-            flattened=_is_flat(datatype, False),
-        )
+        for field in dataclasses.fields(hint.type):
+            if not field.init:
+                # If we cannot initialize the field in the constructor, we should also
+                # exclude it from the definition of the type for de-/serializing.
+                continue
+            if field.name in fields:
+                # Subclasses override their parent's fields.
+                continue
+            if field_origin[field.name] != hint.type:
+                # If this field does not belong to the current type
+                continue
+
+            field_hint = (
+                TypeHint(field.type)
+                .evaluate(eval_context_by_type[field_origin[field.name]])
+                .parameterize(parameter_map)
+            )
+
+            default = NotSet.Value if field.default == MISSING else field.default
+            default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
+            has_default = default != NotSet.Value or default_factory != NotSet.Value
+            required = _is_required(field_hint, not has_default)
+
+            fields[field.name] = Field(
+                datatype=field_hint,
+                required=required,
+                default=None if not required and not has_default else default,
+                default_factory=default_factory,
+                flattened=_is_flat(field_hint, False),
+            )
+
+        # Continue with the base classes.
+        for base in hint.bases or hint.type.__bases__:
+            base_hint = TypeHint(base).parameterize(parameter_map)
+            assert isinstance(base_hint, ClassTypeHint), f"nani? {base_hint}"
+            if dataclasses.is_dataclass(base_hint.type):
+                queue.append(base_hint)
 
     return Schema(fields, t.cast("Constructor", dataclass_type), dataclass_type)
 
 
-def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
+def convert_typed_dict_to_schema(typed_dict: TypedDictProtocol) -> Schema:
     """Converts the definition of a #typing.TypedDict to a #Schema.
 
     !!! note
@@ -237,42 +281,42 @@ def convert_typed_dict_to_schema(typed_dict: typeapi.utils.TypedDict) -> Schema:
 
     ```py
     from databind.core.schema import convert_typed_dict_to_schema, Schema, Field
-    import typing
+    from typing import TypedDict
+    from typeapi import TypeHint
     class Movie(typing.TypedDict):
       name: str
       year: int = 0
     assert convert_typed_dict_to_schema(Movie) == Schema({
-      'name': Field(typeapi.of(str)),
-      'year': Field(typeapi.of(int), False, 0),
+      'name': Field(TypeHint(str)),
+      'year': Field(TypeHint(int), False, 0),
     }, Movie)
     ```
     """
 
-    assert typeapi.utils.is_typed_dict(typed_dict), typed_dict
+    assert is_typed_dict(typed_dict), typed_dict
 
-    annotations = typeapi.get_annotations(t.cast(type, typed_dict))
+    eval_context = vars(sys.modules[typed_dict.__module__])
+
+    annotations = get_annotations(t.cast(type, typed_dict))
     fields: t.Dict[str, Field] = {}
     for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
-        globalns = typeapi.scope(t.cast(type, typed_dict))
-        datatype = typeapi.eval_types(
-            typeapi.of(annotations[key]),
-            module=getattr(typed_dict, "__module__", None) if globalns is None else None,
-            globalns=globalns,
-        )
+
+        field_hint = TypeHint(annotations[key]).evaluate(eval_context)
+
         has_default = hasattr(typed_dict, key)
-        required = _is_required(datatype, not has_default)
+        required = _is_required(field_hint, not has_default)
         fields[key] = Field(
-            datatype=datatype,
+            datatype=field_hint,
             required=required and typed_dict.__total__,
             default=getattr(typed_dict, key) if has_default else None if not required else NotSet.Value,
-            flattened=_is_flat(datatype, False),
+            flattened=_is_flat(field_hint, False),
         )
 
     return Schema(fields, t.cast("Constructor", typed_dict), t.cast(type, typed_dict))
 
 
 def _is_required(datatype: TypeHint, default: bool) -> bool:
-    """If *datatype* is a #typeapi.Annotated instance, it will look for a #Required settings instance and returns
+    """If *datatype* is a #AnnotatedTypeHint instance, it will look for a #Required settings instance and returns
     that instances #Required.enabled value. Otherwise, it returns *default*."""
     from databind.core.settings import Required, get_annotation_setting
 
@@ -280,10 +324,10 @@ def _is_required(datatype: TypeHint, default: bool) -> bool:
     if required:
         return required.enabled
 
-    if isinstance(datatype, typeapi.Annotated):
-        datatype = datatype.wrapped
+    if isinstance(datatype, AnnotatedTypeHint):
+        datatype = datatype[0]
 
-    if isinstance(datatype, typeapi.Union) and datatype.has_none_type():
+    if isinstance(datatype, UnionTypeHint) and datatype.has_none_type():
         return False
 
     return default

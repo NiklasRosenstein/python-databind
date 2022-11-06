@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class Converter(abc.ABC):
     """Interface for converting a value from one representation to another."""
 
-    def convert(self, ctx: Context) -> t.Any:
+    def convert(self, ctx: "Context") -> t.Any:
         """Convert the value in *ctx* to another value.
 
         The default implementation will dispatch to #serialize() and #deserialize() depending on the direction
@@ -42,10 +42,10 @@ class Converter(abc.ABC):
         else:
             raise RuntimeError(f"unexpected direction: {ctx.direction!r}")
 
-    def serialize(self, ctx: Context) -> t.Any:
+    def serialize(self, ctx: "Context") -> t.Any:
         raise NotImplementedError
 
-    def deserialize(self, ctx: Context) -> t.Any:
+    def deserialize(self, ctx: "Context") -> t.Any:
         raise NotImplementedError
 
 
@@ -63,10 +63,10 @@ class Module(Converter):
         assert isinstance(converter, Converter), converter
         self.converters.append(converter)
 
-    def get_converters(self, ctx: Context) -> t.Iterator[Converter]:
+    def get_converters(self, ctx: "Context") -> t.Iterator[Converter]:
         yield from self.converters
 
-    def convert(self, ctx: Context) -> t.Any:
+    def convert(self, ctx: "Context") -> t.Any:
         errors: t.List[t.Tuple[Converter, Exception]] = []
         for converter in self.get_converters(ctx):
             try:
@@ -84,7 +84,7 @@ class ConversionError(Exception):
     def __init__(
         self,
         origin: Converter,
-        context: Context,
+        context: "Context",
         message: str,
         errors: t.Optional[t.List[t.Tuple[Converter, Exception]]] = None,
     ) -> None:
@@ -110,7 +110,7 @@ class ConversionError(Exception):
     @staticmethod
     def expected(
         origin: Converter,
-        ctx: Context,
+        ctx: "Context",
         types: t.Union[type, t.Sequence[type]],
         got: t.Optional[type] = None,
     ) -> "ConversionError":
@@ -124,5 +124,5 @@ class ConversionError(Exception):
 class NoMatchingConverter(ConversionError):
     """If no converter matched to convert the value and datatype in the context."""
 
-    def __init__(self, origin: Converter, context: Context, errors: t.List[t.Tuple[Converter, Exception]]) -> None:
+    def __init__(self, origin: Converter, context: "Context", errors: "list[tuple[Converter, Exception]]") -> None:
         super().__init__(origin, context, f"no applicable converter found for {context.datatype}", errors)

@@ -63,7 +63,7 @@ class Context:
 
     #: A list of #Setting#s that are to be taken into account by the converter which can potentialy impact
     #: the conversion process.
-    settings: SettingsProvider = dataclasses.field(repr=False)
+    settings: "SettingsProvider" = dataclasses.field(repr=False)
 
     #: The key or index under which #value is present in the source material relative to the #parent context.
     #: This is `None` only for the root value in the same source. The value must be #Context.ROOT if the context
@@ -84,7 +84,7 @@ class Context:
         assert self.location is not None
         assert self.parent is not None or self.key == Context.ROOT
 
-    def get_setting(self, setting_type: t.Type[T_Setting]) -> T_Setting | None:
+    def get_setting(self, setting_type: t.Type["T_Setting"]) -> "T_Setting | None":
         """Retrieve a setting by type that for the current context."""
 
         return self.settings.get_setting(self, setting_type)
