@@ -1,5 +1,7 @@
+release-date = "2022-11-06"
+
 [[entries]]
-id = "7478f5e3-d2cc-43f0-a557-753c8420ed4b"
+id = "f5e3ef06-52d0-480d-8685-0473bea87691"
 type = "breaking change"
 description = "Databind is now compatible with Python 3.6! This required a few breaking changes to the API used to extend Databind, which is why this is a major version bump. We now use `typeapi 1.x` which has a significantly different API but enables the Python 3.6 compatibilty."
 author = "@NiklasRosenstein"
