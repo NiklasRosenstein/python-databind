@@ -683,7 +683,7 @@
                 
                   
 
-  <a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/content/api/databind.core.mapper.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/NiklasRosenstein/python-databind/blob/None/docs/content/api/databind.core.mapper.md" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
@@ -696,27 +696,26 @@
 <h2 id="class-objectmapper">Class ObjectMapper</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ObjectMapper</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">U</span><span class="p">])</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L13">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/cd9127ce1959359a3e28890e76a21e2bc20493f5/docs/../databind.core/src/databind/core/mapper.py#L12">[view_source]</a></p>
 <p>The object mapper is responsible for dispatching the conversion process into a <a href="/python-databind/api/databind.core.converter#pydoc:databind.core.converter.Module">Module</a>.</p>
 <p>The type parameter <em>T</em> represents the deserialized type, while <em>U</em> represents the serialized type.</p>
 <p><a id="databind.core.mapper.ObjectMapper.convert"></a></p>
 <p><a id="pydoc:databind.core.mapper.ObjectMapper.convert"></a></p>
 <h4 id="convert">convert</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert</span><span class="p">(</span>
-    <span class="n">direction</span><span class="p">:</span> <span class="n">Direction</span><span class="p">,</span>
-    <span class="n">value</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
-    <span class="n">datatype</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">typeapi</span><span class="o">.</span><span class="n">Hint</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
-    <span class="n">location</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Location</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Setting</span><span class="p">],</span>
-                      <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
+        <span class="n">direction</span><span class="p">:</span> <span class="s2">&quot;Direction&quot;</span><span class="p">,</span>
+        <span class="n">value</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">,</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="s2">&quot;TypeHint | t.Any&quot;</span><span class="p">,</span>
+        <span class="n">location</span><span class="p">:</span> <span class="s2">&quot;Location | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">:</span> <span class="s2">&quot;SettingsProvider | list[Setting] | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L32">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/cd9127ce1959359a3e28890e76a21e2bc20493f5/docs/../databind.core/src/databind/core/mapper.py#L31">[view_source]</a></p>
 <p>Convert a value according to the given datatype.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
 <li><code>direction</code> - The direction, i.e. either deserialization or serialization.</li>
 <li><code>value</code> - The value to convert.</li>
-<li><code>datatype</code> - The datatype. If not already a <code>typeapi.Hint</code> instance, it will be converted using <code>typeapi.of()</code>.</li>
+<li><code>datatype</code> - The datatype. If not already a <code>TypeHint</code> instance, it will be converted using <code>TypeHint()</code>.</li>
 <li><code>location</code> - The location of where <em>value</em> is coming from. Useful to specify to make debugging easier.</li>
 <li><code>settings</code> - A list of settings, in which case they will be treated as global settings in addition to the
   mapper's <a href="/python-databind/api/databind.core.context#pydoc:databind.core.context.Context.settings">settings</a>, or an entirely different <a href="/python-databind/api/databind.core.settings#pydoc:databind.core.settings.SettingsProvider">SettingsProvider</a> instance (for which it is recommended that
@@ -732,26 +731,23 @@
 <p><a id="databind.core.mapper.ObjectMapper.serialize"></a></p>
 <p><a id="pydoc:databind.core.mapper.ObjectMapper.serialize"></a></p>
 <h4 id="serialize">serialize</h4>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span>
-        <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
-        <span class="n">datatype</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">typeapi</span><span class="o">.</span><span class="n">Hint</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
-        <span class="n">filename</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Setting</span><span class="p">],</span>
-                          <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">U</span>
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span>
+              <span class="n">datatype</span><span class="p">:</span> <span class="s2">&quot;TypeHint | t.Any&quot;</span><span class="p">,</span>
+              <span class="n">filename</span><span class="p">:</span> <span class="s2">&quot;str | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">settings</span><span class="p">:</span> <span class="s2">&quot;SettingsProvider | list[Setting] | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">U</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L79">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/cd9127ce1959359a3e28890e76a21e2bc20493f5/docs/../databind.core/src/databind/core/mapper.py#L78">[view_source]</a></p>
 <p>Serialize <em>value</em> according to the its <em>datatype</em>.</p>
 <p><a id="databind.core.mapper.ObjectMapper.deserialize"></a></p>
 <p><a id="pydoc:databind.core.mapper.ObjectMapper.deserialize"></a></p>
 <h4 id="deserialize">deserialize</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span>
         <span class="n">value</span><span class="p">:</span> <span class="n">U</span><span class="p">,</span>
-        <span class="n">datatype</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">typeapi</span><span class="o">.</span><span class="n">Hint</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
-        <span class="n">filename</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">settings</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">SettingsProvider</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="n">Setting</span><span class="p">],</span>
-                          <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span>
+        <span class="n">datatype</span><span class="p">:</span> <span class="s2">&quot;TypeHint | t.Any&quot;</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="s2">&quot;str | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">settings</span><span class="p">:</span> <span class="s2">&quot;SettingsProvider | list[Setting] | None&quot;</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/mapper.py#L92">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/cd9127ce1959359a3e28890e76a21e2bc20493f5/docs/../databind.core/src/databind/core/mapper.py#L91">[view_source]</a></p>
 <p>Deserialize <em>value</em> according to the its <em>datatype</em>.</p>
 
 
