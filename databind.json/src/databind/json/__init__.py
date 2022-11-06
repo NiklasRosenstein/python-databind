@@ -22,7 +22,7 @@ JsonType = t.Union[
 ]
 
 
-def get_object_mapper(settings: t.Optional[Settings] = None) -> ObjectMapper[t.Any, JsonType]:
+def get_object_mapper(settings: "Settings | None" = None) -> "ObjectMapper[t.Any, JsonType]":
     from databind.core.mapper import ObjectMapper
 
     from databind.json.module import JsonModule
@@ -35,9 +35,9 @@ def get_object_mapper(settings: t.Optional[Settings] = None) -> ObjectMapper[t.A
 @t.overload
 def load(
     value: t.Any,
-    type_: t.Type[T],
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    type_: "type[T]",
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> T:
     ...
 
@@ -46,8 +46,8 @@ def load(
 def load(
     value: t.Any,
     type_: t.Any,
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> t.Any:
     ...
 
@@ -55,8 +55,8 @@ def load(
 def load(
     value: t.Any,
     type_: t.Any,
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> t.Any:
     return get_object_mapper().deserialize(value, type_, filename, settings)
 
@@ -64,9 +64,9 @@ def load(
 @t.overload
 def loads(
     value: str,
-    type_: t.Type[T],
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    type_: "type[T]",
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> T:
     ...
 
@@ -75,8 +75,8 @@ def loads(
 def loads(
     value: str,
     type_: t.Any,
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> t.Any:
     ...
 
@@ -84,8 +84,8 @@ def loads(
 def loads(
     value: str,
     type_: t.Any,
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> t.Any:
     return load(json.loads(value), type_, filename, settings)
 
@@ -93,8 +93,8 @@ def loads(
 def dump(
     value: t.Any,
     type_: t.Any,
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
 ) -> JsonType:
     return get_object_mapper().serialize(value, type_, filename, settings)
 
@@ -102,8 +102,8 @@ def dump(
 def dumps(
     value: t.Any,
     type_: t.Any,
-    filename: t.Optional[str] = None,
-    settings: t.Optional[t.List[Setting]] = None,
+    filename: "str | None" = None,
+    settings: "list[Setting] | None" = None,
     indent: t.Union[int, str, None] = None,
     sort_keys: bool = False,
 ) -> str:
