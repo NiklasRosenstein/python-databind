@@ -17,9 +17,9 @@ Repository = "https://github.com/NiklasRosenstein/python-databind"
 python = "^3.6"
 Deprecated = "^1.2.12"
 nr-date = "^2.0.0"
-typeapi = ">=0.1.5,<0.3.0"
-typing-extensions = ">=3.10.0"
 nr-stream = "^1.0.0"
+typeapi = "^1.0.0"
+typing-extensions = ">=3.10.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"
