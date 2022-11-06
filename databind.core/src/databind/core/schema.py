@@ -236,7 +236,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
             )
 
             default = NotSet.Value if field.default == MISSING else field.default
-            default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory  # type: ignore[misc,comparison-overlap]  # Attribute function "default_factory" with type "Callable[[], _T]" does not accept self argument  # Non-overlapping equality check (left operand type: "Callable[[], Any]", right operand type: "_MISSING_TYPE")  # noqa: E501
+            default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory  # type: ignore  # Attribute function "default_factory" with type "Callable[[], _T]" does not accept self argument  # Non-overlapping equality check (left operand type: "Callable[[], Any]", right operand type: "_MISSING_TYPE")  # noqa: E501
             has_default = default != NotSet.Value or default_factory != NotSet.Value
             required = _is_required(field_hint, not has_default)
 
