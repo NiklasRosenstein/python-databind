@@ -115,7 +115,7 @@ class Settings(SettingsProvider):
             datatype = context.datatype
             if isinstance(datatype, AnnotatedTypeHint):
                 yield from (s for s in datatype.metadata if isinstance(s, setting_type))
-                datatype = datatype.wrapped
+                datatype = datatype[0]
             if isinstance(datatype, ClassTypeHint):
                 yield from get_class_settings(datatype.type, setting_type)  # type: ignore[type-var]
                 yield from self.local_settings.get(datatype.type, [])
@@ -415,9 +415,7 @@ class Union(ClassDecoratorSetting):
         discriminator_key: str = "type",
         nesting_key: t.Optional[str] = None,
     ) -> None:
-        def _convert_handler(
-            handler: t.Union[UnionMembers, StaticUnionMembers._MembersMappingType, str]
-        ) -> UnionMembers:
+        def _convert_handler(handler: "UnionMembers | StaticUnionMembers._MembersMappingType | str") -> "UnionMembers":
             if isinstance(handler, t.Mapping) or handler is None:
                 from databind.core.union import StaticUnionMembers
 
@@ -443,6 +441,9 @@ class Union(ClassDecoratorSetting):
         self.style = style
         self.discriminator_key = discriminator_key
         self.nesting_key = nesting_key
+
+    def __hash__(self) -> int:
+        return id(self)  # Needs to be hashable for Annotated[...] in Python 3.6
 
     @staticmethod
     def register(extends: type, name: t.Optional[str] = None) -> t.Callable[[t.Type[T]], t.Type[T]]:

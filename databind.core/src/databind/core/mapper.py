@@ -41,7 +41,7 @@ class ObjectMapper(t.Generic[T, U]):
         Arguments:
           direction: The direction, i.e. either deserialization or serialization.
           value: The value to convert.
-          datatype: The datatype. If not already a #TypeHint instance, it will be converted using #typeapi.of().
+          datatype: The datatype. If not already a #TypeHint instance, it will be converted using #TypeHint().
           location: The location of where *value* is coming from. Useful to specify to make debugging easier.
           settings: A list of settings, in which case they will be treated as global settings in addition to the
             mapper's #settings, or an entirely different #SettingsProvider instance (for which it is recommended that

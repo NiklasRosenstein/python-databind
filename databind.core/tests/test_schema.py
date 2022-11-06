@@ -122,6 +122,8 @@ def test_convert_dataclass_to_schema_simple():
     )
 
 
+# TODO(NiklasRosenstein): Bring back support for defining data classes in a function body.
+
 # def test_convert_dataclass_with_forward_ref():
 #     @dataclasses.dataclass
 #     class A:

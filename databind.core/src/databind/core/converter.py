@@ -1,8 +1,9 @@
 import abc
 import logging
 import typing as t
+from textwrap import indent
 
-import typeapi
+from typeapi import type_repr
 
 from databind.core.utils import exception_safe_str
 
@@ -86,7 +87,7 @@ class ConversionError(Exception):
         origin: Converter,
         context: "Context",
         message: str,
-        errors: t.Optional[t.List[t.Tuple[Converter, Exception]]] = None,
+        errors: "t.List[t.Tuple[Converter, Exception]] | None" = None,
     ) -> None:
         self.origin = origin
         self.context = context
@@ -104,7 +105,7 @@ class ConversionError(Exception):
             message += "\nThe following errors have been reported by converters:"
             for converter, exc in self.errors:
                 if str(exc):
-                    message += f"\n  {converter}: {exc}"
+                    message += f"\n  {converter}: {indent(str(exc), '    ').lstrip()}"
         return message
 
     @staticmethod
@@ -116,9 +117,9 @@ class ConversionError(Exception):
     ) -> "ConversionError":
         if not isinstance(types, t.Sequence):
             types = (types,)
-        expected = "|".join(typeapi.type_repr(t) for t in types)
+        expected = "|".join(type_repr(t) for t in types)
         got = type(ctx.value) if got is None else got
-        return ConversionError(origin, ctx, f"expected {expected}, got {typeapi.type_repr(got)} instead")
+        return ConversionError(origin, ctx, f"expected {expected}, got {type_repr(got)} instead")
 
 
 class NoMatchingConverter(ConversionError):

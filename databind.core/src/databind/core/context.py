@@ -102,7 +102,7 @@ class Context:
         Arguments:
           value: The value to convert.
           datatype: The datatype of *value*. If this is not already a #TypeHint, it will be converted to one
-            using #typeapi.of().
+            using #TypeHint().
           key: The key or index at which the *value* can be found relative to the parent.
           location: The location of the new value. If not specified, the parent filename is inherited but not the
             line number and column.
