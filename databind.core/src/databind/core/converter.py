@@ -87,7 +87,7 @@ class ConversionError(Exception):
         origin: Converter,
         context: "Context",
         message: str,
-        errors: "t.List[t.Tuple[Converter, Exception]] | None" = None,
+        errors: "t.Sequence[t.Tuple[Converter, Exception]] | None" = None,
     ) -> None:
         self.origin = origin
         self.context = context
@@ -125,5 +125,5 @@ class ConversionError(Exception):
 class NoMatchingConverter(ConversionError):
     """If no converter matched to convert the value and datatype in the context."""
 
-    def __init__(self, origin: Converter, context: "Context", errors: "list[tuple[Converter, Exception]]") -> None:
+    def __init__(self, origin: Converter, context: "Context", errors: "t.List[t.Tuple[Converter, Exception]]") -> None:
         super().__init__(origin, context, f"no applicable converter found for {context.datatype}", errors)

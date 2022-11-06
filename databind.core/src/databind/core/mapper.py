@@ -34,7 +34,7 @@ class ObjectMapper(t.Generic[T, U]):
         value: t.Any,
         datatype: "TypeHint | t.Any",
         location: "Location | None" = None,
-        settings: "SettingsProvider | list[Setting] | None" = None,
+        settings: "SettingsProvider | t.List[Setting] | None" = None,
     ) -> t.Any:
         """Convert a value according to the given datatype.
 
@@ -80,7 +80,7 @@ class ObjectMapper(t.Generic[T, U]):
         value: T,
         datatype: "TypeHint | t.Any",
         filename: "str | None" = None,
-        settings: "SettingsProvider | list[Setting] | None" = None,
+        settings: "SettingsProvider | t.List[Setting] | None" = None,
     ) -> U:
         """Serialize *value* according to the its *datatype*."""
 
@@ -93,7 +93,7 @@ class ObjectMapper(t.Generic[T, U]):
         value: U,
         datatype: "TypeHint | t.Any",
         filename: "str | None" = None,
-        settings: "SettingsProvider | list[Setting] | None" = None,
+        settings: "SettingsProvider | t.List[Setting] | None" = None,
     ) -> T:
         """Deserialize *value* according to the its *datatype*."""
 

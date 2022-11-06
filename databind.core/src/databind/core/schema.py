@@ -102,7 +102,7 @@ class Schema:
 
     #: Annotation metadata that goes with the schema, possibly derived from a #AnnotatedTypeHint hint or the underlying
     #: Python type object.
-    annotations: "list[t.Any]" = dataclasses.field(default_factory=list)
+    annotations: t.List[t.Any] = dataclasses.field(default_factory=list)
 
 
 def convert_to_schema(hint: TypeHint) -> Schema:
@@ -168,7 +168,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
     if isinstance(dataclass_type, ClassTypeHint):
         hint = dataclass_type
     else:
-        hint = TypeHint(dataclass_type)
+        hint = TypeHint(dataclass_type)  # type: ignore[assignment]
         assert isinstance(hint, ClassTypeHint), hint
 
     dataclass_type = hint.type
@@ -212,7 +212,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
             continue
 
         # Make sure forward references are resolved.
-        hint = hint.evaluate(eval_context_by_type[hint.type])
+        hint = hint.evaluate(eval_context_by_type[hint.type])  # type: ignore[assignment]
         assert isinstance(hint, ClassTypeHint)
 
         parameter_map = hint.get_parameter_map()
@@ -236,7 +236,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
             )
 
             default = NotSet.Value if field.default == MISSING else field.default
-            default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory
+            default_factory = NotSet.Value if field.default_factory == MISSING else field.default_factory  # type: ignore[misc,comparison-overlap]  # Attribute function "default_factory" with type "Callable[[], _T]" does not accept self argument  # Non-overlapping equality check (left operand type: "Callable[[], Any]", right operand type: "_MISSING_TYPE")  # noqa: E501
             has_default = default != NotSet.Value or default_factory != NotSet.Value
             required = _is_required(field_hint, not has_default)
 

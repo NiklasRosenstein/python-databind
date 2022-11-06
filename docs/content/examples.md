@@ -48,7 +48,7 @@ Note that any extra keys that are not expected per the schema will raise a `data
     version, even if `from __future__ import annotations` is used.
 
     This means if your code needs to be compatible with Python versions lower than 3.10 or 3.9 that you can not
-    use the new type union syntax (`a | b`) or built-in generic aliases (such as `list[int]`) and need to continue
+    use the new type union syntax (`a | b`) or built-in generic aliases (such as `t.List[int]`) and need to continue
     to use `typing.Union`, `typing.Optional` and `typing.List`, etc.
 
 [typeapi]: https://pypi.org/project/typeapi/

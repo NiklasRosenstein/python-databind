@@ -35,9 +35,9 @@ def get_object_mapper(settings: "Settings | None" = None) -> "ObjectMapper[t.Any
 @t.overload
 def load(
     value: t.Any,
-    type_: "type[T]",
+    type_: "t.Type[T]",
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> T:
     ...
 
@@ -47,7 +47,7 @@ def load(
     value: t.Any,
     type_: t.Any,
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> t.Any:
     ...
 
@@ -56,7 +56,7 @@ def load(
     value: t.Any,
     type_: t.Any,
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> t.Any:
     return get_object_mapper().deserialize(value, type_, filename, settings)
 
@@ -64,9 +64,9 @@ def load(
 @t.overload
 def loads(
     value: str,
-    type_: "type[T]",
+    type_: "t.Type[T]",
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> T:
     ...
 
@@ -76,7 +76,7 @@ def loads(
     value: str,
     type_: t.Any,
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> t.Any:
     ...
 
@@ -85,7 +85,7 @@ def loads(
     value: str,
     type_: t.Any,
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> t.Any:
     return load(json.loads(value), type_, filename, settings)
 
@@ -94,7 +94,7 @@ def dump(
     value: t.Any,
     type_: t.Any,
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
 ) -> JsonType:
     return get_object_mapper().serialize(value, type_, filename, settings)
 
@@ -103,7 +103,7 @@ def dumps(
     value: t.Any,
     type_: t.Any,
     filename: "str | None" = None,
-    settings: "list[Setting] | None" = None,
+    settings: "t.List[Setting] | None" = None,
     indent: t.Union[int, str, None] = None,
     sort_keys: bool = False,
 ) -> str:

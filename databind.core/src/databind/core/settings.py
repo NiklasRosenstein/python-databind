@@ -23,7 +23,7 @@ T_ClassDecoratorSetting = t.TypeVar("T_ClassDecoratorSetting", bound="ClassDecor
 class SettingsProvider(abc.ABC):
     """Interface for providing settings."""
 
-    def get_setting(self, context: "Context", setting_type: "type[T_Setting]") -> "T_Setting | None":
+    def get_setting(self, context: "Context", setting_type: "t.Type[T_Setting]") -> "T_Setting | None":
         ...
 
 
@@ -92,7 +92,7 @@ class Settings(SettingsProvider):
 
     # SettingsProvider
 
-    def get_setting(self, context: "Context", setting_type: t.Type[T_Setting]) -> t.Optional[T_Setting]:
+    def get_setting(self, context: "Context", setting_type: t.Type[T_Setting]) -> "T_Setting | None":
         """Resolves the highest priority instance of the given setting type relevant to the current context. The places
         that the setting is looked for are, in order:
 
@@ -407,7 +407,7 @@ class Union(ClassDecoratorSetting):
         members: t.Union[
             "UnionMembers",
             "StaticUnionMembers._MembersMappingType",
-            "list[UnionMembers | StaticUnionMembers._MembersMappingType]",
+            "t.List[UnionMembers | StaticUnionMembers._MembersMappingType]",
             str,
             None,
         ] = None,
@@ -639,14 +639,14 @@ class ExtraKeys(ClassDecoratorSetting):
     def __init__(
         self,
         allow: bool = True,
-        recorder: "t.Callable[[Context, set[str]], t.Any] | None" = None,
+        recorder: "t.Callable[[Context, t.Set[str]], t.Any] | None" = None,
         priority: Priority = Priority.NORMAL,
     ) -> None:
         self.allow = allow
         self.recorder = recorder
         self.priority = priority
 
-    def inform(self, origin: "Converter", ctx: "Context", extra_keys: "set[str]") -> None:
+    def inform(self, origin: "Converter", ctx: "Context", extra_keys: "t.Set[str]") -> None:
         from databind.core.converter import ConversionError
 
         if self.allow is False:

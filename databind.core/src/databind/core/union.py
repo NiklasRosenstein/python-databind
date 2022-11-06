@@ -7,7 +7,7 @@ import types
 import typing as t
 
 import pkg_resources
-from typeapi import TypeHint
+from typeapi import ClassTypeHint, TypeHint
 
 from databind.core.utils import T
 
@@ -88,7 +88,7 @@ class StaticUnionMembers(UnionMembers):
             #   passed the type of a value here as type_ which would have lost any generic aliasing if it was even
             #   present in the first place. We compare to the underlying type instead, but this means you cannot have
             #   a union with two members of the "same type" (even if they might differ in type parametrization).
-            if reference_type == type_ or isinstance(reference_type, TypeHint) and reference_type.type == type_:
+            if reference_type == type_ or isinstance(reference_type, ClassTypeHint) and reference_type.type == type_:
                 return type_id
         raise ValueError(f"type {type_} is not a member of {self}")
 

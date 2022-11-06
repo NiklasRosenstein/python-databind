@@ -1,5 +1,5 @@
 import enum
-from typing import Any, Callable, Optional, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Callable, Tuple, Type, TypeVar, Union, overload
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -19,7 +19,7 @@ def exception_safe_str(func: Callable[[T], str]) -> Callable[[T], str]:
     import logging
 
     @functools.wraps(func)
-    def wrapper(self) -> str:
+    def wrapper(self: T) -> str:
         try:
             return func(self)
         except Exception as exc:
@@ -50,7 +50,7 @@ def _repr_types(types: _Types) -> str:
         return "|".join(t.__name__ for t in types)
 
 
-def check_not_none(value: Optional[_T], message: _Message = None) -> _T:
+def check_not_none(value: "_T | None", message: "_Message | None" = None) -> _T:
     """
     Raises a #ValueError if *value* is `None`.
     """
@@ -61,16 +61,18 @@ def check_not_none(value: Optional[_T], message: _Message = None) -> _T:
 
 
 @overload
-def check_instance_of(value: Any, type_: Type[_T], message: _Message = None) -> _T:
+def check_instance_of(value: Any, types: Type[_T], message: "_Message | None" = None) -> _T:
     ...
 
 
 @overload
-def check_instance_of(value: Any, types: Tuple[Type, ...], message: _Message = None) -> Any:
+def check_instance_of(value: Any, types: Tuple[type, ...], message: "_Message | None" = None) -> Any:
     ...
 
 
-def check_instance_of(value, types, message=None):
+def check_instance_of(
+    value: Any, types: "Type[_T] | Tuple[type, ...]", message: "_Message | None" = None
+) -> "_T | Any":
     """
     Raises a #TypeError if *value* is not an instance of the specified *types*. If no message is
     provided, it will be auto-generated for the given *types*.
@@ -83,7 +85,7 @@ def check_instance_of(value, types, message=None):
     return value
 
 
-def check_subclass_of(cls: Type, types: _Types, message: _Message = None) -> Type:
+def check_subclass_of(cls: type, types: _Types, message: "_Message | None" = None) -> type:
     """
     Raises a #TypeError if *cls* is not a subclass of one of the specified *types*. If *cls* is not
     a type, a different #TypeError is raised that does not include the specified *message*.

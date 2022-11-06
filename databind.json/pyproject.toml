@@ -17,7 +17,7 @@ Repository = "https://github.com/NiklasRosenstein/python-databind"
 python = "^3.6"
 "databind.core" = "^3.0.0"
 nr-date = "^2.0.0"
-typeapi = "^1.0.0"
+typeapi = "^1.0.1"
 typing-extensions = ">=3.10.0"
 
 [tool.poetry.dev-dependencies]
