@@ -1,9 +1,13 @@
 import typing as t
 
+import typing_extensions as te
 from databind.core.converter import Converter
 from databind.core.settings import ClassDecoratorSetting
 
-ConverterSupplier = t.Callable[[], Converter]
+
+class ConverterSupplier(te.Protocol):
+    def __call__(self) -> Converter:
+        ...
 
 
 class JsonConverter(ClassDecoratorSetting):
@@ -38,6 +42,6 @@ class JsonConverter(ClassDecoratorSetting):
     def __init__(self, supplier: t.Union[ConverterSupplier, Converter]) -> None:
         super().__init__()
         if isinstance(supplier, Converter):
-            self.supplier = lambda: t.cast(Converter, supplier)
+            self.supplier = lambda: supplier
         else:
             self.supplier = supplier

@@ -5,7 +5,6 @@ import enum
 import types
 import typing as t
 
-import typeapi
 from databind.core.context import Context, Direction
 from databind.core.converter import ConversionError, Converter
 from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
@@ -20,7 +19,8 @@ from databind.core.settings import (
     Union,
     get_annotation_setting,
 )
-from nr.util.generic import T
+from databind.core.utils import T
+from typeapi import AnnotatedTypeHint, ClassTypeHint, LiteralTypeHint, TypeHint, UnionTypeHint, get_annotations
 
 
 def _int_lossless(v: float) -> int:
@@ -40,35 +40,40 @@ def _bool_from_str(s: str) -> bool:
     raise ValueError(f"not a truthy keyword: {s!r}")
 
 
+def _unwrap_annotated(hint: TypeHint) -> TypeHint:
+    if isinstance(hint, AnnotatedTypeHint):
+        return hint[0]
+    return hint
+
+
 class AnyConverter(Converter):
     """A converter for #typing.Any and #object typed values, which will return them unchanged in any case."""
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        is_any_type = (
-            isinstance(datatype, typeapi.Any) or isinstance(datatype, typeapi.Type) and datatype.type is object
-        )
+        datatype = _unwrap_annotated(ctx.datatype)
+        is_any_type = isinstance(datatype, ClassTypeHint) and datatype.type in (object, t.Any)
         if is_any_type:
             return ctx.value
         raise NotImplementedError
 
 
 class CollectionConverter(Converter):
+    _FORBIDDEN_COLLECTIONS = (str, bytes, bytearray, memoryview, t.Mapping)
+
     def __init__(self, json_collection_type: t.Type[t.Collection[t.Any]] = list) -> None:
         self.json_collection_type = json_collection_type
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, t.Collection):
-            raise NotImplementedError
-
-        if datatype.nparams != 1:
-            # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
-            # track of type parameter values.
+        datatype = _unwrap_annotated(ctx.datatype)
+        if (
+            not isinstance(datatype, ClassTypeHint)
+            or not issubclass(datatype.type, t.Collection)
+            or issubclass(datatype.type, self._FORBIDDEN_COLLECTIONS)
+        ):
             raise NotImplementedError
 
         python_type = datatype.type
-        item_type = datatype.args[0] if datatype.args else t.Any
+        item_type = datatype[0] if datatype.args else TypeHint(t.Any)
         values: t.Iterable[t.Any] = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
 
         if ctx.direction == Direction.SERIALIZE:
@@ -77,7 +82,7 @@ class CollectionConverter(Converter):
             return self.json_collection_type(values)  # type: ignore[call-arg]
 
         else:
-            if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, (str, bytes, bytearray, memoryview)):
+            if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, self._FORBIDDEN_COLLECTIONS):
                 raise ConversionError.expected(self, ctx, t.Collection)
             values = list(values)
             if python_type == list:
@@ -93,15 +98,15 @@ class CollectionConverter(Converter):
 
 class DatetimeConverter(Converter):
     """A converter for #datetime.datetime, #datetime.date and #datetime.time that represents the serialized form as
-    strings formatted using the #nr.util.date module. The converter respects the #DateFormat setting."""
+    strings formatted using the #nr.date module. The converter respects the #DateFormat setting."""
 
     DEFAULT_DATE_FMT = DateFormat(".ISO_8601")
     DEFAULT_TIME_FMT = DEFAULT_DATE_FMT
     DEFAULT_DATETIME_FMT = DEFAULT_DATE_FMT
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type):
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, ClassTypeHint):
             raise NotImplementedError
 
         date_type = datatype.type
@@ -144,8 +149,8 @@ class DecimalConverter(Converter):
         self.strict_by_default = strict_by_default
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, decimal.Decimal):
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, ClassTypeHint) or not issubclass(datatype.type, decimal.Decimal):
             raise NotImplementedError
 
         strict = ctx.get_setting(Strict) or Strict(self.strict_by_default)
@@ -187,12 +192,12 @@ class EnumConverter(Converter):
 
     def _discover_alias(self, enum_type: t.Type[enum.Enum], member_name: str) -> t.Optional[Alias]:
         # TODO (@NiklasRosenstein): Take into account annotations of the base classes?
-        hint = typeapi.of(typeapi.get_annotations(enum_type).get(member_name))
+        hint = TypeHint(get_annotations(enum_type).get(member_name))
         return get_annotation_setting(hint, Alias)
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type):
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, ClassTypeHint):
             raise NotImplementedError
         if not issubclass(datatype.type, enum.Enum):
             raise NotImplementedError
@@ -239,16 +244,11 @@ class MappingConverter(Converter):
         self.json_mapping_type = json_mapping_type
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, t.Mapping):
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, ClassTypeHint) or not issubclass(datatype.type, t.Mapping):
             raise NotImplementedError
 
-        if datatype.nparams != 2:
-            # TODO (@NiklasRosenstein): Look into the type's bases and find the mapping base class while keeping
-            # track of type parameter values.
-            raise NotImplementedError
-
-        if datatype.args is None:
+        if not datatype.args:
             key_type, value_type = t.Any, t.Any
         else:
             key_type, value_type = datatype.args
@@ -279,8 +279,8 @@ class MappingConverter(Converter):
 
 class OptionalConverter(Converter):
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Union) or not datatype.has_none_type():
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, UnionTypeHint) or not datatype.has_none_type():
             raise NotImplementedError
         if ctx.value is None:
             return None
@@ -328,8 +328,8 @@ class PlainDatatypeConverter(Converter):
         self.strict_by_default = strict_by_default
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type):
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, ClassTypeHint):
             raise NotImplementedError
         if datatype.type not in {k[0] for k in self._strict_adapters}:
             raise NotImplementedError
@@ -366,7 +366,7 @@ class SchemaConverter(Converter):
     def __init__(
         self,
         json_mapping_type: t.Type[t.MutableMapping[str, t.Any]] = dict,
-        convert_to_schema: t.Callable[[typeapi.Hint], Schema] = convert_to_schema,
+        convert_to_schema: t.Callable[[TypeHint], Schema] = convert_to_schema,
         serialize_defaults: bool = True,
     ) -> None:
         self.json_mapping_type = json_mapping_type
@@ -378,7 +378,7 @@ class SchemaConverter(Converter):
         return ctx.get_setting(Alias) or Alias(field_name)
 
     def _get_schema(self, ctx: Context) -> Schema:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
+        datatype = _unwrap_annotated(ctx.datatype)
         try:
             return self.convert_to_schema(datatype)
         except ValueError as exc:
@@ -545,8 +545,8 @@ class StringifyConverter(Converter):
         self.formatter = formatter
 
     def convert(self, ctx: Context) -> t.Any:
-        datatype = typeapi.unwrap(ctx.datatype)[0]
-        if not isinstance(datatype, typeapi.Type) or not issubclass(datatype.type, self.type_):
+        datatype = _unwrap_annotated(ctx.datatype)
+        if not isinstance(datatype, ClassTypeHint) or not issubclass(datatype.type, self.type_):
             raise NotImplementedError
 
         if ctx.direction == Direction.DESERIALIZE:
@@ -566,14 +566,14 @@ class StringifyConverter(Converter):
 class UnionConverter(Converter):
     """Converter for union types. The following kinds of union types are supported:
 
-    * A #typing.Union (represented as #typeapi.Union) instance, in which case the members are deserialized in the
+    * A #typing.Union (represented as #UnionTypeHint) instance, in which case the members are deserialized in the
       the #Union.NESTED mode, using the class name as the discriminator keys.
 
         ```py
         AOrB = A | B   # ex.: {"type": "A", "A": {...}}
         ```
 
-    * A #typing.Annotated annotated with the #Union setting (represented as #typeapi.Annotated)
+    * A #typing.Annotated annotated with the #Union setting (represented as #AnnotatedTypeHint)
 
         ```py
         from databind.core.settings import Union
@@ -659,16 +659,16 @@ class UnionConverter(Converter):
     def convert(self, ctx: Context) -> t.Any:
         datatype = ctx.datatype
         union: t.Optional[Union]
-        if isinstance(datatype, typeapi.Union):
+        if isinstance(datatype, UnionTypeHint):
             if datatype.has_none_type():
                 raise NotImplementedError("unable to handle Union type with None in it")
-            if not all(isinstance(a, typeapi.Type) for a in datatype.types):
+            if not all(isinstance(a, ClassTypeHint) for a in datatype):
                 raise NotImplementedError(f"members of plain Union must be concrete types: {datatype}")
-            members = {t.cast(typeapi.Type, a).type.__name__: a for a in datatype.types}
-            if len(members) != len(datatype.types):
+            members = {t.cast(ClassTypeHint, a).type.__name__: a for a in datatype}
+            if len(members) != len(datatype):
                 raise NotImplementedError(f"members of plain Union cannot have overlapping type names: {datatype}")
             union = Union(members, Union.BEST_MATCH)
-        elif isinstance(datatype, (typeapi.Annotated, typeapi.Type)):
+        elif isinstance(datatype, (AnnotatedTypeHint, ClassTypeHint)):
             union = ctx.get_setting(Union)
             if union is None:
                 raise NotImplementedError
@@ -683,11 +683,12 @@ class UnionConverter(Converter):
                 try:
                     return ctx.spawn(ctx.value, member_type, None).convert()
                 except ConversionError as exc:
-                    errors.append((exc))
+                    errors.append((exc.origin, exc))
             raise ConversionError(
                 self,
                 ctx,
                 f"unable to {ctx.direction.name.lower()} any union member",
+                errors,
             )
 
         discriminator_key = union.discriminator_key
@@ -706,7 +707,7 @@ class UnionConverter(Converter):
             member_type = union.members.get_type_by_id(member_name)
 
         nesting_key = union.nesting_key or member_name
-        type_hint = typeapi.of(member_type) if not isinstance(member_type, typeapi.Hint) else member_type
+        type_hint = TypeHint(member_type) if not isinstance(member_type, TypeHint) else member_type
 
         if is_deserialize:
             # Forward deserialization of the value using the newly identified type hint.
@@ -757,7 +758,7 @@ class LiteralConverter(Converter):
     or #None."""
 
     def convert(self, ctx: Context) -> t.Any:
-        if not isinstance(ctx.datatype, typeapi.Literal):
+        if not isinstance(ctx.datatype, LiteralTypeHint):
             raise NotImplementedError
 
         if ctx.value not in ctx.datatype.values:

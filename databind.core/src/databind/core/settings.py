@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import abc
 import dataclasses
 import datetime
@@ -7,12 +5,12 @@ import decimal
 import enum
 import typing as t
 
-import typeapi
-from nr.util.generic import T
-from nr.util.preconditions import check_instance_of, check_not_none, check_subclass_of
+from typeapi import AnnotatedTypeHint, ClassTypeHint, TypeHint
+
+from databind.core.utils import T, check_instance_of, check_not_none, check_subclass_of
 
 if t.TYPE_CHECKING:
-    from nr.util.date import date_format, datetime_format, format_set, time_format
+    from nr.date import date_format, datetime_format, format_set, time_format
 
     from databind.core.context import Context
     from databind.core.converter import Converter
@@ -25,7 +23,7 @@ T_ClassDecoratorSetting = t.TypeVar("T_ClassDecoratorSetting", bound="ClassDecor
 class SettingsProvider(abc.ABC):
     """Interface for providing settings."""
 
-    def get_setting(self, context: Context, setting_type: t.Type[T_Setting]) -> t.Optional[T_Setting]:
+    def get_setting(self, context: "Context", setting_type: "t.Type[T_Setting]") -> "T_Setting | None":
         ...
 
 
@@ -52,25 +50,25 @@ class Settings(SettingsProvider):
     """
 
     def __init__(
-        self, parent: t.Optional[SettingsProvider] = None, global_settings: t.Optional[t.List[Setting]] = None
+        self, parent: t.Optional[SettingsProvider] = None, global_settings: t.Optional[t.List["Setting"]] = None
     ) -> None:
         self.parent = parent
         self.global_settings: t.List[Setting] = list(global_settings) if global_settings else []
         self.local_settings: t.Dict[type, t.List[Setting]] = {}
         self.providers: t.List[t.Callable[[Context], t.List[Setting]]] = []
 
-    def add_global(self, setting: Setting) -> None:
+    def add_global(self, setting: "Setting") -> None:
         """Add a global setting."""
 
         self.global_settings.append(setting)
 
-    def add_local(self, type_: type, setting: Setting) -> None:
+    def add_local(self, type_: type, setting: "Setting") -> None:
         """Add a setting locally for a particular Python type. If that Python type is encountered, the settings are
         combined with any other settings that are found for the type."""
 
         self.local_settings.setdefault(type_, []).append(setting)
 
-    def add_conditional(self, predicate: t.Callable[[Context], bool], setting: Setting) -> None:
+    def add_conditional(self, predicate: t.Callable[["Context"], bool], setting: "Setting") -> None:
         """Adds a setting conditional on the given *predicate*."""
 
         def _provider(context: Context) -> t.List[Setting]:
@@ -80,13 +78,13 @@ class Settings(SettingsProvider):
 
         self.providers.append(_provider)
 
-    def add_provider(self, provider: t.Callable[[Context], t.List[Setting]]) -> None:
+    def add_provider(self, provider: t.Callable[["Context"], t.List["Setting"]]) -> None:
         """Add a provider callback that is invoked for every conversion context to provide additional settings that
         the subsequent converter should have access to."""
 
         self.providers.append(provider)
 
-    def copy(self) -> Settings:
+    def copy(self) -> "Settings":
         new = type(self)(self.parent, self.global_settings)
         new.local_settings = {k: list(v) for k, v in self.local_settings.items()}
         new.providers = list(self.providers)
@@ -94,13 +92,13 @@ class Settings(SettingsProvider):
 
     # SettingsProvider
 
-    def get_setting(self, context: Context, setting_type: t.Type[T_Setting]) -> t.Optional[T_Setting]:
+    def get_setting(self, context: "Context", setting_type: t.Type[T_Setting]) -> "T_Setting | None":
         """Resolves the highest priority instance of the given setting type relevant to the current context. The places
         that the setting is looked for are, in order:
 
-        1. If the context's datatype is #typeapi.Annotated, look for it in the #typeapi.Annotated.metadata. Otherwise,
+        1. If the context's datatype is #AnnotatedTypeHint, look for it in the #AnnotatedTypeHint.metadata. Otherwise,
            use the wrapped type in the following steps.
-        2. If the datatype is a #typeapi.Type, look for it as a class setting, then subsequently in the settings added
+        2. If the datatype is a #ClassTypeHint, look for it as a class setting, then subsequently in the settings added
            with #add_local().
         3. Check the setting providers added with #add_provider() or #add_conditional().
         4. Look for it in the global settings.
@@ -111,14 +109,14 @@ class Settings(SettingsProvider):
         is returned.
         """
 
-        from nr.util.stream import Stream
+        from nr.stream import Stream
 
         def _all_settings() -> t.Iterator[t.Any]:
             datatype = context.datatype
-            if isinstance(datatype, typeapi.Annotated):
+            if isinstance(datatype, AnnotatedTypeHint):
                 yield from (s for s in datatype.metadata if isinstance(s, setting_type))
-                datatype = datatype.wrapped
-            if isinstance(datatype, typeapi.Type):
+                datatype = datatype[0]
+            if isinstance(datatype, ClassTypeHint):
                 yield from get_class_settings(datatype.type, setting_type)  # type: ignore[type-var]
                 yield from self.local_settings.get(datatype.type, [])
             for provider in self.providers:
@@ -189,7 +187,7 @@ class ClassDecoratorSetting(Setting):
         return type_
 
 
-def get_highest_setting(settings: t.Iterable[T_Setting]) -> T_Setting | None:
+def get_highest_setting(settings: t.Iterable[T_Setting]) -> "T_Setting | None":
     """Return the first, highest setting of *settings*."""
 
     try:
@@ -208,23 +206,23 @@ def get_class_settings(
             yield item
 
 
-def get_class_setting(type_: type, setting_type: t.Type[T_ClassDecoratorSetting]) -> T_ClassDecoratorSetting | None:
+def get_class_setting(type_: type, setting_type: t.Type[T_ClassDecoratorSetting]) -> "T_ClassDecoratorSetting | None":
     """Returns the first instance of the given *setting_type* on *type_*."""
 
     return get_highest_setting(get_class_settings(type_, setting_type))
 
 
-def get_annotation_setting(type_: typeapi.Hint, setting_type: t.Type[T_Setting]) -> T_Setting | None:
+def get_annotation_setting(type_: TypeHint, setting_type: t.Type[T_Setting]) -> "T_Setting | None":
     """Returns the first setting of the given *setting_type* from the given type hint from inspecting the metadata
-    of the #typeapi.Annotated. Returns `None` if no such setting exists or if *type_* is not an #typeapi.Annotated
+    of the #AnnotatedTypeHint. Returns `None` if no such setting exists or if *type_* is not an #AnnotatedTypeHint
     instance."""
 
-    if isinstance(type_, typeapi.Annotated):
+    if isinstance(type_, AnnotatedTypeHint):
         return get_highest_setting(s for s in type_.metadata if isinstance(s, setting_type))
     return None
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class BooleanSetting(Setting):
     """Base class for boolean settings."""
 
@@ -329,6 +327,9 @@ class SerializeDefaults(BooleanSetting):
     to how the name of the setting appears assertive of the fact that the instance indicates the setting is enabled."""
 
 
+# NOTE(NiklasRosenstein): For Python 3.6, metadata passed into Annotated[...] must be hashable.
+
+
 @dataclasses.dataclass
 class Precision(Setting):
     """A setting to describe the precision for #decimal.Decimal fields."""
@@ -389,7 +390,7 @@ class Union(ClassDecoratorSetting):
     #: to chain them together. Te constructor will also accept a string that is either `"<import>"`, which will
     #: be converted to an #ImportUnionMembers handler, or a string formatted as `"!<entrypoint>"`, which will be
     #: converted to an #EntrypointUnionMembers handler.
-    members: UnionMembers
+    members: "UnionMembers"
 
     #: The style of the union. This should be one of #NESTED, #FLAT, #KEYED or #BEST_MATCH. The default is #NESTED.
     style: str = NESTED
@@ -404,9 +405,9 @@ class Union(ClassDecoratorSetting):
     def __init__(
         self,
         members: t.Union[
-            UnionMembers,
-            StaticUnionMembers._MembersMappingType,
-            t.List[UnionMembers | StaticUnionMembers._MembersMappingType],
+            "UnionMembers",
+            "StaticUnionMembers._MembersMappingType",
+            "t.List[UnionMembers | StaticUnionMembers._MembersMappingType]",
             str,
             None,
         ] = None,
@@ -414,9 +415,7 @@ class Union(ClassDecoratorSetting):
         discriminator_key: str = "type",
         nesting_key: t.Optional[str] = None,
     ) -> None:
-        def _convert_handler(
-            handler: t.Union[UnionMembers, StaticUnionMembers._MembersMappingType, str]
-        ) -> UnionMembers:
+        def _convert_handler(handler: "UnionMembers | StaticUnionMembers._MembersMappingType | str") -> "UnionMembers":
             if isinstance(handler, t.Mapping) or handler is None:
                 from databind.core.union import StaticUnionMembers
 
@@ -442,6 +441,9 @@ class Union(ClassDecoratorSetting):
         self.style = style
         self.discriminator_key = discriminator_key
         self.nesting_key = nesting_key
+
+    def __hash__(self) -> int:
+        return id(self)  # Needs to be hashable for Annotated[...] in Python 3.6
 
     @staticmethod
     def register(extends: type, name: t.Optional[str] = None) -> t.Callable[[t.Type[T]], t.Type[T]]:
@@ -486,13 +488,13 @@ class Union(ClassDecoratorSetting):
         return _decorator
 
     @staticmethod
-    def entrypoint(group: str) -> EntrypointUnionMembers:
+    def entrypoint(group: str) -> "EntrypointUnionMembers":
         from databind.core.union import EntrypointUnionMembers
 
         return EntrypointUnionMembers(group)
 
     @staticmethod
-    def import_() -> ImportUnionMembers:
+    def import_() -> "ImportUnionMembers":
         from databind.core.union import ImportUnionMembers
 
         return ImportUnionMembers()
@@ -504,7 +506,7 @@ class DateFormat(Setting):
     and #datetime.time values when formatting them as a string, i.e. usually when the date/time is serialized, and
     when parsing them.
 
-    The #nr.util.date module provides types to describe the format of a date, time and datetime (see #date_format,
+    The #nr.date module provides types to describe the format of a date, time and datetime (see #date_format,
     #time_format and #datetime_format), as well as an entire suite of formats for all types of date/time values.
 
     Arguments:
@@ -535,11 +537,11 @@ class DateFormat(Setting):
     @staticmethod
     def __get_builtin_format(fmt: str) -> Formatter:
         if fmt == ".ISO_8601":
-            from nr.util.date.format_sets import ISO_8601
+            from nr.date.format_sets import ISO_8601
 
             return ISO_8601
         if fmt == ".JAVA_OFFSET_DATETIME":
-            from nr.util.date.format_sets import JAVA_OFFSET_DATETIME
+            from nr.date.format_sets import JAVA_OFFSET_DATETIME
 
             return JAVA_OFFSET_DATETIME
         raise ValueError(f"{fmt!r} is not a built-in date/time format set")
@@ -569,7 +571,7 @@ class DateFormat(Setting):
           The parsed date/time value.
         """
 
-        from nr.util.date import date_format, datetime_format, time_format
+        from nr.date import date_format, datetime_format, time_format
 
         format_t: t.Type[DateFormat.Formatter]
         format_t, method_name = {  # type: ignore
@@ -596,7 +598,7 @@ class DateFormat(Setting):
           The formatted date/time value.
         """
 
-        from nr.util.date import date_format, datetime_format, time_format
+        from nr.date import date_format, datetime_format, time_format
 
         format_t: t.Type[DateFormat.Formatter]
         format_t, method_name = {  # type: ignore
@@ -637,14 +639,14 @@ class ExtraKeys(ClassDecoratorSetting):
     def __init__(
         self,
         allow: bool = True,
-        recorder: t.Callable[[Context, t.Set[str]], t.Any] | None = None,
+        recorder: "t.Callable[[Context, t.Set[str]], t.Any] | None" = None,
         priority: Priority = Priority.NORMAL,
     ) -> None:
         self.allow = allow
         self.recorder = recorder
         self.priority = priority
 
-    def inform(self, origin: Converter, ctx: Context, extra_keys: t.Set[str]) -> None:
+    def inform(self, origin: "Converter", ctx: "Context", extra_keys: "t.Set[str]") -> None:
         from databind.core.converter import ConversionError
 
         if self.allow is False:

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Iterator
 
 from databind.core.context import Context
@@ -19,7 +17,7 @@ class JsonModule(Module):
         import pathlib
         import uuid
 
-        from nr.util.date import duration
+        from nr.date import duration
 
         from databind.json.converters import (
             AnyConverter,

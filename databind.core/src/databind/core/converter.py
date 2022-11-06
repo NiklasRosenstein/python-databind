@@ -1,11 +1,11 @@
-from __future__ import annotations
-
 import abc
 import logging
 import typing as t
+from textwrap import indent
 
-import typeapi
-from nr.util.exceptions import safe_str
+from typeapi import type_repr
+
+from databind.core.utils import exception_safe_str
 
 if t.TYPE_CHECKING:
     from databind.core.context import Context
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Converter(abc.ABC):
     """Interface for converting a value from one representation to another."""
 
-    def convert(self, ctx: Context) -> t.Any:
+    def convert(self, ctx: "Context") -> t.Any:
         """Convert the value in *ctx* to another value.
 
         The default implementation will dispatch to #serialize() and #deserialize() depending on the direction
@@ -43,10 +43,10 @@ class Converter(abc.ABC):
         else:
             raise RuntimeError(f"unexpected direction: {ctx.direction!r}")
 
-    def serialize(self, ctx: Context) -> t.Any:
+    def serialize(self, ctx: "Context") -> t.Any:
         raise NotImplementedError
 
-    def deserialize(self, ctx: Context) -> t.Any:
+    def deserialize(self, ctx: "Context") -> t.Any:
         raise NotImplementedError
 
 
@@ -64,10 +64,10 @@ class Module(Converter):
         assert isinstance(converter, Converter), converter
         self.converters.append(converter)
 
-    def get_converters(self, ctx: Context) -> t.Iterator[Converter]:
+    def get_converters(self, ctx: "Context") -> t.Iterator[Converter]:
         yield from self.converters
 
-    def convert(self, ctx: Context) -> t.Any:
+    def convert(self, ctx: "Context") -> t.Any:
         errors: t.List[t.Tuple[Converter, Exception]] = []
         for converter in self.get_converters(ctx):
             try:
@@ -85,16 +85,16 @@ class ConversionError(Exception):
     def __init__(
         self,
         origin: Converter,
-        context: Context,
+        context: "Context",
         message: str,
-        errors: t.Optional[t.List[t.Tuple[Converter, Exception]]] = None,
+        errors: "t.Sequence[t.Tuple[Converter, Exception]] | None" = None,
     ) -> None:
         self.origin = origin
         self.context = context
         self.message = message
         self.errors = errors or []
 
-    @safe_str
+    @exception_safe_str
     def __str__(self) -> str:
         import textwrap
 
@@ -105,25 +105,25 @@ class ConversionError(Exception):
             message += "\nThe following errors have been reported by converters:"
             for converter, exc in self.errors:
                 if str(exc):
-                    message += f"\n  {converter}: {exc}"
+                    message += f"\n  {converter}: {indent(str(exc), '    ').lstrip()}"
         return message
 
     @staticmethod
     def expected(
         origin: Converter,
-        ctx: Context,
+        ctx: "Context",
         types: t.Union[type, t.Sequence[type]],
         got: t.Optional[type] = None,
-    ) -> ConversionError:
+    ) -> "ConversionError":
         if not isinstance(types, t.Sequence):
             types = (types,)
-        expected = "|".join(typeapi.type_repr(t) for t in types)
+        expected = "|".join(type_repr(t) for t in types)
         got = type(ctx.value) if got is None else got
-        return ConversionError(origin, ctx, f"expected {expected}, got {typeapi.type_repr(got)} instead")
+        return ConversionError(origin, ctx, f"expected {expected}, got {type_repr(got)} instead")
 
 
 class NoMatchingConverter(ConversionError):
     """If no converter matched to convert the value and datatype in the context."""
 
-    def __init__(self, origin: Converter, context: Context, errors: t.List[t.Tuple[Converter, Exception]]) -> None:
+    def __init__(self, origin: Converter, context: "Context", errors: "t.List[t.Tuple[Converter, Exception]]") -> None:
         super().__init__(origin, context, f"no applicable converter found for {context.datatype}", errors)
