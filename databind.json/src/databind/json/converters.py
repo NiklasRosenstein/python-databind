@@ -83,7 +83,7 @@ class CollectionConverter(Converter):
         if isinstance(datatype, TupleTypeHint) and not datatype.repeated:
             # Require that the length of the input data matches the tuple.
             item_types_iterator = iter(datatype)
-            python_type = tuple
+            python_type: type = tuple
 
             def _length_check() -> None:
                 if len(ctx.value) != len(datatype):
