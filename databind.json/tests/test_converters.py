@@ -450,3 +450,20 @@ def test_json_converter_setting() -> None:
     assert load({"a": 42}, MyClass2) == MyClass2(42)
     assert load({"a": 42}, te.Annotated[MyClass2, JsonConverter(MyConverter("foo"))]) == "foo"
     assert load({"a": 42}, te.Annotated[MyClass2, JsonConverter(MyConverter(None, skip=True))]) == MyClass2(42)
+
+
+def test_deserialize_tuple() -> None:
+    import databind.json
+
+    assert databind.json.load([1, 2], t.Tuple[int, int]) == (1, 2)
+    assert databind.json.load([1, "foo"], t.Tuple[int, str]) == (1, "foo")
+    assert databind.json.load([1, 2, 3], t.Tuple[int, ...]) == (1, 2, 3)
+    assert databind.json.load([], t.Tuple[int, ...]) == ()
+
+    with pytest.raises(ConversionError) as excinfo:
+        databind.json.load([1, 42], t.Tuple[int, str])
+    assert excinfo.value.message == "unable to deserialize int -> str"
+
+    with pytest.raises(ConversionError) as excinfo:
+        databind.json.load([1, 42, 3], t.Tuple[int, int])
+    assert excinfo.value.message == "expected a tuple of length 2, found 3"

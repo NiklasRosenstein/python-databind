@@ -20,7 +20,15 @@ from databind.core.settings import (
     get_annotation_setting,
 )
 from databind.core.utils import T
-from typeapi import AnnotatedTypeHint, ClassTypeHint, LiteralTypeHint, TypeHint, UnionTypeHint, get_annotations
+from typeapi import (
+    AnnotatedTypeHint,
+    ClassTypeHint,
+    LiteralTypeHint,
+    TupleTypeHint,
+    TypeHint,
+    UnionTypeHint,
+    get_annotations,
+)
 
 
 def _int_lossless(v: float) -> int:
@@ -69,21 +77,47 @@ class CollectionConverter(Converter):
             not isinstance(datatype, ClassTypeHint)
             or not issubclass(datatype.type, t.Collection)
             or issubclass(datatype.type, self._FORBIDDEN_COLLECTIONS)
-        ):
+        ) and not isinstance(datatype, TupleTypeHint):
             raise NotImplementedError
 
-        python_type = datatype.type
-        item_type = datatype[0] if datatype.args else TypeHint(t.Any)
-        values: t.Iterable[t.Any] = (ctx.spawn(val, item_type, idx).convert() for idx, val in enumerate(ctx.value))
+        if isinstance(datatype, TupleTypeHint) and not datatype.repeated:
+            # Require that the length of the input data matches the tuple.
+            item_types_iterator = iter(datatype)
+            python_type = tuple
+
+            def _length_check() -> None:
+                if len(ctx.value) != len(datatype):
+                    raise ConversionError(
+                        self, ctx, f"expected a tuple of length {len(datatype)}, found {len(ctx.value)}"
+                    )
+
+        else:
+            # There could be no arguments to the collection type, in which case we
+            # consider Any as the item type.
+            item_types_iterator = iter(lambda: datatype[0] if datatype.args else TypeHint(t.Any), None)
+            if isinstance(datatype, TupleTypeHint):
+                python_type = tuple
+            else:
+                python_type = datatype.type
+
+            def _length_check() -> None:
+                pass
+
+        values: t.Iterable[t.Any] = (
+            ctx.spawn(val, item_type, idx).convert()
+            for idx, (val, item_type) in enumerate(zip(ctx.value, item_types_iterator))
+        )
 
         if ctx.direction == Direction.SERIALIZE:
             if not isinstance(ctx.value, python_type):
                 raise ConversionError.expected(self, ctx, python_type)
+            _length_check()
             return self.json_collection_type(values)  # type: ignore[call-arg]
 
         else:
             if not isinstance(ctx.value, t.Collection) or isinstance(ctx.value, self._FORBIDDEN_COLLECTIONS):
                 raise ConversionError.expected(self, ctx, t.Collection)
+            _length_check()
             values = list(values)
             if python_type == list:
                 return values

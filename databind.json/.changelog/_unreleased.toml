@@ -3,3 +3,9 @@ id = "df9af6b0-896e-41f5-846f-550de25c2db9"
 type = "fix"
 description = "Set min version to 3.6.3 because of a `typing.get_type_hints()` incompatibiltiy"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "ed7e9626-ccad-469f-acaa-b3e6225cf6d9"
+type = "feature"
+description = "support deserialization of tuples"
+author = "@NiklasRosenstein"
