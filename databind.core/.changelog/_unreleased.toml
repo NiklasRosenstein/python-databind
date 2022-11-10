@@ -1,0 +1,5 @@
+[[entries]]
+id = "f368b4b8-414a-4791-a01b-2012c5dc99b6"
+type = "tests"
+description = "add a unnit test to see if the conversion of nested dataclasses with forward references works as expected (breaks in Python 3.6.2)"
+author = "@NiklasRosenstein"
