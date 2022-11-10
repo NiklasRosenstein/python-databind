@@ -1,6 +1,6 @@
 # databind
 
-__Compatibility__: Python 3.6+
+__Compatibility__: Python 3.6.3+
 
 Databind is a library inspired by jackson-databind to de-/serialise Python dataclasses.
 
