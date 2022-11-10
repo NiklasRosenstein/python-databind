@@ -122,7 +122,7 @@ class CollectionConverter(Converter):
             if python_type == list:
                 return values
             try:
-                return python_type(values)  # type: ignore[call-arg]
+                return python_type(values)
             except TypeError:
                 assert not isinstance(values, types.GeneratorType), (type(values), python_type)
                 # We assume that the native list is an appropriate placeholder for whatever specific Collection type
