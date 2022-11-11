@@ -60,9 +60,12 @@ class Module(Converter):
     def __repr__(self) -> str:
         return f"Module({self.name!r})"
 
-    def register(self, converter: Converter) -> None:
+    def register(self, converter: Converter, first: bool = False) -> None:
         assert isinstance(converter, Converter), converter
-        self.converters.append(converter)
+        if first:
+            self.converters.insert(0, converter)
+        else:
+            self.converters.append(converter)
 
     def get_converters(self, ctx: "Context") -> t.Iterator[Converter]:
         yield from self.converters

@@ -44,10 +44,10 @@ class JsonModule(Module):
         self.register(PlainDatatypeConverter())
         self.register(UnionConverter())
         self.register(SchemaConverter())
-        self.register(StringifyConverter(uuid.UUID))
-        self.register(StringifyConverter(pathlib.Path))
-        self.register(StringifyConverter(pathlib.PurePath))
-        self.register(StringifyConverter(duration, duration.parse))
+        self.register(StringifyConverter(uuid.UUID), first=True)
+        self.register(StringifyConverter(pathlib.Path), first=True)
+        self.register(StringifyConverter(pathlib.PurePath), first=True)
+        self.register(StringifyConverter(duration, duration.parse), first=True)
         self.register(LiteralConverter())
 
     def get_converters(self, ctx: Context) -> Iterator[Converter]:
