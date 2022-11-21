@@ -78,7 +78,7 @@ class Module(Converter):
         for converter in self.get_converters(ctx):
             try:
                 return converter.convert(ctx)
-            except NotImplementedError as exc:
+            except NotImplementedError:
                 pass
             except ConversionError as exc:
                 errors.append((converter, exc))
