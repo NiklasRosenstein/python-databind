@@ -28,6 +28,7 @@ from typeapi import (
     TypeHint,
     UnionTypeHint,
     get_annotations,
+    type_repr,
 )
 
 
@@ -572,11 +573,19 @@ class StringifyConverter(Converter):
         type_: t.Type[T],
         parser: t.Optional[t.Callable[[str], T]] = None,
         formatter: t.Callable[[T], str] = str,
+        name: t.Optional[str] = None,
     ) -> None:
         assert isinstance(type_, type), type_
         self.type_ = type_
         self.parser: t.Callable[[str], T] = parser or type_
         self.formatter = formatter
+        self.name = name
+
+    def __repr__(self) -> str:
+        if self.name is not None:
+            return f"StringifyConverter(name={self.name!r})"
+        else:
+            return f"StringifyConverter(type={type_repr(self.type_)}, parser={self.parser!r}, formatter={self.formatter!r})"
 
     def convert(self, ctx: Context) -> t.Any:
         datatype = _unwrap_annotated(ctx.datatype)

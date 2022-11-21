@@ -1,0 +1,5 @@
+[[entries]]
+id = "8bfab3e3-e014-4e99-a647-5af5e47aa6c7"
+type = "improvement"
+description = "add `StringifyConverter(name)` parameter and improve `__repr__()`"
+author = "@NiklasRosenstein"
