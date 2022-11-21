@@ -9,7 +9,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.9">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
     
     
       
@@ -17,7 +17,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.20d9efc8.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.472b142f.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.08040f6c.min.css">
@@ -248,9 +248,40 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          databind.json
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         databind.json
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-converters" class="md-nav__link">
+    Built-in converters
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -575,6 +606,21 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-converters" class="md-nav__link">
+    Built-in converters
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -587,7 +633,7 @@
                 
                   
 
-  <a href="https://github.com/NiklasRosenstein/python-databind/blob/None/docs/content/databind.json.md" title="Edit this page" class="md-content__button md-icon">
+  <a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/content/databind.json.md" title="Edit this page" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
@@ -597,6 +643,119 @@
 <p>The <code>databind.json</code> package implements the de-/serialization to or from JSON payloads using
 the <code>databind.core</code> framework.</p>
 <p>Check out the <a href="https://niklasrosenstein.github.io/python-databind/">Documentation</a> for examples.</p>
+<h2 id="built-in-converters">Built-in converters</h2>
+<p>The following tables shows which types can be deserialized from / serialize to Python types with the native
+converters provided by the <code>databind.json</code> module:</p>
+<table>
+<thead>
+<tr>
+<th>Converter name</th>
+<th>Types</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AnyConverter</code></td>
+<td><code>typing.Any</code></td>
+<td>Accept any value (useful for arbitrary JSON).</td>
+</tr>
+<tr>
+<td><code>CollectionConverter</code></td>
+<td><code>typing.Collection[T]</code>, excl. <code>str</code>, <code>bytes</code>, <code>bytearray</code>, <code>memoryview</code> and <code>typing.Mapping[K, V]</code></td>
+<td>Converts between native Python collections and JSON arrays.</td>
+</tr>
+<tr>
+<td><code>DatetimeConverter</code></td>
+<td><code>datetime.date</code>, <code>datetime.datetime</code>, <code>datetime.time</code></td>
+<td>Converts between strings and date/time formats, using ISO 8601 time format by default (can be changed with the <code>databind.core.settings.DateFormat</code> setting).</td>
+</tr>
+<tr>
+<td><code>DecimalConverter</code></td>
+<td><code>decimal.Decimal</code></td>
+<td>Converts between strings (and ints/floats if strict mode is off, strict mode is on by default) and decimals. The precision can be controlled with the <code>databind.core.settings.Precision</code> setting.</td>
+</tr>
+<tr>
+<td><code>EnumConverter</code></td>
+<td><code>enum.Enum</code>, <code>enum.IntEnum</code></td>
+<td>Convert between strings and Python enumerations. The serialized form of <code>IntEnum</code> is the integer value, whereas the serialized form of <code>Enum</code> is a string (name of the enumeration value).</td>
+</tr>
+<tr>
+<td><code>MappingConverter</code></td>
+<td><code>typing.Mapping[K, V]</code></td>
+<td>Converts between Python dicts and JSON objects. (While in theory <code>K</code> can be any type, for JSON <code>K</code> always needs to be <code>str</code>).</td>
+</tr>
+<tr>
+<td><code>OptionalConverter</code></td>
+<td><code>typing.Optional[T]</code></td>
+<td>Handles optional fields in a schema.</td>
+</tr>
+<tr>
+<td><code>PlainDatatypeConverter</code></td>
+<td><code>bytes</code>, <code>str</code>, <code>int</code>, <code>float</code>, <code>bool</code></td>
+<td>Converts between plain datatypes. In non-strict mode (off by default), numeric types will also accept strings as input for the deserialization.</td>
+</tr>
+<tr>
+<td><code>SchemaConverter</code></td>
+<td><code>dataclasses.dataclass</code>, <code>typing.TypedDict</code></td>
+<td>Converts between Python dataclasses or typed dictionary and JSON objects.</td>
+</tr>
+<tr>
+<td><code>UnionConverter</code></td>
+<td><code>typing.Union[...]</code></td>
+<td>Handles union types. Unions in JSON can be expressed in a multitide of ways, e.g. using a discriminator key and flat, keyed or nested structure or "best match". Check out the examples section of the documentation for more information.</td>
+</tr>
+<tr>
+<td><code>LiteralConverter</code></td>
+<td><code>typing.Literal[...]</code></td>
+<td>Accepts or rejects a value based on whether it matches one of the values in the literal type hint.</td>
+</tr>
+</tbody>
+</table>
+<p>The following converters are provided for convenience:</p>
+<table>
+<thead>
+<tr>
+<th>Converter name</th>
+<th>Types</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StringifyConverter</code></td>
+<td>n/a</td>
+<td>A helper that allows to easily create de/serializers from a "to string" and "from string" function.</td>
+</tr>
+</tbody>
+</table>
+<p>The following additional types are natively supported by <code>databind.json</code> using <code>StringifyConverter</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Types</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>uuid.UUID</code></td>
+<td>Convert between strings and UUIDs.</td>
+</tr>
+<tr>
+<td><code>pathlib.Path</code></td>
+<td>Convert between strings and paths.</td>
+</tr>
+<tr>
+<td><code>pathlib.PurePath</code></td>
+<td>Convert between strings and paths.</td>
+</tr>
+<tr>
+<td><code>nr.date.duration</code></td>
+<td>Deserialize from ISO 8601 duration strings or the object form, serialize to ISO 8601 strings.</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <p align="center">Copyright &copy; 2020 &ndash; Niklas Rosenstein</p>
 
