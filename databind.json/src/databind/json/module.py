@@ -45,8 +45,13 @@ class JsonModule(Module):
         self.register(UnionConverter())
         self.register(SchemaConverter())
         self.register(StringifyConverter(uuid.UUID, name="JsonModule:uuid.UUID"), first=True)
-        self.register(StringifyConverter(pathlib.Path, name="JsonModule:pathlib.Path"), first=True)
+
+        # NOTE(NiklasRosenstein): It is important that we have the converter for `Path` appear before the converter
+        #       for `PurePath` for the `issubclass()` checks in the converter to match appropriately due to Liskov
+        #       substition principle (otherwise you would end up deserializing a `Path` field as a `PurePath` but
+        #       then actually serialize it as a `Path` which causes an error, "expected Path, got PurePath").
         self.register(StringifyConverter(pathlib.PurePath, name="JsonModule:pathlib.PurePath"), first=True)
+        self.register(StringifyConverter(pathlib.Path, name="JsonModule:pathlib.Path"), first=True)
         self.register(StringifyConverter(duration, duration.parse, name="JsonModule:nr.date.duration"), first=True)
         self.register(LiteralConverter())
 
