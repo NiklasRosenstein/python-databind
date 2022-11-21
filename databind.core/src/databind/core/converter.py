@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 class Converter(abc.ABC):
     """Interface for converting a value from one representation to another."""
 
+    def __repr__(self) -> str:
+        return f"{type_repr(type(self))}()"
+
     def convert(self, ctx: "Context") -> t.Any:
         """Convert the value in *ctx* to another value.
 
@@ -76,9 +79,11 @@ class Module(Converter):
             try:
                 return converter.convert(ctx)
             except NotImplementedError as exc:
+                pass
+            except ConversionError as exc:
                 errors.append((converter, exc))
-            except NoMatchingConverter as exc:
-                errors.extend(exc.errors)
+        if len(errors) == 1:
+            raise errors[0][1]
         raise NoMatchingConverter(self, ctx, errors)
 
 
@@ -103,12 +108,12 @@ class ConversionError(Exception):
 
         from databind.core.context import format_context_trace
 
-        message = f'{self.message}\nConversion trace:\n{textwrap.indent(format_context_trace(self.context), "  ")}'
+        message = f'{self.message}\n\nTrace:\n{textwrap.indent(format_context_trace(self.context), "  ")}'
         if self.errors:
-            message += "\nThe following errors have been reported by converters:"
+            message += "\n\nThe following errors have been reported by converters:"
             for converter, exc in self.errors:
                 if str(exc):
-                    message += f"\n  {converter}: {indent(str(exc), '    ').lstrip()}"
+                    message += f"\n\n  {converter}: {indent(str(exc), '    ').lstrip()}"
         return message
 
     @staticmethod
@@ -129,4 +134,10 @@ class NoMatchingConverter(ConversionError):
     """If no converter matched to convert the value and datatype in the context."""
 
     def __init__(self, origin: Converter, context: "Context", errors: "t.List[t.Tuple[Converter, Exception]]") -> None:
-        super().__init__(origin, context, f"no applicable converter found for {context.datatype}", errors)
+        super().__init__(
+            origin,
+            context,
+            f"no {context.direction.name.lower()}r for `{context.datatype}` and payload of type "
+            f"`{type_repr(type(context.value))}`",
+            errors,
+        )

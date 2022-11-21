@@ -153,10 +153,14 @@ def test_datetime_converter(direction: Direction):
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_duration_converter(direction: Direction):
-    mapper = make_mapper([StringifyConverter(duration, duration.parse)])
+    mapper = make_mapper([StringifyConverter(duration, duration.parse), SchemaConverter(), PlainDatatypeConverter()])
+
+    # Test parsing duration from strings.
 
     tests = [
         (duration(2, 1, 4, 0, 3), "P2Y1M4WT3H"),
+        (duration(seconds=10), "PT10S"),
+        (duration(days=1, minutes=5), "P1DT5M"),
     ]
 
     for py_value, str_value in tests:
@@ -164,6 +168,20 @@ def test_duration_converter(direction: Direction):
             assert mapper.convert(direction, py_value, duration) == str_value
         else:
             assert mapper.convert(direction, str_value, duration) == py_value
+
+    # Test parsing duraiton from objects (it is also a dataclass).
+
+    tests = [
+        (duration(2, 1, 4, 0, 3), {"years": 2, "months": 1, "weeks": 4, "hours": 3}),
+        (duration(seconds=10), {"seconds": 10}),
+        (duration(days=1, minutes=5), {"days": 1, "minutes": 5}),
+    ]
+
+    for py_value, obj_value in tests:
+        if direction == Direction.SERIALIZE:
+            assert mapper.convert(direction, py_value, duration) == str(py_value)  # obj_value
+        else:
+            assert mapper.convert(direction, obj_value, duration) == py_value
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
