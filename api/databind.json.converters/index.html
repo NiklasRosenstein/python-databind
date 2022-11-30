@@ -754,14 +754,14 @@
 <h2 id="class-anyconverter">Class AnyConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AnyConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L58">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L58">[view_source]</a></p>
 <p>A converter for <code>typing.Any</code> and <code>object</code> typed values, which will return them unchanged in any case.</p>
 <p><a id="databind.json.converters.DatetimeConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.DatetimeConverter"></a></p>
 <h2 id="class-datetimeconverter">Class DatetimeConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DatetimeConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L134">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L134">[view_source]</a></p>
 <p>A converter for <code>datetime.datetime</code>, <code>datetime.date</code> and <code>datetime.time</code> that represents the serialized form as
 strings formatted using the <code>nr.date</code> module. The converter respects the <a href="/python-databind/api/databind.core.settings#pydoc:databind.core.settings.DateFormat">DateFormat</a> setting.</p>
 <p><a id="databind.json.converters.DecimalConverter"></a></p>
@@ -769,14 +769,14 @@ strings formatted using the <code>nr.date</code> module. The converter respects 
 <h2 id="class-decimalconverter">Class DecimalConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DecimalConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L180">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L180">[view_source]</a></p>
 <p>A converter for <code>decimal.Decimal</code> values to and from JSON as strings.</p>
 <p><a id="databind.json.converters.EnumConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.EnumConverter"></a></p>
 <h2 id="class-enumconverter">Class EnumConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">EnumConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L206">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L206">[view_source]</a></p>
 <p>JSON converter for enum values.</p>
 <p>Converts <code>enum.IntEnum</code> values to integers and <code>enum.Enum</code> values to strings. Note that combined integer flags
 are not supported and cannot be serializ</p>
@@ -796,7 +796,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-plaindatatypeconverter">Class PlainDatatypeConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PlainDatatypeConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L325">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L325">[view_source]</a></p>
 <p>A converter for the plain datatypes <code>bool</code>, <code>bytes</code>, <code>int</code>, <code>str</code> and <code>float</code>.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
@@ -812,7 +812,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-schemaconverter">Class SchemaConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SchemaConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L392">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L392">[view_source]</a></p>
 <p>Converter for type hints that can be adapter to a <code>databind.core.schema.Schema</code> object.</p>
 <p>This converter respects the following settings:</p>
 <ul>
@@ -824,7 +824,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-stringifyconverter">Class StringifyConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">StringifyConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L567">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L567">[view_source]</a></p>
 <p>A useful helper converter that matches on a given type or its subclasses and converts them to a string for
 serialization and deserializes them from a string using the type's constructor.</p>
 <p><a id="databind.json.converters.UnionConverter"></a></p>
@@ -832,7 +832,7 @@ serialization and deserializes them from a string using the type's constructor.<
 <h2 id="class-unionconverter">Class UnionConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L609">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L612">[view_source]</a></p>
 <p>Converter for union types. The following kinds of union types are supported:</p>
 <ul>
 <li>A <code>typing.Union</code> (represented as <code>UnionTypeHint</code>) instance, in which case the members are deserialized in the
@@ -890,7 +890,7 @@ if an object is an instance of an alias. This is an implementation detail of the
 <h2 id="class-literalconverter">Class LiteralConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LiteralConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/9ca8c3f663e901a3fc8629746bfa823b0cb53c0a/docs/../databind.json/src/databind/json/converters.py#L797">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/3df3fc49cee492fd9d5f3d69b030615101f829c9/docs/../databind.json/src/databind/json/converters.py#L800">[view_source]</a></p>
 <p>A converter for <code>typing.Literal</code> type hints. A literal value in the definition must simply match the literal
 value in the context being serialized/deserialized, otherwise a <a href="/python-databind/api/databind.core.converter#pydoc:databind.core.converter.ConversionError">ConversionError</a> is raised. Currently, literal
 values must be of a plain data type that natively maps to a JSON type, like a boolean, integer, float, string
