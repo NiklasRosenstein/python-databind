@@ -9,7 +9,7 @@ if t.TYPE_CHECKING:
     from databind.core.mapper import ObjectMapper
     from databind.core.settings import Setting, Settings
 
-__version__ = "4.2.1"
+__version__ = "4.2.2"
 
 JsonType = t.Union[
     None,
