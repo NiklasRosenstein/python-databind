@@ -585,7 +585,10 @@ class StringifyConverter(Converter):
         if self.name is not None:
             return f"StringifyConverter(name={self.name!r})"
         else:
-            return f"StringifyConverter(type={type_repr(self.type_)}, parser={self.parser!r}, formatter={self.formatter!r})"
+            return (
+                f"StringifyConverter(type={type_repr(self.type_)}, parser={self.parser!r}, "
+                f"formatter={self.formatter!r})"
+            )
 
     def convert(self, ctx: Context) -> t.Any:
         datatype = _unwrap_annotated(ctx.datatype)

@@ -168,7 +168,7 @@ class ClassDecoratorSetting(Setting):
             raise TypeError("ClassDecoratorSetting cannot be directly instantiated")
         super().__init__()
 
-    def __call__(self, type_: type) -> type:
+    def __call__(self, type_: t.Type[T]) -> t.Type[T]:
         """Decorate the class *type_* with this setting, adding the setting to its `__databind_settings__` list
         (which is created if it does not exist) and sets #bound_to. The same setting instance cannot decorate multiple
         types."""
