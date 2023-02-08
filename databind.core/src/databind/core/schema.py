@@ -304,7 +304,6 @@ def convert_typed_dict_to_schema(typed_dict: TypedDictProtocol) -> Schema:
     annotations = get_annotations(t.cast(type, typed_dict))
     fields: t.Dict[str, Field] = {}
     for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
-
         field_hint = TypeHint(annotations[key]).evaluate(eval_context)
 
         has_default = hasattr(typed_dict, key)

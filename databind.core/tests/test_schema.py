@@ -43,7 +43,6 @@ def test_convert_to_schema_dataclass():
 
 
 def test_convert_to_schema_typed_dict() -> None:
-
     # Test typed dict detection
     class Movie(te.TypedDict):
         name: str
