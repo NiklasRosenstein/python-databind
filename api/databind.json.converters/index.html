@@ -8,8 +8,14 @@
       
       
       
+      
+        <link rel="prev" href="../databind.json/">
+      
+      
+        <link rel="next" href="../databind.json.direction/">
+      
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.11">
     
     
       
@@ -17,15 +23,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.0d440cfe.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
-        
-          
-          
-          <meta name="theme-color" content="#2094f3">
-        
       
       
 
@@ -134,7 +135,7 @@
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -276,41 +277,42 @@
     <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
       
       
-      
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
-          
-        
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
       
       
-        <label class="md-nav__link" for="__nav_5">
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
           API
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="API" data-md-level="1">
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_5">
           <span class="md-nav__icon md-icon"></span>
           API
@@ -438,7 +440,7 @@
   
     <li class="md-nav__item md-nav__item--active">
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
       
@@ -583,8 +585,9 @@
     <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" >
       
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
       
       
         
@@ -594,12 +597,12 @@
         
       
       
-        <label class="md-nav__link" for="__nav_6">
+        <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
           Changelogs
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" aria-label="Changelogs" data-md-level="1">
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_6">
           <span class="md-nav__icon md-icon"></span>
           Changelogs
@@ -741,10 +744,9 @@
                 
                   
 
-  <a href="https://github.com/NiklasRosenstein/python-databind/blob/None/docs/content/api/databind.json.converters.md" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
+
 
 
   <h1>databind.json.converters</h1>
@@ -754,14 +756,14 @@
 <h2 id="class-anyconverter">Class AnyConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AnyConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L58">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L58">[view_source]</a></p>
 <p>A converter for <code>typing.Any</code> and <code>object</code> typed values, which will return them unchanged in any case.</p>
 <p><a id="databind.json.converters.DatetimeConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.DatetimeConverter"></a></p>
 <h2 id="class-datetimeconverter">Class DatetimeConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DatetimeConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L134">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L134">[view_source]</a></p>
 <p>A converter for <code>datetime.datetime</code>, <code>datetime.date</code> and <code>datetime.time</code> that represents the serialized form as
 strings formatted using the <code>nr.date</code> module. The converter respects the <a href="/python-databind/api/databind.core.settings#pydoc:databind.core.settings.DateFormat">DateFormat</a> setting.</p>
 <p><a id="databind.json.converters.DecimalConverter"></a></p>
@@ -769,14 +771,14 @@ strings formatted using the <code>nr.date</code> module. The converter respects 
 <h2 id="class-decimalconverter">Class DecimalConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DecimalConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L180">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L180">[view_source]</a></p>
 <p>A converter for <code>decimal.Decimal</code> values to and from JSON as strings.</p>
 <p><a id="databind.json.converters.EnumConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.EnumConverter"></a></p>
 <h2 id="class-enumconverter">Class EnumConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">EnumConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L206">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L206">[view_source]</a></p>
 <p>JSON converter for enum values.</p>
 <p>Converts <code>enum.IntEnum</code> values to integers and <code>enum.Enum</code> values to strings. Note that combined integer flags
 are not supported and cannot be serializ</p>
@@ -796,7 +798,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-plaindatatypeconverter">Class PlainDatatypeConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PlainDatatypeConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L325">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L325">[view_source]</a></p>
 <p>A converter for the plain datatypes <code>bool</code>, <code>bytes</code>, <code>int</code>, <code>str</code> and <code>float</code>.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
@@ -812,7 +814,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-schemaconverter">Class SchemaConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SchemaConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L392">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L392">[view_source]</a></p>
 <p>Converter for type hints that can be adapter to a <code>databind.core.schema.Schema</code> object.</p>
 <p>This converter respects the following settings:</p>
 <ul>
@@ -824,7 +826,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-stringifyconverter">Class StringifyConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">StringifyConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L567">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L567">[view_source]</a></p>
 <p>A useful helper converter that matches on a given type or its subclasses and converts them to a string for
 serialization and deserializes them from a string using the type's constructor.</p>
 <p><a id="databind.json.converters.UnionConverter"></a></p>
@@ -832,7 +834,7 @@ serialization and deserializes them from a string using the type's constructor.<
 <h2 id="class-unionconverter">Class UnionConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L612">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L612">[view_source]</a></p>
 <p>Converter for union types. The following kinds of union types are supported:</p>
 <ul>
 <li>A <code>typing.Union</code> (represented as <code>UnionTypeHint</code>) instance, in which case the members are deserialized in the
@@ -890,7 +892,7 @@ if an object is an instance of an alias. This is an implementation detail of the
 <h2 id="class-literalconverter">Class LiteralConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LiteralConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/4b3551fc0fc3498ec2547527eaa4a5b05de1b3a5/docs/../databind.json/src/databind/json/converters.py#L800">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/db3b9e4d37c37dcebdec55ec5372568b546437b1/docs/../databind.json/src/databind/json/converters.py#L800">[view_source]</a></p>
 <p>A converter for <code>typing.Literal</code> type hints. A literal value in the definition must simply match the literal
 value in the context being serialized/deserialized, otherwise a <a href="/python-databind/api/databind.core.converter#pydoc:databind.core.converter.ConversionError">ConversionError</a> is raised. Currently, literal
 values must be of a plain data type that natively maps to a JSON type, like a boolean, integer, float, string
@@ -916,42 +918,6 @@ or <code>None</code>.</p>
       
         <footer class="md-footer">
   
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="../databind.json/" class="md-footer__link md-footer__link--prev" aria-label="Previous: databind.json" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              databind.json
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../databind.json.direction/" class="md-footer__link md-footer__link--next" aria-label="Next: databind.json.direction" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              databind.json.direction
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
-  
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
       <div class="md-copyright">
@@ -973,12 +939,11 @@ or <code>None</code>.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../assets/javascripts/workers/search.db81ec45.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="../../assets/javascripts/bundle.6df46069.min.js"></script>
       
-    
     
   </body>
 </html>
