@@ -231,11 +231,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
                 # If this field does not belong to the current type
                 continue
 
-            field_hint = (
-                TypeHint(field.type)
-                .evaluate(eval_context_by_type[field_origin[field.name]])
-                .parameterize(parameter_map)
-            )
+            field_hint = TypeHint(field.type, field_origin[field.name]).evaluate().parameterize(parameter_map)
 
             # NOTE(NiklasRosenstein): In Python 3.6, Mypy complains about "Callable does not accept self argument",
             #       but we also cannot ignore it because of warn_unused_ignores.
