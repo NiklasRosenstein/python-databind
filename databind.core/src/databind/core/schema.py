@@ -125,8 +125,10 @@ def convert_to_schema(hint: TypeHint) -> Schema:
         hint = hint[0]
 
     if isinstance(hint, ClassTypeHint) and dataclasses.is_dataclass(hint.type):
-        schema = convert_dataclass_to_schema(hint.type)
+        schema = convert_dataclass_to_schema(hint)
     elif isinstance(hint, ClassTypeHint) and is_typed_dict(hint.type):
+        # TODO(@NiklasRosenstein): Pass in the original TypeHint which will contain information about
+        #   TypeVar parametrization that is lost when we just pass the generic type.
         schema = convert_typed_dict_to_schema(hint.type)
     else:
         raise ValueError(f"cannot be converted to a schema (not a dataclass or TypedDict): {type_repr(original_hint)}")
@@ -304,7 +306,6 @@ def convert_typed_dict_to_schema(typed_dict: TypedDictProtocol) -> Schema:
     annotations = get_annotations(t.cast(type, typed_dict))
     fields: t.Dict[str, Field] = {}
     for key in typed_dict.__required_keys__ | typed_dict.__optional_keys__:
-
         field_hint = TypeHint(annotations[key]).evaluate(eval_context)
 
         has_default = hasattr(typed_dict, key)

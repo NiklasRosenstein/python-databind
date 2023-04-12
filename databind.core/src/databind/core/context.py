@@ -137,7 +137,6 @@ def format_context_trace(ctx: Context) -> str:
     lines = []
     prev_filename: t.Union[str, None] = None
     for ctx in reversed(list(ctx.iter_hierarchy_up())):
-
         # On the first context, or if the filename changed, we output the filename.
         if ctx.location.filename != prev_filename and ctx.location.filename is not None:
             lines.append(f'In "{ctx.location.filename}"')

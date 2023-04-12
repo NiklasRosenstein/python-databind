@@ -160,7 +160,6 @@ class Setting:
 
 
 class ClassDecoratorSetting(Setting):
-
     bound_to: t.Optional[type] = None
 
     def __init__(self) -> None:

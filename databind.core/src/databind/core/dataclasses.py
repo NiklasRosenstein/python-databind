@@ -54,7 +54,6 @@ def _field_has_default(field: Field) -> bool:
 
 
 def _process_class(cls, **kwargs):
-
     # Collect a list of the fields that have no default values but follow after a default argument.
     no_default_fields: t.List[str] = []
     existing_fields = getattr(cls, "__dataclass_fields__", {})  # For subclasses of dataclasses
