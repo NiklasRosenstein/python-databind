@@ -880,7 +880,7 @@
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Field</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L41">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L41">[view_source]</a></p>
 <p>Describes a field in a schema.</p>
 <p><a id="databind.core.schema.Field.datatype"></a></p>
 <p><a id="pydoc:databind.core.schema.Field.datatype"></a></p>
@@ -911,7 +911,7 @@ own, those fields should be treated as if expanded into the same level as this f
 <div class="highlight"><pre><span></span><code><span class="nd">@property</span>
 <span class="k">def</span> <span class="nf">aliases</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L74">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L74">[view_source]</a></p>
 <p>For convience, the aliases described in the <a href="#pydoc:databind.core.schema.Field.datatype">datatype</a>#'s annotations are listed here. Do note however, that
 during the conversion process, the <a href="/python-databind/api/databind.core.settings#pydoc:databind.core.settings.Alias">Alias</a> setting should still be looked up through <a href="/python-databind/api/databind.core.context#pydoc:databind.core.context.Context.get_setting">Context.get_setting()</a>
 and this field should be ignored. It serves only a introspective purpose. Returns an empty tuple if no alias
@@ -922,7 +922,7 @@ setting is present in the type hint.</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Schema</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L87">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L87">[view_source]</a></p>
 <p>A <a href="#pydoc:databind.core.schema.Schema">Schema</a> describes a set of fields with a name and datatype.</p>
 <p><a id="databind.core.schema.Schema.fields"></a></p>
 <p><a id="pydoc:databind.core.schema.Schema.fields"></a></p>
@@ -950,7 +950,7 @@ Python type object.</p>
 <h4 id="convert_to_schema">convert_to_schema</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_to_schema</span><span class="p">(</span><span class="n">hint</span><span class="p">:</span> <span class="n">TypeHint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L108">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L108">[view_source]</a></p>
 <p>Convert the given type hint to a <a href="#pydoc:databind.core.schema.Schema">Schema</a>.</p>
 <p>The function delegates to <a href="#pydoc:databind.core.schema.convert_dataclass_to_schema">convert_dataclass_to_schema()</a> or <a href="#pydoc:databind.core.schema.convert_typed_dict_to_schema">convert_typed_dict_to_schema()</a>.</p>
 <p><strong>Arguments</strong>:</p>
@@ -967,7 +967,7 @@ Python type object.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_dataclass_to_schema</span><span class="p">(</span>
         <span class="n">dataclass_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">GenericAlias</span><span class="p">,</span> <span class="n">ClassTypeHint</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L140">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L140">[view_source]</a></p>
 <p>Converts a Python class that is decorated with <code>dataclasses.dataclass()</code> to a Schema.</p>
 <p>The function will respect the <a href="/python-databind/api/databind.core.settings#pydoc:databind.core.settings.Required">Required</a> setting if it is present in a field's datatype if,
 and only if, the setting occurs in the root type hint, which must be a <code>typing.Annotated</code> hint.</p>
@@ -994,7 +994,7 @@ and only if, the setting occurs in the root type hint, which must be a <code>typ
 <h4 id="convert_typed_dict_to_schema">convert_typed_dict_to_schema</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_typed_dict_to_schema</span><span class="p">(</span><span class="n">typed_dict</span><span class="p">:</span> <span class="n">TypedDictProtocol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L263">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L263">[view_source]</a></p>
 <p>Converts the definition of a <code>typing.TypedDict</code> to a <a href="#pydoc:databind.core.schema.Schema">Schema</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1030,7 +1030,7 @@ typed dict are not possible (state: 2022-03-17, Python 3.10.2).</p>
     <span class="n">convert_to_schema</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">TypeHint</span><span class="p">],</span> <span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_to_schema</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">]]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/12fa72bc328f71c44fb20c66c22c22e7ae91aa4d/docs/../databind.core/src/databind/core/schema.py#L343">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L343">[view_source]</a></p>
 <p>Returns a dictionary that contains an entry for each flattened field in the schema, mapping to another
 dictionary that contains <em>all</em> fields expanded from the flattened field's sub-schema.</p>
 <p>Given a schema like the following example, this function returns something akin to the below.</p>
