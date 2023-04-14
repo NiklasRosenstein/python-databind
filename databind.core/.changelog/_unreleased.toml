@@ -9,3 +9,9 @@ id = "ce944eb9-871d-498a-9f23-5f54bf3d589e"
 type = "feature"
 description = "add `JsonConverter.using_classmethods()` method"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "4128540f-d20a-498b-ab91-d89eaea5c8b4"
+type = "improvement"
+description = "Removed restriction that would only permit keys of type `int|str|Root|None` in `Context.key`. This unlocks serializing keys in mappings of specialized types."
+author = "@NiklasRosenstein"

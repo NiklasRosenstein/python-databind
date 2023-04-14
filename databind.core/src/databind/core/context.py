@@ -68,7 +68,7 @@ class Context:
     #: The key or index under which #value is present in the source material relative to the #parent context.
     #: This is `None` only for the root value in the same source. The value must be #Context.ROOT if the context
     #: has no parent.
-    key: t.Union[int, str, Root, None]
+    key: t.Union[int, str, Root, None, t.Any]
 
     #: The location of the #value in the source material.
     location: Location
@@ -80,7 +80,6 @@ class Context:
 
     def __post_init__(self) -> None:
         assert isinstance(self.datatype, TypeHint), self.datatype
-        assert isinstance(self.key, (int, str, Root)) or self.key is None, self.key
         assert self.location is not None
         assert self.parent is not None or self.key == Context.ROOT
 
