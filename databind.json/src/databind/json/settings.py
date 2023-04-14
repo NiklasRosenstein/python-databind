@@ -1,7 +1,7 @@
 import typing as t
 
 import typing_extensions as te
-from databind.core.converter import Converter
+from databind.core.converter import Converter, DelegateToClassmethodConverter
 from databind.core.settings import ClassDecoratorSetting
 
 
@@ -17,25 +17,34 @@ class JsonConverter(ClassDecoratorSetting):
     Example:
 
     ```py
-    from databind.core.converter import Converter
-    from databind.json.direction import Direction
     from databind.json.settings import JsonConverter
-    from typing import Any
 
-    class MyCustomConverter(JsonConverter.Base):
+
+
+    class MyCustomConverter(Converter):
         def __init__(self, direction: Direction) -> None:
             self.direction = direction
         def convert(self, ctx: Context) -> Any:
             ...
 
-    @JsonConverter(MyCustomConverter)
+    @JsonConverter.using_classmethods(serialize="__str__", deserialize="of")
     class MyCustomType:
-        ...
 
-    # Or
+        def __str__(self) -> str:
+            ...
 
+        @staticmethod
+        def of(s: str) -> MyCustomType:
+            ...
+    ```
+
+    The same override can also be achieved by attaching the setting to an `Annotated` type hint:
+
+
+    ```py
     Annotated[MyCustomType, JsonConverter(MyCustomConverter)]
-    ```"""
+    ```
+    """
 
     supplier: ConverterSupplier
 
@@ -45,3 +54,7 @@ class JsonConverter(ClassDecoratorSetting):
             self.supplier = lambda: supplier
         else:
             self.supplier = supplier
+
+    @staticmethod
+    def using_classmethods(*, serialize: "str | None" = None, deserialize: "str | None" = None) -> "JsonConverter":
+        return JsonConverter(DelegateToClassmethodConverter(serialize=serialize, deserialize=deserialize))
