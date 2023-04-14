@@ -125,8 +125,10 @@ def convert_to_schema(hint: TypeHint) -> Schema:
         hint = hint[0]
 
     if isinstance(hint, ClassTypeHint) and dataclasses.is_dataclass(hint.type):
-        schema = convert_dataclass_to_schema(hint.type)
+        schema = convert_dataclass_to_schema(hint)
     elif isinstance(hint, ClassTypeHint) and is_typed_dict(hint.type):
+        # TODO(@NiklasRosenstein): Pass in the original TypeHint which will contain information about
+        #   TypeVar parametrization that is lost when we just pass the generic type.
         schema = convert_typed_dict_to_schema(hint.type)
     else:
         raise ValueError(f"cannot be converted to a schema (not a dataclass or TypedDict): {type_repr(original_hint)}")
@@ -229,11 +231,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
                 # If this field does not belong to the current type
                 continue
 
-            field_hint = (
-                TypeHint(field.type)
-                .evaluate(eval_context_by_type[field_origin[field.name]])
-                .parameterize(parameter_map)
-            )
+            field_hint = TypeHint(field.type, field_origin[field.name]).evaluate().parameterize(parameter_map)
 
             # NOTE(NiklasRosenstein): In Python 3.6, Mypy complains about "Callable does not accept self argument",
             #       but we also cannot ignore it because of warn_unused_ignores.

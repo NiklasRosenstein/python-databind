@@ -1,0 +1,8 @@
+release-date = "2023-04-12"
+
+[[entries]]
+id = "cfc08d4f-130e-4e34-b74d-5f831281c2a1"
+type = "fix"
+description = "Fixed an issue where the source class of a fields type hint was not correctly propagated to the TypeHint API such that evaluating forward references that reference to a member on the same class level would fail to evaluate."
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/issues/41"
