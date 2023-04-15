@@ -3,7 +3,7 @@ import logging
 import typing as t
 from textwrap import indent
 
-from typeapi import type_repr
+from typeapi import ClassTypeHint, type_repr
 
 from databind.core.utils import exception_safe_str
 
@@ -141,3 +141,27 @@ class NoMatchingConverter(ConversionError):
             f"`{type_repr(type(context.value))}`",
             errors,
         )
+
+
+class DelegateToClassmethodConverter(Converter):
+    """
+    This converter delegaes to the methods defined by name to perform serialization and deserialization of a type. This
+    converter is usually used in conjunction with settings that override the converteer to be used in a specifc
+    scenario (e.g. such as de/serializing JSON with the #databind.json.settings.JsonConverter setting).
+    """
+
+    def __init__(self, *, serialize: "str | None" = None, deserialize: "str | None" = None) -> None:
+        self._serialize = serialize
+        self._deserialize = deserialize
+
+    def serialize(self, ctx: "Context") -> t.Any:
+        if self._serialize is None or not isinstance(ctx.datatype, ClassTypeHint):
+            raise NotImplementedError
+        method: t.Callable[[t.Any], t.Any] = getattr(ctx.datatype.type, self._serialize)
+        return method(ctx.value)
+
+    def deserialize(self, ctx: "Context") -> t.Any:
+        if self._deserialize is None or not isinstance(ctx.datatype, ClassTypeHint):
+            raise NotImplementedError
+        method: t.Callable[[t.Any], t.Any] = getattr(ctx.datatype.type, self._deserialize)
+        return method(ctx.value)

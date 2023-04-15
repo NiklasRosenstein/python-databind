@@ -1,0 +1,20 @@
+[[entries]]
+id = "1c19df94-6996-466e-a0b4-7e8b2111fe6a"
+type = "feature"
+description = "add `DelegateToClassmethodConverter` class"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/issues/42"
+
+[[entries]]
+id = "ce944eb9-871d-498a-9f23-5f54bf3d589e"
+type = "feature"
+description = "add `JsonConverter.using_classmethods()` method"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/issues/42"
+
+[[entries]]
+id = "4128540f-d20a-498b-ab91-d89eaea5c8b4"
+type = "improvement"
+description = "Removed restriction that would only permit keys of type `int|str|Root|None` in `Context.key`. This unlocks serializing keys in mappings of specialized types."
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/issues/42"

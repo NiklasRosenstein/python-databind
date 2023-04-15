@@ -20,7 +20,7 @@ jobs:
       - run: slap test
 
   update-changelog:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
         with: { version: "1.4.2" }
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - uses: NiklasRosenstein/slap@gha/install/v1
