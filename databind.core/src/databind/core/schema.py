@@ -205,13 +205,12 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
     fields: t.Dict[str, Field] = {}
     while queue:
         hint = queue.pop(0)
+        parameter_map = hint.get_parameter_map()
 
         if hint.type in eval_context_by_type:
             # Make sure forward references are resolved.
             hint = hint.evaluate(eval_context_by_type[hint.type])  # type: ignore[assignment]
             assert isinstance(hint, ClassTypeHint)
-
-            parameter_map = hint.get_parameter_map()
 
             for field in dataclasses.fields(hint.type):
                 if not field.init:

@@ -1,0 +1,5 @@
+[[entries]]
+id = "8a6d54b8-0898-465a-a34c-6d5b37dab337"
+type = "fix"
+description = "Fix potential `NameError: parameter_map` in `convert_dataclass_to_schema()` (regression introduced in 4.2.6)"
+author = "@NiklasRosenstein"
