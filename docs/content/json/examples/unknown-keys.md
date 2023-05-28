@@ -11,7 +11,7 @@ When using this setting, you can also record any unexpected keys so you can repo
 ```py
 # cat <<EOF | python -
 from dataclasses import dataclass
-from databind.core.settings import ExtraKeys
+from databind.core import ExtraKeys
 from databind.json import load
 
 @ExtraKeys()
@@ -31,7 +31,7 @@ assert load({"a": 42, "b": "ignored"}, MyClass) == MyClass(42)
 ```py
 # cat <<EOF | python -
 from dataclasses import dataclass
-from databind.core.settings import ExtraKeys
+from databind.core import ExtraKeys
 from databind.json import load
 from typing_extensions import Annotated
 
@@ -63,7 +63,7 @@ except for those that have a different setting "closer by" (you can use `ExtraKe
 ```py
 # cat <<EOF | python -
 from dataclasses import dataclass
-from databind.core.settings import ExtraKeys
+from databind.core import ExtraKeys
 from databind.json import load
 
 @dataclass
@@ -81,8 +81,7 @@ warn about unused keys in a payload.
 ```py
 # cat <<EOF | python -
 from dataclasses import dataclass
-from databind.core.settings import ExtraKeys
-from databind.core.context import format_context_trace
+from databind.core import format_context_trace, ExtraKeys
 from databind.json import load
 
 @dataclass

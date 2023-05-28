@@ -12,8 +12,7 @@ from dataclasses import dataclass
 from urllib.parse import urlparse
 from typing import Any
 
-from databind.core.context import Context
-from databind.core.converter import Converter
+from databind.core import Context, Converter
 
 
 @dataclass
@@ -44,7 +43,7 @@ class URI:
 To use this new converter, you need to register it to an {@pylink databind.core.mapper.ObjectMapper} instance.
 
 ```python
-from databind.core.mapper import ObjectMapper
+from databind.core import ObjectMapper
 
 mapper = ObjectMapper()
 mapper.module.register(URI.URIConverter())
@@ -65,7 +64,7 @@ convenient methods to access settings that are relevant for the current value be
 
 ```python
 #  ...
-from databind.core.settings import BooleanSetting
+from databind.core import BooleanSetting
 
 
 @dataclass
@@ -100,7 +99,7 @@ The setting can now be specified when serializing a `URI` instance as a global s
 ```python
 # ...
 
-from databind.core.converter import NoMatchingConverter
+from databind.core import NoMatchingConverter
 from pytest import raises
 
 # When the setting is not enabled, the converter raises a NotImplementedError, having databind search for

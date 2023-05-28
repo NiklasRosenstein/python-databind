@@ -1,6 +1,6 @@
 __version__ = "4.2.8"
 
-from .context import Context, Direction, Location
+from .context import Context, Direction, Location, format_context_trace
 from .converter import ConversionError, Converter, DelegateToClassmethodConverter, Module, NoMatchingConverter
 from .mapper import ObjectMapper
 from .schema import Schema, convert_dataclass_to_schema, convert_to_schema, convert_typed_dict_to_schema
@@ -44,6 +44,7 @@ __all__ = [
     "Direction",
     "ExtraKeys",
     "Flattened",
+    "format_context_trace",
     "get_annotation_setting",
     "get_class_setting",
     "get_class_settings",
