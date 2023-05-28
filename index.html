@@ -690,7 +690,14 @@ extended to YAML or TOML by combining it with respective libraries (e.g. <code>p
 <li><a href="https://www.python.org/dev/peps/pep-0585/">PEP585 - Type Hinting Generics in Standard Collections</a>)</li>
 </ul>
 </li>
+<li>Support for customized serialization and deserialization of types</li>
 <li>Full runtime type checking during serialization</li>
+<li>Use "settings" to customize serialization behaviour<ul>
+<li>As global settings per <code>load()</code>/<code>dump()</code> call: <code>load(..., settings=[ExtraKeys(True)])</code></li>
+<li>As class-level settings using a decorator: <code>@Union(style=Union.FLAT)</code> or <code>@ExtraKeys(True)</code></li>
+<li>As type-hint level settings using <code>typing.Annotated</code> (or <code>typing_extensions.Annotated</code>): <code>full_name: Annotated[str, Alias("fullName")]</code> or <code>FullNameField = Annotated[str, Alias("fullName")]</code></li>
+</ul>
+</li>
 </ul>
 <hr />
 <p align="center">Copyright &copy; 2022 &ndash; Niklas Rosenstein</p>
