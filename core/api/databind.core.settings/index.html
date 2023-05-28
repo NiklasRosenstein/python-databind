@@ -1719,7 +1719,7 @@ to how the name of the setting appears assertive of the fact that the instance i
 <p><a id="databind.core.settings.DeserializeAs"></a></p>
 <p><a id="pydoc:databind.core.settings.DeserializeAs"></a></p>
 <h2 id="class-deserializeas">Class DeserializeAs</h2>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">DeserializeAs</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L330">[view_source]</a></p>
@@ -1748,7 +1748,7 @@ field, a concrete type should be used instead.</p>
 <p><a id="databind.core.settings.Precision"></a></p>
 <p><a id="pydoc:databind.core.settings.Precision"></a></p>
 <h2 id="class-precision">Class Precision</h2>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Precision</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L364">[view_source]</a></p>
@@ -1843,7 +1843,7 @@ setting that is attached to the type <em>extends</em>. The <a href="#pydoc:datab
 <p><a id="databind.core.settings.DateFormat"></a></p>
 <p><a id="pydoc:databind.core.settings.DateFormat"></a></p>
 <h2 id="class-dateformat">Class DateFormat</h2>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">unsafe_hash</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">DateFormat</span><span class="p">(</span><span class="n">Setting</span><span class="p">)</span>
 </code></pre></div>
 <p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/settings.py#L534">[view_source]</a></p>

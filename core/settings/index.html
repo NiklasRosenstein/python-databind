@@ -345,6 +345,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#notes-about-implementing-custom-settings" class="md-nav__link">
+    Notes about implementing custom settings
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -875,6 +882,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#notes-about-implementing-custom-settings" class="md-nav__link">
+    Notes about implementing custom settings
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -919,6 +933,9 @@ unless specified otherwise. The following priority groups exist:</p>
 <li><code>ULTIMATE</code>: Settings with this priority group are resolved before <code>HIGH</code> settings.</li>
 </ul>
 <p>Converters are usually only interested in the first instance of any setting type.</p>
+<h2 id="notes-about-implementing-custom-settings">Notes about implementing custom settings</h2>
+<p>To support Python 3.6, <code>typing_extensions.Annotated</code> metadata must be hashable. As such, settings that you want users
+to be able to pass into annotated type hints in Python 3.6 must support hashing (identity hashing is often sufficient).</p>
 
 
 
