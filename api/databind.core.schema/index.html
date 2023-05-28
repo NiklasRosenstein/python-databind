@@ -996,7 +996,7 @@ and only if, the setting occurs in the root type hint, which must be a <code>typ
 <h4 id="convert_typed_dict_to_schema">convert_typed_dict_to_schema</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_typed_dict_to_schema</span><span class="p">(</span><span class="n">typed_dict</span><span class="p">:</span> <span class="n">TypedDictProtocol</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L261">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L260">[view_source]</a></p>
 <p>Converts the definition of a <code>typing.TypedDict</code> to a <a href="#pydoc:databind.core.schema.Schema">Schema</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1032,7 +1032,7 @@ typed dict are not possible (state: 2022-03-17, Python 3.10.2).</p>
     <span class="n">convert_to_schema</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">TypeHint</span><span class="p">],</span> <span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_to_schema</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">]]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L341">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L340">[view_source]</a></p>
 <p>Returns a dictionary that contains an entry for each flattened field in the schema, mapping to another
 dictionary that contains <em>all</em> fields expanded from the flattened field's sub-schema.</p>
 <p>Given a schema like the following example, this function returns something akin to the below.</p>
