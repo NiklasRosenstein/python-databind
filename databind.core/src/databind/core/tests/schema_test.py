@@ -312,7 +312,7 @@ def test_convert_dataclass_to_schema_generic_nested() -> None:
     )
     assert convert_dataclass_to_schema(B2) == Schema(
         {
-            "a": Field(TypeHint(A[U])),  # type: ignore[valid-type]  # type: ignore[unused-ignore]  # Type variable U is unbound  # noqa: E501
+            "a": Field(TypeHint(A[U])),  # type: ignore[valid-type,unused-ignore]  # Type variable U is unbound  # noqa: E501
             "b": Field(TypeHint(str)),
         },
         B2,
