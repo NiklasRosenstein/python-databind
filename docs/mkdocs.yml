@@ -1,9 +1,18 @@
 nav:
   - Home: index.md
-  - databind.core.md
-  - databind.json.md
-  - examples.md
-  - API: []  # Updated by build.novella
-  - Changelogs:
-    - changelog/databind.core.md
-    - changelog/databind.json.md
+  - CORE:
+    - core/index.md
+    - core/basic-usage.md
+    - core/settings.md
+    - core/dataclass-ext.md
+    - core/changelog.md
+    - API: []
+  - JSON:
+    - json/index.md
+    - Examples:
+      - json/examples/index.md
+      - json/examples/config-serde.md
+      - json/examples/unions.md
+      - json/examples/unknown-keys.md
+    - json/changelog.md
+    - API: []

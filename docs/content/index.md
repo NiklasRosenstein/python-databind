@@ -1,1 +1,1 @@
-@cat ../../readme.md
+@cat ../../README.md

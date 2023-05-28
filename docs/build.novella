@@ -1,7 +1,8 @@
 
 template "mkdocs"
 
-def databind_modules = [
+def databind_core_modules = [
+  'databind.core',
   'databind.core.context',
   'databind.core.converter',
   'databind.core.dataclasses',
@@ -9,19 +10,26 @@ def databind_modules = [
   'databind.core.schema',
   'databind.core.settings',
   'databind.core.union',
+]
+
+def databind_json_modules = [
   'databind.json',
   'databind.json.converters',
   'databind.json.direction',
   'databind.json.module',
+  'databind.json.settings',
 ]
 
 action "mkdocs-update-config" {
   site_name = "python-databind"
   update '$.theme.features' add: []
-  update '$.theme.palette' set: {'scheme': 'slate', 'primary': 'blue', 'accent': 'amber'}
+  update '$.theme.palette' set: {'primary': 'blue', 'accent': 'amber'}
   update_with config -> {
-    for module in databind_modules:
-      config['nav'][-2]['API'].append('api/' + module + '.md')
+    print(json.dumps(config, indent=2))
+    for module in databind_core_modules:
+      config['nav'][1]['CORE'][-1]['API'].append('core/api/' + module + '.md')
+    for module in databind_json_modules:
+      config['nav'][2]['JSON'][-1]['API'].append('json/api/' + module + '.md')
   }
 }
 
@@ -38,8 +46,12 @@ do
     precedes "preprocess-markdown"
   }
   action: {
-    for module in databind_modules:
-      def filename = directory / 'content' / 'api'/ (module + '.md')
+    for module in databind_core_modules:
+      def filename = directory / 'content' / 'core' / 'api'/ (module + '.md')
+      filename.parent.mkdir parents: True exist_ok: True
+      filename.write_text '---\ntitle: {0}\n---\n@pydoc {0}\n'.format(module)
+    for module in databind_json_modules:
+      def filename = directory / 'content' / 'json' / 'api'/ (module + '.md')
       filename.parent.mkdir parents: True exist_ok: True
       filename.write_text '---\ntitle: {0}\n---\n@pydoc {0}\n'.format(module)
   }

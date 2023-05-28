@@ -1,5 +1,3 @@
----
-title: databind.json
----
+# Changelog
 
 @shell cd ../databind.json && slap changelog format --markdown --all
