@@ -3,3 +3,9 @@ id = "34f4cbf8-4bd4-4b6d-837f-6bf4b2006803"
 type = "feature"
 description = "Add `DeserializeAs` setting"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "78606f4e-7b4c-4f88-9143-e40b12d86100"
+type = "improvement"
+description = "Expose public API in `databind.core` root module."
+author = "@NiklasRosenstein"
