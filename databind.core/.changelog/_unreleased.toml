@@ -1,0 +1,5 @@
+[[entries]]
+id = "fdfc7b53-785f-4ab9-a23b-2b9f1dde2a5c"
+type = "improvement"
+description = "Allow passing a `str` into the `List` argument of the `Union()` setting."
+author = "@NiklasRosenstein"

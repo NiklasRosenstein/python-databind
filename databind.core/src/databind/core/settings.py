@@ -406,7 +406,7 @@ class Union(ClassDecoratorSetting):
         members: t.Union[
             "UnionMembers",
             "StaticUnionMembers._MembersMappingType",
-            "t.List[UnionMembers | StaticUnionMembers._MembersMappingType]",
+            "t.List[UnionMembers | str | StaticUnionMembers._MembersMappingType]",
             str,
             None,
         ] = None,
