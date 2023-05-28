@@ -25,7 +25,6 @@ action "mkdocs-update-config" {
   update '$.theme.features' add: []
   update '$.theme.palette' set: {'primary': 'blue', 'accent': 'amber'}
   update_with config -> {
-    print(json.dumps(config, indent=2))
     for module in databind_core_modules:
       config['nav'][1]['CORE'][-1]['API'].append('core/api/' + module + '.md')
     for module in databind_json_modules:
