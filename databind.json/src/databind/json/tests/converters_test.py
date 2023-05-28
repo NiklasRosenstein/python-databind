@@ -399,13 +399,13 @@ def test_deserialize_as() -> None:
         assert mapper.serialize(MyClass(A(1)), MyClass) == {"a": {"a": 1}}
     assert (
         str(excinfo.value)
-        == """expected test_converters.test_deserialize_as.<locals>.B, got test_converters.test_deserialize_as.\
+        == """expected converters_test.test_deserialize_as.<locals>.B, got converters_test.test_deserialize_as.\
 <locals>.A instead
 
 Trace:
-    $: TypeHint(test_converters.test_deserialize_as.<locals>.MyClass)
-    .a: TypeHint(typing_extensions.Annotated[test_converters.test_deserialize_as.<locals>.A, DeserializeAs(type=<class \
-'test_converters.test_deserialize_as.<locals>.B'>, priority=<Priority.NORMAL: 1>)])"""
+    $: TypeHint(converters_test.test_deserialize_as.<locals>.MyClass)
+    .a: TypeHint(typing_extensions.Annotated[converters_test.test_deserialize_as.<locals>.A, DeserializeAs(type=<class \
+'converters_test.test_deserialize_as.<locals>.B'>, priority=<Priority.NORMAL: 1>)])"""
     )
 
     assert mapper.serialize(MyClass(B(2)), MyClass) == {"a": {"a": 2}}

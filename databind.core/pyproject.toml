@@ -42,10 +42,10 @@ build-backend = "poetry.core.masonry.api"
 [tool.slap.test]
 check = "slap check"
 mypy = "dmypy run src/"
-pytest = "pytest tests/ -vv"
-black = "black --check src/ tests/"
-isort = "isort --check-only src/ tests/"
-flake8 = "flake8 src/ tests/"
+pytest = "pytest src/ -vv"
+black = "black --check src/"
+isort = "isort --check-only src/"
+flake8 = "flake8 src/"
 
 [tool.slap.run]
 fmt = "black src/ tests/ && isort src/ tests/"
