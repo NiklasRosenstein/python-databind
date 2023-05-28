@@ -1,8 +1,8 @@
 <h1 align="center">databind</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/pypi/pyversions/pydoc-markdown?style=for-the-badge" alt="Python versions">
-  <a href="https://pypi.org/project/pydoc-markdown/"><img src="https://img.shields.io/pypi/v/pydoc-markdown?style=for-the-badge"></a>
+  <img src="https://img.shields.io/pypi/pyversions/databind?style=for-the-badge" alt="Python versions">
+  <a href="https://pypi.org/project/databind/"><img src="https://img.shields.io/pypi/v/databind?style=for-the-badge"></a>
 </p>
 <p align="center"><i>
 Databind is a Python serialization library on top of dataclasses, inspired by similar libraries from other languages
