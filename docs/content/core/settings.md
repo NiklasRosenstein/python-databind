@@ -29,3 +29,8 @@ unless specified otherwise. The following priority groups exist:
 * `ULTIMATE`: Settings with this priority group are resolved before `HIGH` settings.
 
 Converters are usually only interested in the first instance of any setting type.
+
+## Notes about implementing custom settings
+
+To support Python 3.6, `typing_extensions.Annotated` metadata must be hashable. As such, settings that you want users
+to be able to pass into annotated type hints in Python 3.6 must support hashing (identity hashing is often sufficient).

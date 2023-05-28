@@ -326,7 +326,7 @@ class SerializeDefaults(BooleanSetting):
     to how the name of the setting appears assertive of the fact that the instance indicates the setting is enabled."""
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class DeserializeAs(Setting):
     """Indicates that a field should be deserialized as the given type instead of the type of the field. This is
     typically used when a field should be typed as an abstract class or interface, but during deserialization of the
@@ -360,7 +360,7 @@ class DeserializeAs(Setting):
     priority: Priority = Priority.NORMAL
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class Precision(Setting):
     """A setting to describe the precision for #decimal.Decimal fields."""
 
@@ -530,7 +530,7 @@ class Union(ClassDecoratorSetting):
         return ImportUnionMembers()
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(init=False, unsafe_hash=True)
 class DateFormat(Setting):
     """The #DateFormat setting is used to describe the date format to use for #datetime.datetime, #datetime.date
     and #datetime.time values when formatting them as a string, i.e. usually when the date/time is serialized, and
