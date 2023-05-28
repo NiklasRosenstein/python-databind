@@ -1,12 +1,17 @@
-# `databind`
+<h1 align="center">databind</h1>
 
+<p align="center">
+  <img src="https://img.shields.io/pypi/pyversions/pydoc-markdown?style=for-the-badge" alt="Python versions">
+  <a href="https://pypi.org/project/pydoc-markdown/"><img src="https://img.shields.io/pypi/v/pydoc-markdown?style=for-the-badge"></a>
+</p>
+<p align="center">
 Databind is a Python serialization library on top of dataclasses, inspired by similar libraries from other languages
-like [jackson-databind](https://github.com/FasterXML/jackson-databind) and [serde-rs](https://serde.rs/).
-
-![Python versions](https://img.shields.io/pypi/pyversions/pydoc-markdown?style=for-the-badge)
-[![Pypi version](https://img.shields.io/pypi/v/pydoc-markdown?style=for-the-badge)](https://pypi.org/project/pydoc-markdown/)
-
-[Examples](https://niklasrosenstein.github.io/python-databind/examples/) | [Changelog](https://niklasrosenstein.github.io/python-databind/changelog/databind.core/)
+like <a href="https://github.com/FasterXML/jackson-databind">jackson-databind</a> and <a href="https://serde.rs/">serde-rs</a>.
+</p>
+<p align="center">
+  <a href="https://niklasrosenstein.github.io/python-databind/core/basic-usage/">CORE Guide</a>
+  <a href="https://niklasrosenstein.github.io/python-databind/json/examples/">JSON Examples</a>
+</p>
 
 ## Overview 📖
 
