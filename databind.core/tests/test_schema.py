@@ -251,12 +251,13 @@ def test_convert_dataclass_overriden_field_type():
     @dataclasses.dataclass
     class A:
         a: int
+        b: str
 
     @dataclasses.dataclass
     class B(A):
         a: str
 
-    assert convert_dataclass_to_schema(B) == Schema({"a": Field(TypeHint(str))}, B, B)
+    assert convert_dataclass_to_schema(B) == Schema({"a": Field(TypeHint(str)), "b": Field(TypeHint(str))}, B, B)
 
 
 def test_convert_dataclass_to_schema_type_var_without_generic():
