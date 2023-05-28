@@ -326,7 +326,38 @@ class SerializeDefaults(BooleanSetting):
     to how the name of the setting appears assertive of the fact that the instance indicates the setting is enabled."""
 
 
-# NOTE(NiklasRosenstein): For Python 3.6, metadata passed into Annotated[...] must be hashable.
+@dataclasses.dataclass
+class DeserializeAs(Setting):
+    """Indicates that a field should be deserialized as the given type instead of the type of the field. This is
+    typically used when a field should be typed as an abstract class or interface, but during deserialization of the
+    field, a concrete type should be used instead.
+
+    Example:
+
+    ```py
+    import typing
+    from dataclasses import dataclass
+    from databind.core.settings import DeserializeAs
+
+    @dataclass
+    class A:
+        pass
+
+    @dataclass
+    class B(A):
+        pass
+
+    @dataclass
+    class MyClass:
+      my_field: typing.Annotated[A, DeserializeAs(B)]
+    ```
+
+    Here, although `MyClass.my_field` is annotated as `A`, when a payload is deserialized into an instance of
+    `MyClass`, the value for `my_field` will be deserialized as an instance of `B` instead of `A`.
+    """
+
+    type: t.Type[t.Any]
+    priority: Priority = Priority.NORMAL
 
 
 @dataclasses.dataclass
