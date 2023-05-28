@@ -29,7 +29,7 @@ pytest = "*"
 mypy = "*"
 types-dataclasses = "*"
 types-deprecated = "*"
-types-pkg_resources = "*"
+types-setuptools = "*"
 types-termcolor = "*"
 
 [tool.slap]
