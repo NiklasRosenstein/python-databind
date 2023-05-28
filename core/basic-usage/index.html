@@ -1,0 +1,1133 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../settings/">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
+    
+    
+      
+        <title>Basic Usage - python-databind</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.85bb2934.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.a6bdf11c.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="amber">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#basic-usage" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="python-databind" class="md-header__button md-logo" aria-label="python-databind" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            python-databind
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Basic Usage
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/NiklasRosenstein/python-databind" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="python-databind" class="md-nav__button md-logo" aria-label="python-databind" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    python-databind
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/NiklasRosenstein/python-databind" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../">CORE</a>
+          
+            <label for="__nav_2">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          CORE
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Basic Usage
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Basic Usage
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#implementing-a-custom-converter" class="md-nav__link">
+    Implementing a custom converter
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supporting-settings-in-your-converter" class="md-nav__link">
+    Supporting settings in your converter
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supporting-typingannotated-type-hints" class="md-nav__link">
+    Supporting typing.Annotated type hints
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-decorator-settings" class="md-nav__link">
+    Class-decorator settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simplifying-custom-converts-for-users" class="md-nav__link">
+    Simplifying custom converts for users
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settings/" class="md-nav__link">
+        Settings
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dataclass-ext/" class="md-nav__link">
+        Dataclass extension
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        Changelog
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_2_6" id="__nav_2_6_label" tabindex="0">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2_6">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core/" class="md-nav__link">
+        databind.core
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.context/" class="md-nav__link">
+        databind.core.context
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.converter/" class="md-nav__link">
+        databind.core.converter
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.dataclasses/" class="md-nav__link">
+        databind.core.dataclasses
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.mapper/" class="md-nav__link">
+        databind.core.mapper
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.schema/" class="md-nav__link">
+        databind.core.schema
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.settings/" class="md-nav__link">
+        databind.core.settings
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/databind.core.union/" class="md-nav__link">
+        databind.core.union
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+      
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../json/">JSON</a>
+          
+            <label for="__nav_3">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          JSON
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+        
+          
+            
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        
+        
+        <div class="md-nav__link md-nav__link--index ">
+          <a href="../../json/examples/">Examples</a>
+          
+            <label for="__nav_3_2">
+              <span class="md-nav__icon md-icon"></span>
+            </label>
+          
+        </div>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Examples
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/examples/config-serde/" class="md-nav__link">
+        Configuration Serde
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/examples/unions/" class="md-nav__link">
+        Defining Unions
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/examples/unknown-keys/" class="md-nav__link">
+        Handling unknown keys during deserialization
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/changelog/" class="md-nav__link">
+        Changelog
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_4" >
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_4">
+          <span class="md-nav__icon md-icon"></span>
+          API
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/api/databind.json/" class="md-nav__link">
+        databind.json
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/api/databind.json.converters/" class="md-nav__link">
+        databind.json.converters
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/api/databind.json.direction/" class="md-nav__link">
+        databind.json.direction
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/api/databind.json.module/" class="md-nav__link">
+        databind.json.module
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../json/api/databind.json.settings/" class="md-nav__link">
+        databind.json.settings
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#implementing-a-custom-converter" class="md-nav__link">
+    Implementing a custom converter
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supporting-settings-in-your-converter" class="md-nav__link">
+    Supporting settings in your converter
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supporting-typingannotated-type-hints" class="md-nav__link">
+    Supporting typing.Annotated type hints
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-decorator-settings" class="md-nav__link">
+    Class-decorator settings
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#simplifying-custom-converts-for-users" class="md-nav__link">
+    Simplifying custom converts for users
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="basic-usage">Basic Usage</h1>
+<h2 id="implementing-a-custom-converter">Implementing a custom converter</h2>
+<p>Implementing your own serialization functions is easy. It's often needed, not only when implementing a new
+serialization format next to the <code>databind.json</code> module, but also to extend an existing serialization format. For
+example, you may want to add support for serializing your <code>URI</code> custom type to and from a string. You can do this
+by implementing a custom <a href="/python-databind/core/api/databind.core.converter#pydoc:databind.core.converter.Converter">Class Converter</a>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">databind.core</span> <span class="kn">import</span> <span class="n">Context</span><span class="p">,</span> <span class="n">Converter</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">URI</span><span class="p">:</span>
+    <span class="n">scheme</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scheme</span><span class="si">}</span><span class="s1">://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="si">}{</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="k">class</span> <span class="nc">URIConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span> <span class="n">ClassTypeHint</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">datatype</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">URI</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">is_serialize</span><span class="p">():</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>  <span class="c1"># Always serialize into string</span>
+            <span class="k">elif</span> <span class="n">ctx</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">is_deserialize</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">URI</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+                <span class="c1"># Fall back to other converters, such as default implementation for dataclasses</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;invalid direction&#39;</span>
+</code></pre></div>
+<p>To use this new converter, you need to register it to an <a href="/python-databind/core/api/databind.core.mapper#pydoc:databind.core.mapper.ObjectMapper">Class ObjectMapper</a> instance.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">databind.core</span> <span class="kn">import</span> <span class="n">ObjectMapper</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">ObjectMapper</span><span class="p">()</span>
+<span class="n">mapper</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">URI</span><span class="o">.</span><span class="n">URIConverter</span><span class="p">())</span>
+
+<span class="k">assert</span> <span class="n">mapper</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="s1">&#39;https://example.com/foo&#39;</span><span class="p">,</span> <span class="n">URI</span><span class="p">)</span> <span class="o">==</span> <span class="n">URI</span><span class="p">(</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;/foo&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">mapper</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">URI</span><span class="p">(</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;/foo&#39;</span><span class="p">),</span> <span class="n">URI</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;https://example.com/foo&#39;</span>
+</code></pre></div>
+<h2 id="supporting-settings-in-your-converter">Supporting settings in your converter</h2>
+<div class="admonition info">
+<p class="admonition-title">What are settings?</p>
+<p>"Settings" are Python objects that are associated with types in the serialization process that can alter the behavior
+of the converter. Go to <a href="../settings/">Settings</a> to read more about it.</p>
+</div>
+<p>Consuming settings in a converter is straight forward. The <a href="/python-databind/core/api/databind.core.context#pydoc:databind.core.context.Context">Class Context</a> class provides
+convenient methods to access settings that are relevant for the current value being processed.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#  ...</span>
+<span class="kn">from</span> <span class="nn">databind.core</span> <span class="kn">import</span> <span class="n">BooleanSetting</span>
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">URI</span><span class="p">:</span>
+    <span class="c1"># ...</span>
+
+    <span class="k">class</span> <span class="nc">SerializeAsString</span><span class="p">(</span><span class="n">BooleanSetting</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Specifies whether the URI should be serialized to a string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">class</span> <span class="nc">URIConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">datatype</span><span class="p">,</span> <span class="n">ClassTypeHint</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">datatype</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">URI</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">is_serialize</span><span class="p">():</span>
+                <span class="n">serialize_as_string</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">get_setting</span><span class="p">(</span><span class="n">URI</span><span class="o">.</span><span class="n">SerializeAsString</span><span class="p">)</span><span class="o">.</span><span class="n">enabled</span>
+                <span class="k">if</span> <span class="n">serialize_as_string</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">elif</span> <span class="n">ctx</span><span class="o">.</span><span class="n">direction</span><span class="o">.</span><span class="n">is_deserialize</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">URI</span><span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">scheme</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;invalid direction&#39;</span>
+</code></pre></div>
+<p>The setting can now be specified when serializing a <code>URI</code> instance as a global setting:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># ...</span>
+
+<span class="kn">from</span> <span class="nn">databind.core</span> <span class="kn">import</span> <span class="n">NoMatchingConverter</span>
+<span class="kn">from</span> <span class="nn">pytest</span> <span class="kn">import</span> <span class="n">raises</span>
+
+<span class="c1"># When the setting is not enabled, the converter raises a NotImplementedError, having databind search for</span>
+<span class="c1"># another applicable converter. Since none exists with an otherwise empty ObjectMapper, this raises a</span>
+<span class="c1"># NoMatchingConverter exception.</span>
+<span class="k">with</span> <span class="n">raises</span><span class="p">(</span><span class="n">NoMatchingConverter</span><span class="p">):</span>
+    <span class="n">mapper</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">URI</span><span class="p">(</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;/foo&#39;</span><span class="p">),</span> <span class="n">URI</span><span class="p">)</span>
+
+<span class="c1"># Using a global setting, affecting all URI instances being serialized unless a more local setting is specified.</span>
+<span class="k">assert</span> <span class="n">mapper</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span>
+    <span class="n">URI</span><span class="p">(</span><span class="s1">&#39;htps&#39;</span><span class="p">,</span> <span class="s1">&#39;example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;/foo&#39;</span><span class="p">),</span> <span class="n">URI</span><span class="p">,</span> <span class="n">settings</span><span class="o">=</span><span class="p">[</span><span class="n">URI</span><span class="o">.</span><span class="n">SerializeAsString</span><span class="p">(</span><span class="kc">True</span><span class="p">)])</span> <span class="o">==</span> <span class="s1">&#39;https://example.com/foo&#39;</span>
+</code></pre></div>
+<h2 id="supporting-typingannotated-type-hints">Supporting <code>typing.Annotated</code> type hints</h2>
+<p>Converters must explicitly support <code>typing.Annotated</code> type hints. They are often useful to associate settings with
+a type in a particular case only. There may also be other reasons that a user may want to use an <code>Annotated</code> type
+hint.</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">URI</span><span class="p">:</span>
+    <span class="c1"># ...</span>
+
+    <span class="k">class</span> <span class="nc">URIConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="c1"># Check if the type to be converted is supposed to be a URI.</span>
+            <span class="n">datatype</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">datatype</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">AnnotatedTypeHint</span><span class="p">):</span>
+                <span class="n">datatype</span> <span class="o">=</span> <span class="n">datatype</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">datatype</span><span class="p">,</span> <span class="n">ClassTypeHint</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">datatype</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">URI</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+            <span class="c1"># ...</span>
+</code></pre></div>
+<p>Now the setting can be specified as an <code>Annotated</code> type hint:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Using the Annotated type hint to associate the setting with the type.</span>
+<span class="k">assert</span> <span class="n">mapper</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span>
+    <span class="n">URI</span><span class="p">(</span><span class="s1">&#39;https&#39;</span><span class="p">,</span> <span class="s1">&#39;example.com&#39;</span><span class="p">,</span> <span class="s1">&#39;/foo&#39;</span><span class="p">),</span> <span class="n">Annoated</span><span class="p">[</span><span class="n">URI</span><span class="p">,</span> <span class="n">URI</span><span class="o">.</span><span class="n">SerializeAsString</span><span class="p">(</span><span class="kc">True</span><span class="p">)])</span> <span class="o">==</span> <span class="s1">&#39;https://example.com/foo&#39;</span>
+</code></pre></div>
+<h2 id="class-decorator-settings">Class-decorator settings</h2>
+<p>There is also a special class called <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.ClassDecoratorSetting">Class ClassDecoratorSetting</a>, which can be used to
+create setting types that can decorate classes. The <code>Context.get_settings()</code> method will automatically understand
+that setting as well.</p>
+<h2 id="simplifying-custom-converts-for-users">Simplifying custom converts for users</h2>
+<p>Implementing custom converters, especially to convert between strings and custom types, can be a bit tedious. Given
+that it is quite a common use case, it is usually recommended that a Databind serialization library provide specific
+settings to simplify the process for users.</p>
+<p>For example, the <code>databind.json</code> package provides a <a href="/python-databind/json/api/databind.json.settings#pydoc:databind.json.settings.JsonConverter">Class JsonConverter</a> setting that users
+can use to very easily support the serialization of their custom types to and from strings in a JSON context.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">databind.json.settings</span> <span class="kn">import</span> <span class="n">JsonConverter</span>
+
+<span class="nd">@JsonConverter</span><span class="o">.</span><span class="n">using_classmethods</span><span class="p">(</span><span class="n">serialize</span><span class="o">=</span><span class="s2">&quot;__str__&quot;</span><span class="p">,</span> <span class="n">deserialize</span><span class="o">=</span><span class="s2">&quot;of&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyCustomType</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="o">...</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">of</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MyCustomType</span><span class="p">:</span>
+        <span class="o">...</span>
+</code></pre></div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      
+    
+  </body>
+</html>

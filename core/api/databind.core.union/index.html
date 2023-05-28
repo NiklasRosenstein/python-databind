@@ -9,22 +9,24 @@
       
       
       
+        <link rel="prev" href="../databind.core.settings/">
       
-        <link rel="next" href="core/">
       
-      <link rel="icon" href="assets/images/favicon.png">
+        <link rel="next" href="../../../json/">
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.14">
     
     
       
-        <title>python-databind</title>
+        <title>databind.core.union - python-databind</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.85bb2934.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.85bb2934.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.a6bdf11c.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.a6bdf11c.min.css">
       
       
 
@@ -40,7 +42,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -65,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#overview" class="md-skip">
+        <a href="#class-unionmembers" class="md-skip">
           Skip to content
         </a>
       
@@ -81,7 +83,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="python-databind" class="md-header__button md-logo" aria-label="python-databind" data-md-component="logo">
+    <a href="../../.." title="python-databind" class="md-header__button md-logo" aria-label="python-databind" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -100,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              databind.core.union
             
           </span>
         </div>
@@ -181,7 +183,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="python-databind" class="md-nav__button md-logo" aria-label="python-databind" data-md-component="logo">
+    <a href="../../.." title="python-databind" class="md-nav__button md-logo" aria-label="python-databind" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
@@ -210,55 +212,11 @@
 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Home
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
         Home
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview 📖
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    Features ✨
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -269,16 +227,18 @@
 
   
   
+    
+  
   
     
       
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
       
       
       
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
       
       
         
@@ -301,7 +261,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="core/">CORE</a>
+          <a href="../../">CORE</a>
           
             <label for="__nav_2">
               <span class="md-nav__icon md-icon"></span>
@@ -309,7 +269,7 @@
           
         </div>
       
-      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_2">
           <span class="md-nav__icon md-icon"></span>
           CORE
@@ -324,7 +284,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/basic-usage/" class="md-nav__link">
+      <a href="../../basic-usage/" class="md-nav__link">
         Basic Usage
       </a>
     </li>
@@ -338,7 +298,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/settings/" class="md-nav__link">
+      <a href="../../settings/" class="md-nav__link">
         Settings
       </a>
     </li>
@@ -352,7 +312,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/dataclass-ext/" class="md-nav__link">
+      <a href="../../dataclass-ext/" class="md-nav__link">
         Dataclass extension
       </a>
     </li>
@@ -366,7 +326,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/changelog/" class="md-nav__link">
+      <a href="../../changelog/" class="md-nav__link">
         Changelog
       </a>
     </li>
@@ -378,14 +338,16 @@
               
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
       
       
-      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" >
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_6" checked>
       
       
         
@@ -412,7 +374,7 @@
           <span class="md-nav__icon md-icon"></span>
         </label>
       
-      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="false">
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_6_label" aria-expanded="true">
         <label class="md-nav__title" for="__nav_2_6">
           <span class="md-nav__icon md-icon"></span>
           API
@@ -425,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core/" class="md-nav__link">
+      <a href="../databind.core/" class="md-nav__link">
         databind.core
       </a>
     </li>
@@ -439,7 +401,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core.context/" class="md-nav__link">
+      <a href="../databind.core.context/" class="md-nav__link">
         databind.core.context
       </a>
     </li>
@@ -453,7 +415,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core.converter/" class="md-nav__link">
+      <a href="../databind.core.converter/" class="md-nav__link">
         databind.core.converter
       </a>
     </li>
@@ -467,7 +429,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core.dataclasses/" class="md-nav__link">
+      <a href="../databind.core.dataclasses/" class="md-nav__link">
         databind.core.dataclasses
       </a>
     </li>
@@ -481,7 +443,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core.mapper/" class="md-nav__link">
+      <a href="../databind.core.mapper/" class="md-nav__link">
         databind.core.mapper
       </a>
     </li>
@@ -495,7 +457,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core.schema/" class="md-nav__link">
+      <a href="../databind.core.schema/" class="md-nav__link">
         databind.core.schema
       </a>
     </li>
@@ -509,7 +471,7 @@
   
   
     <li class="md-nav__item">
-      <a href="core/api/databind.core.settings/" class="md-nav__link">
+      <a href="../databind.core.settings/" class="md-nav__link">
         databind.core.settings
       </a>
     </li>
@@ -521,11 +483,116 @@
               
   
   
+    
   
-    <li class="md-nav__item">
-      <a href="core/api/databind.core.union/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          databind.core.union
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         databind.core.union
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class-unionmembers" class="md-nav__link">
+    Class UnionMembers
+  </a>
+  
+    <nav class="md-nav" aria-label="Class UnionMembers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_type_id" class="md-nav__link">
+    get_type_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_type_by_id" class="md-nav__link">
+    get_type_by_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_type_ids" class="md-nav__link">
+    get_type_ids
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-staticunionmembers" class="md-nav__link">
+    Class StaticUnionMembers
+  </a>
+  
+    <nav class="md-nav" aria-label="Class StaticUnionMembers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#members" class="md-nav__link">
+    members
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-entrypointunionmembers" class="md-nav__link">
+    Class EntrypointUnionMembers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-importunionmembers" class="md-nav__link">
+    Class ImportUnionMembers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-chainunionmembers" class="md-nav__link">
+    Class ChainUnionMembers
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -578,7 +645,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="json/">JSON</a>
+          <a href="../../../json/">JSON</a>
           
             <label for="__nav_3">
               <span class="md-nav__icon md-icon"></span>
@@ -625,7 +692,7 @@
         
         
         <div class="md-nav__link md-nav__link--index ">
-          <a href="json/examples/">Examples</a>
+          <a href="../../../json/examples/">Examples</a>
           
             <label for="__nav_3_2">
               <span class="md-nav__icon md-icon"></span>
@@ -648,7 +715,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/examples/config-serde/" class="md-nav__link">
+      <a href="../../../json/examples/config-serde/" class="md-nav__link">
         Configuration Serde
       </a>
     </li>
@@ -662,7 +729,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/examples/unions/" class="md-nav__link">
+      <a href="../../../json/examples/unions/" class="md-nav__link">
         Defining Unions
       </a>
     </li>
@@ -676,7 +743,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/examples/unknown-keys/" class="md-nav__link">
+      <a href="../../../json/examples/unknown-keys/" class="md-nav__link">
         Handling unknown keys during deserialization
       </a>
     </li>
@@ -697,7 +764,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/changelog/" class="md-nav__link">
+      <a href="../../../json/changelog/" class="md-nav__link">
         Changelog
       </a>
     </li>
@@ -750,7 +817,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/api/databind.json/" class="md-nav__link">
+      <a href="../../../json/api/databind.json/" class="md-nav__link">
         databind.json
       </a>
     </li>
@@ -764,7 +831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/api/databind.json.converters/" class="md-nav__link">
+      <a href="../../../json/api/databind.json.converters/" class="md-nav__link">
         databind.json.converters
       </a>
     </li>
@@ -778,7 +845,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/api/databind.json.direction/" class="md-nav__link">
+      <a href="../../../json/api/databind.json.direction/" class="md-nav__link">
         databind.json.direction
       </a>
     </li>
@@ -792,7 +859,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/api/databind.json.module/" class="md-nav__link">
+      <a href="../../../json/api/databind.json.module/" class="md-nav__link">
         databind.json.module
       </a>
     </li>
@@ -806,7 +873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="json/api/databind.json.settings/" class="md-nav__link">
+      <a href="../../../json/api/databind.json.settings/" class="md-nav__link">
         databind.json.settings
       </a>
     </li>
@@ -852,15 +919,76 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    Overview 📖
+  <a href="#class-unionmembers" class="md-nav__link">
+    Class UnionMembers
+  </a>
+  
+    <nav class="md-nav" aria-label="Class UnionMembers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_type_id" class="md-nav__link">
+    get_type_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_type_by_id" class="md-nav__link">
+    get_type_by_id
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_type_ids" class="md-nav__link">
+    get_type_ids
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-staticunionmembers" class="md-nav__link">
+    Class StaticUnionMembers
+  </a>
+  
+    <nav class="md-nav" aria-label="Class StaticUnionMembers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#members" class="md-nav__link">
+    members
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-entrypointunionmembers" class="md-nav__link">
+    Class EntrypointUnionMembers
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
-    Features ✨
+  <a href="#class-importunionmembers" class="md-nav__link">
+    Class ImportUnionMembers
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-chainunionmembers" class="md-nav__link">
+    Class ChainUnionMembers
   </a>
   
 </li>
@@ -883,61 +1011,111 @@
   
 
 
-<h1 align="center">databind</h1>
+  <h1>databind.core.union</h1>
 
-<p align="center">
-  <img src="https://img.shields.io/pypi/pyversions/databind?style=for-the-badge" alt="Python versions">
-  <a href="https://pypi.org/project/databind/"><img src="https://img.shields.io/pypi/v/databind?style=for-the-badge"></a>
-</p>
-<p align="center"><i>
-Databind is a Python serialization library on top of dataclasses, inspired by similar libraries from other languages
-like <a href="https://github.com/FasterXML/jackson-databind">jackson-databind</a> and <a href="https://serde.rs/">serde-rs</a>.</i>
-</p>
-<p align="center">
-  <a href="https://niklasrosenstein.github.io/python-databind/core/basic-usage/">CORE Guide</a> |
-  <a href="https://niklasrosenstein.github.io/python-databind/json/examples/">JSON Examples</a>
-</p>
-
-<h2 id="overview">Overview 📖</h2>
-<p>The <code>databind.core</code> package provides the core framework for databind. It is then used by <code>databind.json</code> to provide
-comprehensive serializatio support between Python and JSON-like data structure. The serialization can easily be
-extended to YAML or TOML by combining it with respective libraries (e.g. <code>pyaaml</code> and <code>tomli</code>).</p>
-<div class="highlight"><pre><span></span><code><span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Server</span><span class="p">:</span>
-    <span class="n">host</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="n">port</span><span class="p">:</span> <span class="nb">int</span>
-
-<span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Config</span><span class="p">:</span>
-    <span class="n">server</span><span class="p">:</span> <span class="n">Server</span>
-
-<span class="kn">from</span> <span class="nn">databind.json</span> <span class="kn">import</span> <span class="n">dump</span><span class="p">,</span> <span class="n">load</span>
-<span class="k">assert</span> <span class="n">load</span><span class="p">({</span><span class="s2">&quot;server&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">8080</span><span class="p">}},</span> <span class="n">Config</span><span class="p">)</span> <span class="o">==</span> <span class="n">Config</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="n">Server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">))</span>
-<span class="k">assert</span> <span class="n">dump</span><span class="p">(</span><span class="n">Config</span><span class="p">(</span><span class="n">server</span><span class="o">=</span><span class="n">Server</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">8080</span><span class="p">)),</span> <span class="n">Config</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&quot;server&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="mi">8080</span><span class="p">}}</span>
+<p>Provides the interface and implementations for representing the members of a union type.</p>
+<p><a id="databind.core.union.UnionMembers"></a></p>
+<p><a id="pydoc:databind.core.union.UnionMembers"></a></p>
+<h2 id="class-unionmembers">Class UnionMembers</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionMembers</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">)</span>
 </code></pre></div>
-<p>If you install the <code>databind</code> proxy package, you get matching versions of <code>databind.core</code> and <code>databind.json</code>.</p>
-<h2 id="features">Features ✨</h2>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L17">[view_source]</a></p>
+<p>Interface for representing the members of a union type. It defines methods to look up member type details
+based on name and Python type hints.</p>
+<p><a id="databind.core.union.UnionMembers.get_type_id"></a></p>
+<p><a id="pydoc:databind.core.union.UnionMembers.get_type_id"></a></p>
+<h4 id="get_type_id">get_type_id</h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<span class="k">def</span> <span class="nf">get_type_id</span><span class="p">(</span><span class="n">type_</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L22">[view_source]</a></p>
+<p>Given a Python type, return the ID of the type among the union members.</p>
+<p><strong>Arguments</strong>:</p>
 <ul>
-<li>Support for a plethora of builtin types, including <code>Enum</code>, <code>Decimal</code>, <code>UUID</code>, <code>Path</code>, <code>datetime</code>, <code>date</code>, <code>time</code>, <code>timedelta</code></li>
-<li>Support for multiple union serialization modes (nested, flat, keyed, <code>typing.Literal</code>)</li>
-<li>Support for generic types, e.g. <code>load([{"name": "Jane Doe"}], list[Person])</code></li>
-<li>Support for new-style type hints in older Python versions when using forward refererences (strings or <code>__future__.annotations</code>) thanks to <a href="https://github.com/NiklasRosenstein/python-typeapi">typeapi</a><ul>
-<li><a href="https://www.python.org/dev/peps/pep-0604/">PEP 604 - Allow writing union types as X | Y</a></li>
-<li><a href="https://www.python.org/dev/peps/pep-0585/">PEP585 - Type Hinting Generics in Standard Collections</a>)</li>
+<li><code>type_</code> - The Python type to retrieve the ID for.</li>
 </ul>
-</li>
-<li>Support for customized serialization and deserialization of types</li>
-<li>Support for flattening fields of a nested dataclass or collecting remaining fields in a <code>dict</code></li>
-<li>Full runtime type checking during serialization</li>
-<li>Use "settings" to customize serialization behaviour<ul>
-<li>As global settings per <code>load()</code>/<code>dump()</code> call: <code>load(..., settings=[ExtraKeys(True)])</code></li>
-<li>As class-level settings using a decorator: <code>@Union(style=Union.FLAT)</code> or <code>@ExtraKeys(True)</code></li>
-<li>As type-hint level settings using <code>typing.Annotated</code> (or <code>typing_extensions.Annotated</code>): <code>full_name: Annotated[str, Alias("fullName")]</code> or <code>FullNameField = Annotated[str, Alias("fullName")]</code></li>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>ValueError</code> - If the <em>type_</em> is not a member of the union.</li>
 </ul>
-</li>
+<p><a id="databind.core.union.UnionMembers.get_type_by_id"></a></p>
+<p><a id="pydoc:databind.core.union.UnionMembers.get_type_by_id"></a></p>
+<h4 id="get_type_by_id">get_type_by_id</h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<span class="k">def</span> <span class="nf">get_type_by_id</span><span class="p">(</span><span class="n">type_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L32">[view_source]</a></p>
+<p>Given type ID, return the Python type associated with that ID among the union members.</p>
+<p><strong>Arguments</strong>:</p>
+<ul>
+<li><code>type_id</code> - The ID of the type to retrieve.</li>
 </ul>
-<hr />
-<p align="center">Copyright &copy; 2022 &ndash; Niklas Rosenstein</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>ValueError</code> - If the <em>type_id</em> is not an ID among the union members.</li>
+</ul>
+<p><a id="databind.core.union.UnionMembers.get_type_ids"></a></p>
+<p><a id="pydoc:databind.core.union.UnionMembers.get_type_ids"></a></p>
+<h4 id="get_type_ids">get_type_ids</h4>
+<div class="highlight"><pre><span></span><code><span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+<span class="k">def</span> <span class="nf">get_type_ids</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L42">[view_source]</a></p>
+<p><strong>Returns</strong>:</p>
+<p>A list of the type names known to the union subtypes.</p>
+<p><strong>Raises</strong>:</p>
+<ul>
+<li><code>NotImplementedError</code> - If the method not supported by this implementation.</li>
+</ul>
+<p><a id="databind.core.union.StaticUnionMembers"></a></p>
+<p><a id="pydoc:databind.core.union.StaticUnionMembers"></a></p>
+<h2 id="class-staticunionmembers">Class StaticUnionMembers</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">StaticUnionMembers</span><span class="p">(</span><span class="n">UnionMembers</span><span class="p">)</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L52">[view_source]</a></p>
+<p>An implementation of <a href="#pydoc:databind.core.union.UnionMembers">UnionMembers</a> that reads statically from a dictionary. The dictionary can be altered
+subsequently, which is commonly done to explicitly register a member. The <a href="#pydoc:databind.core.union.StaticUnionMembers.members">members</a> dictionary values may
+contain Python types or type hints understood by databind converters, as well as functions that return these
+types of values to allow for deferred evaluation.</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">databind.core.union</span> <span class="kn">import</span> <span class="n">StaticUnionMembers</span>
+
+<span class="n">members</span> <span class="o">=</span> <span class="n">StaticUnionMembers</span><span class="p">()</span>
+
+<span class="nd">@members</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s1">&#39;my-type&#39;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MyType</span><span class="p">:</span>
+  <span class="k">pass</span>
+</code></pre></div>
+<p>The <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union.register">register()</a> method is also exposed for your convenience on the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union">Union</a> settings type (see <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union.register">Union.register()</a>).</p>
+<p><a id="databind.core.union.StaticUnionMembers.members"></a></p>
+<p><a id="pydoc:databind.core.union.StaticUnionMembers.members"></a></p>
+<h4 id="members">members</h4>
+<p>The member types dictionary.</p>
+<p><a id="databind.core.union.EntrypointUnionMembers"></a></p>
+<p><a id="pydoc:databind.core.union.EntrypointUnionMembers"></a></p>
+<h2 id="class-entrypointunionmembers">Class EntrypointUnionMembers</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">EntrypointUnionMembers</span><span class="p">(</span><span class="n">UnionMembers</span><span class="p">)</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L123">[view_source]</a></p>
+<p>An implementation of <a href="#pydoc:databind.core.union.UnionMembers">UnionMembers</a> to treat the member type ID as a name for an entry in a entrypoint group.</p>
+<p><a id="databind.core.union.ImportUnionMembers"></a></p>
+<p><a id="pydoc:databind.core.union.ImportUnionMembers"></a></p>
+<h2 id="class-importunionmembers">Class ImportUnionMembers</h2>
+<div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">ImportUnionMembers</span><span class="p">(</span><span class="n">UnionMembers</span><span class="p">)</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L155">[view_source]</a></p>
+<p>This <a href="#pydoc:databind.core.union.UnionMembers">UnionMembers</a> subclass treats type IDs as fully qualified identifiers by which to import Python classes.</p>
+<p>This implementation does not support <a href="#pydoc:databind.core.union.UnionMembers.get_type_ids">UnionMembers.get_type_ids()</a>.</p>
+<p><a id="databind.core.union.ChainUnionMembers"></a></p>
+<p><a id="pydoc:databind.core.union.ChainUnionMembers"></a></p>
+<h2 id="class-chainunionmembers">Class ChainUnionMembers</h2>
+<div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">ChainUnionMembers</span><span class="p">(</span><span class="n">UnionMembers</span><span class="p">)</span>
+</code></pre></div>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/union.py#L203">[view_source]</a></p>
+<p>Chain multiple implementations of <a href="#pydoc:databind.core.union.UnionMembers">UnionMembers</a>.</p>
 
 
 
@@ -980,10 +1158,10 @@ extended to YAML or TOML by combining it with respective libraries (e.g. <code>p
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.b4d07000.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.b4d07000.min.js"></script>
       
     
   </body>
