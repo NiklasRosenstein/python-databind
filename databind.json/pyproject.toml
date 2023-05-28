@@ -43,7 +43,7 @@ isort = "isort --check-only src/"
 flake8 = "flake8 src/"
 
 [tool.slap.run]
-fmt = "black src/ tests/ && isort src/ tests/"
+fmt = "black src/ && isort src/"
 
 [tool.mypy]
 python_version = "3.6"

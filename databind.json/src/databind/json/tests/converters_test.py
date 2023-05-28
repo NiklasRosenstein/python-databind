@@ -39,13 +39,13 @@ from databind.json.settings import JsonConverter
 
 
 def make_mapper(converters: t.List[Converter]) -> ObjectMapper[t.Any, t.Any]:
-    mapper = ObjectMapper()
+    mapper = ObjectMapper[t.Any, t.Any]()
     for converter in converters:
         mapper.module.register(converter)
     return mapper
 
 
-def test_any_converter():
+def test_any_converter() -> None:
     mapper = make_mapper([AnyConverter()])
     assert mapper.convert(Direction.SERIALIZE, "foobar", t.Any) == "foobar"
     assert mapper.convert(Direction.SERIALIZE, 42, t.Any) == 42
@@ -53,8 +53,8 @@ def test_any_converter():
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_plain_datatype_converter(direction: Direction):
-    mapper = make_mapper([PlainDatatypeConverter(direction)])
+def test_plain_datatype_converter(direction: Direction) -> None:
+    mapper = make_mapper([PlainDatatypeConverter()])
 
     # test strict
 
@@ -77,8 +77,8 @@ def test_plain_datatype_converter(direction: Direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_decimal_converter(direction: Direction):
-    mapper = make_mapper([DecimalConverter(direction)])
+def test_decimal_converter(direction: Direction) -> None:
+    mapper = make_mapper([DecimalConverter()])
 
     pi = decimal.Decimal("3.141592653589793")
     if direction == Direction.SERIALIZE:
@@ -93,7 +93,7 @@ def test_decimal_converter(direction: Direction):
 
 @pytest.mark.parametrize("direction", (Direction.DESERIALIZE, Direction.SERIALIZE))
 # @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_enum_converter(direction: Direction):
+def test_enum_converter(direction: Direction) -> None:
     mapper = make_mapper([EnumConverter()])
 
     class Pet(enum.Enum):
@@ -126,7 +126,7 @@ def test_enum_converter(direction: Direction):
             assert mapper.convert(direction, 3, Flags)
 
 
-def test_optional_converter():
+def test_optional_converter() -> None:
     mapper = make_mapper([OptionalConverter(), PlainDatatypeConverter()])
     assert mapper.convert(Direction.SERIALIZE, 42, t.Optional[int]) == 42
     assert mapper.convert(Direction.SERIALIZE, None, t.Optional[int]) is None
@@ -136,7 +136,7 @@ def test_optional_converter():
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_datetime_converter(direction: Direction):
+def test_datetime_converter(direction: Direction) -> None:
     mapper = make_mapper([DatetimeConverter()])
 
     tests = [
@@ -153,32 +153,32 @@ def test_datetime_converter(direction: Direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_duration_converter(direction: Direction):
+def test_duration_converter(direction: Direction) -> None:
     mapper = make_mapper([StringifyConverter(duration, duration.parse), SchemaConverter(), PlainDatatypeConverter()])
 
     # Test parsing duration from strings.
 
-    tests = [
+    test_from_strings = [
         (duration(2, 1, 4, 0, 3), "P2Y1M4WT3H"),
         (duration(seconds=10), "PT10S"),
         (duration(days=1, minutes=5), "P1DT5M"),
     ]
 
-    for py_value, str_value in tests:
+    for py_value, str_value in test_from_strings:
         if direction == Direction.SERIALIZE:
             assert mapper.convert(direction, py_value, duration) == str_value
         else:
             assert mapper.convert(direction, str_value, duration) == py_value
 
-    # Test parsing duraiton from objects (it is also a dataclass).
+    # Test parsing duration from objects (it is also a dataclass).
 
-    tests = [
+    test_from_dicts = [
         (duration(2, 1, 4, 0, 3), {"years": 2, "months": 1, "weeks": 4, "hours": 3}),
         (duration(seconds=10), {"seconds": 10}),
         (duration(days=1, minutes=5), {"days": 1, "minutes": 5}),
     ]
 
-    for py_value, obj_value in tests:
+    for py_value, obj_value in test_from_dicts:
         if direction == Direction.SERIALIZE:
             assert mapper.convert(direction, py_value, duration) == str(py_value)  # obj_value
         else:
@@ -186,7 +186,7 @@ def test_duration_converter(direction: Direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_stringify_converter(direction: Direction):
+def test_stringify_converter(direction: Direction) -> None:
     mapper = make_mapper([StringifyConverter(uuid.UUID)])
 
     uid = uuid.uuid4()
@@ -197,7 +197,7 @@ def test_stringify_converter(direction: Direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_mapping_converter(direction):
+def test_mapping_converter(direction: Direction) -> None:
     mapper = make_mapper([AnyConverter(), MappingConverter(), PlainDatatypeConverter()])
     assert mapper.convert(direction, {"a": 1}, t.Mapping) == {"a": 1}
     assert mapper.convert(direction, {"a": 1}, t.Mapping[str, int]) == {"a": 1}
@@ -206,7 +206,8 @@ def test_mapping_converter(direction):
     with pytest.raises(ConversionError):
         assert mapper.convert(direction, 1, t.Mapping[int, str])
 
-    K, V = t.TypeVar("K"), t.TypeVar("V")
+    K = t.TypeVar("K")
+    V = t.TypeVar("V")
 
     class CustomDict(t.Dict[K, V]):
         pass
@@ -225,7 +226,7 @@ def test_mapping_converter(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_collection_converter(direction):
+def test_collection_converter(direction: Direction) -> None:
     mapper = make_mapper([AnyConverter(), CollectionConverter(), PlainDatatypeConverter()])
     assert mapper.convert(direction, [1, 2, 3], t.Collection) == [1, 2, 3]
     assert mapper.convert(direction, [1, 2, 3], t.Collection[int]) == [1, 2, 3]
@@ -253,7 +254,7 @@ def test_collection_converter(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_union_converter_nested(direction):
+def test_union_converter_nested(direction: Direction) -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
 
     hint = te.Annotated[t.Union[int, str], Union({"int": int, "str": str})]
@@ -264,7 +265,7 @@ def test_union_converter_nested(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_union_converter_best_match(direction):
+def test_union_converter_best_match(direction: Direction) -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
 
     if direction == Direction.DESERIALIZE:
@@ -274,7 +275,7 @@ def test_union_converter_best_match(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_union_converter_keyed(direction):
+def test_union_converter_keyed(direction: Direction) -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
 
     th = te.Annotated[t.Union[int, str], Union({"int": int, "str": str}, style=Union.KEYED)]
@@ -285,7 +286,7 @@ def test_union_converter_keyed(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_union_converter_flat_plain_types_not_supported(direction):
+def test_union_converter_flat_plain_types_not_supported(direction: Direction) -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
 
     th = te.Annotated[t.Union[int, str], Union({"int": int, "str": str}, style=Union.FLAT)]
@@ -302,7 +303,7 @@ def test_union_converter_flat_plain_types_not_supported(direction):
 # TODO(NiklasRosenstein): Bring back dataclass definitions in function bodies.
 
 # @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-# def test_schema_converter(direction):
+# def test_schema_converter(direction: Direction):
 #     mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
 
 #     class Dict1(te.TypedDict):
@@ -351,7 +352,7 @@ def test_union_converter_flat_plain_types_not_supported(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_schema_converter_with_dict_member(direction):
+def test_schema_converter_with_dict_member(direction: Direction) -> None:
     mapper = make_mapper([SchemaConverter(), MappingConverter(), PlainDatatypeConverter()])
 
     @dataclasses.dataclass
@@ -366,7 +367,7 @@ def test_schema_converter_with_dict_member(direction):
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
-def test_schema_converter_remainder_field(direction):
+def test_schema_converter_remainder_field(direction: Direction) -> None:
     mapper = make_mapper([SchemaConverter(), MappingConverter(), PlainDatatypeConverter()])
 
     @dataclasses.dataclass
@@ -413,7 +414,7 @@ Trace:
     assert mapper.deserialize({"a": {}}, MyClass) == MyClass(B(42))
 
 
-def test_deserialize_union_dataclass_subclass():
+def test_deserialize_union_dataclass_subclass() -> None:
     """Tests that a subclass of a dataclass marked as a union is deserialized as a dataclass."""
 
     @dataclasses.dataclass
@@ -432,7 +433,7 @@ def test_deserialize_union_dataclass_subclass():
     assert load({"id": 0, "name": "spam"}, B) == B(0, "spam")
 
 
-def test_deserialize_and_serialize_literal_union():
+def test_deserialize_and_serialize_literal_union() -> None:
     from databind.json import dump, load
 
     @dataclasses.dataclass
@@ -482,8 +483,8 @@ def test_json_converter_setting() -> None:
     class MyClass1:
         a: int
 
-    assert load({"a": 42}, MyClass1) == "Oh HELLO"
-    assert load({}, MyClass1) == "Oh HELLO"
+    assert load({"a": 42}, MyClass1) == "Oh HELLO"  # type: ignore[comparison-overlap]  # Non-overlapping equality check  # noqa: E501
+    assert load({}, MyClass1) == "Oh HELLO"  # type: ignore[comparison-overlap]  # Non-overlapping equality check  # noqa: E501
     assert load({}, te.Annotated[MyClass1, JsonConverter(MyConverter("I am better"))]) == "I am better"
 
     class AnotherClass:
@@ -498,7 +499,7 @@ def test_json_converter_setting() -> None:
     class MyClass2:
         a: int
 
-    assert load({"a": 42}, MyClass1) == "Oh HELLO"
+    assert load({"a": 42}, MyClass1) == "Oh HELLO"  # type: ignore[comparison-overlap]  # Non-overlapping equality check  # noqa: E501
     assert load({"a": 42}, MyClass2) == MyClass2(42)
     assert load({"a": 42}, te.Annotated[MyClass2, JsonConverter(MyConverter("foo"))]) == "foo"
     assert load({"a": 42}, te.Annotated[MyClass2, JsonConverter(MyConverter(None, skip=True))]) == MyClass2(42)
