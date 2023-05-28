@@ -41,7 +41,12 @@ If you install the `databind` proxy package, you get matching versions of `datab
 * Support for new-style type hints in older Python versions when using forward refererences (strings or `__future__.annotations`) thanks to [typeapi][]
     * [PEP 604 - Allow writing union types as X | Y](https://www.python.org/dev/peps/pep-0604/)
     * [PEP585 - Type Hinting Generics in Standard Collections](https://www.python.org/dev/peps/pep-0585/))
+* Support for customized serialization and deserialization of types
 * Full runtime type checking during serialization
+* Use "settings" to customize serialization behaviour
+    * As global settings per `load()`/`dump()` call: `load(..., settings=[ExtraKeys(True)])`
+    * As class-level settings using a decorator: `@Union(style=Union.FLAT)` or `@ExtraKeys(True)`
+    * As type-hint level settings using `typing.Annotated` (or `typing_extensions.Annotated`): `full_name: Annotated[str, Alias("fullName")]` or `FullNameField = Annotated[str, Alias("fullName")]`
 
 ---
 
