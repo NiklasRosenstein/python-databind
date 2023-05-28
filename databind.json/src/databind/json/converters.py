@@ -11,6 +11,7 @@ from databind.core.schema import Field, Schema, convert_to_schema, get_fields_ex
 from databind.core.settings import (
     Alias,
     DateFormat,
+    DeserializeAs,
     ExtraKeys,
     Precision,
     Remainder,
@@ -413,7 +414,12 @@ class SchemaConverter(Converter):
         return ctx.get_setting(Alias) or Alias(field_name)
 
     def _get_schema(self, ctx: Context) -> Schema:
-        datatype = _unwrap_annotated(ctx.datatype)
+        deserialize_as = ctx.get_setting(DeserializeAs)
+        if deserialize_as is not None:
+            datatype = TypeHint(deserialize_as.type)
+        else:
+            datatype = _unwrap_annotated(ctx.datatype)
+
         try:
             return self.convert_to_schema(datatype)
         except ValueError as exc:

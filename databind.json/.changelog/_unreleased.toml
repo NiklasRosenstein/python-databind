@@ -1,0 +1,5 @@
+[[entries]]
+id = "5d31c345-35ef-40f4-bf02-bfca907f0517"
+type = "feature"
+description = "Support new `DeserializeAs` setting"
+author = "@NiklasRosenstein"

@@ -12,6 +12,7 @@ from databind.core.converter import ConversionError, Converter, NoMatchingConver
 from databind.core.mapper import ObjectMapper
 from databind.core.settings import (  # noqa: F401
     Alias,
+    DeserializeAs,
     ExtraKeys,
     Flattened,
     Remainder,
@@ -377,6 +378,38 @@ def test_schema_converter_remainder_field(direction):
         assert mapper.serialize(A(1, {"spam": 2}), A) == {"a": 1, "spam": 2}
     else:
         assert mapper.deserialize({"a": 1, "spam": 2}, A) == A(1, {"spam": 2})
+
+
+def test_deserialize_as() -> None:
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
+
+    @dataclasses.dataclass
+    class A:
+        a: int
+
+    @dataclasses.dataclass
+    class B(A):
+        a: int = 42
+
+    @dataclasses.dataclass
+    class MyClass:
+        a: te.Annotated[A, DeserializeAs(B)]
+
+    with pytest.raises(ConversionError) as excinfo:
+        assert mapper.serialize(MyClass(A(1)), MyClass) == {"a": {"a": 1}}
+    assert (
+        str(excinfo.value)
+        == """expected test_converters.test_deserialize_as.<locals>.B, got test_converters.test_deserialize_as.<locals>.A instead
+
+Trace:
+    $: TypeHint(test_converters.test_deserialize_as.<locals>.MyClass)
+    .a: TypeHint(typing_extensions.Annotated[test_converters.test_deserialize_as.<locals>.A, DeserializeAs(type=<class 'test_converters.test_deserialize_as.<locals>.B'>, priority=<Priority.NORMAL: 1>)])"""
+    )
+
+    assert mapper.serialize(MyClass(B(2)), MyClass) == {"a": {"a": 2}}
+    assert mapper.deserialize({"a": {"a": 1}}, MyClass) == MyClass(B(1))
+    assert mapper.deserialize({"a": {"a": 2}}, MyClass) == MyClass(B(2))
+    assert mapper.deserialize({"a": {}}, MyClass) == MyClass(B(42))
 
 
 def test_deserialize_union_dataclass_subclass():
