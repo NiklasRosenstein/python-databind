@@ -3,7 +3,14 @@ __version__ = "4.2.8"
 from .context import Context, Direction, Location, format_context_trace
 from .converter import ConversionError, Converter, DelegateToClassmethodConverter, Module, NoMatchingConverter
 from .mapper import ObjectMapper
-from .schema import Schema, convert_dataclass_to_schema, convert_to_schema, convert_typed_dict_to_schema
+from .schema import (
+    Field,
+    Schema,
+    convert_dataclass_to_schema,
+    convert_to_schema,
+    convert_typed_dict_to_schema,
+    get_fields_expanded,
+)
 from .settings import (
     Alias,
     BooleanSetting,
@@ -43,11 +50,13 @@ __all__ = [
     "DeserializeAs",
     "Direction",
     "ExtraKeys",
+    "Field",
     "Flattened",
     "format_context_trace",
     "get_annotation_setting",
     "get_class_setting",
     "get_class_settings",
+    "get_fields_expanded",
     "get_highest_setting",
     "Location",
     "Module",

@@ -5,22 +5,26 @@ import enum
 import types
 import typing as t
 
-from databind.core.context import Context, Direction
-from databind.core.converter import ConversionError, Converter
-from databind.core.schema import Field, Schema, convert_to_schema, get_fields_expanded
-from databind.core.settings import (
+from databind.core import (
     Alias,
+    Context,
+    ConversionError,
+    Converter,
     DateFormat,
     DeserializeAs,
+    Direction,
     ExtraKeys,
+    Field,
     Precision,
     Remainder,
+    Schema,
     SerializeDefaults,
     Strict,
     Union,
+    convert_to_schema,
     get_annotation_setting,
+    get_fields_expanded,
 )
-from databind.core.utils import T
 from typeapi import (
     AnnotatedTypeHint,
     ClassTypeHint,
@@ -31,6 +35,8 @@ from typeapi import (
     get_annotations,
     type_repr,
 )
+
+T = t.TypeVar("T")
 
 
 def _int_lossless(v: float) -> int:

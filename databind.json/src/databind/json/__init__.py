@@ -3,12 +3,10 @@
 import json
 import typing as t
 
+from databind.core import ObjectMapper, Setting, Settings
+
 from databind.json.module import JsonModule
 from databind.json.settings import JsonConverter
-
-if t.TYPE_CHECKING:
-    from databind.core.mapper import ObjectMapper
-    from databind.core.settings import Setting, Settings
 
 __version__ = "4.2.8"
 __all__ = [
@@ -35,10 +33,6 @@ JsonType = t.Union[
 
 
 def get_object_mapper(settings: "Settings | None" = None) -> "ObjectMapper[t.Any, JsonType]":
-    from databind.core.mapper import ObjectMapper
-
-    from databind.json.module import JsonModule
-
     mapper = ObjectMapper[t.Any, JsonType](settings)
     mapper.module.register(JsonModule())
     return mapper
