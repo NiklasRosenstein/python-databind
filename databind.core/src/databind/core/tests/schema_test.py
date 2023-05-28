@@ -16,7 +16,7 @@ from databind.core.settings import Flattened, Required
 from databind.core.utils import T, U
 
 
-def test_convert_to_schema_dataclass():
+def test_convert_to_schema_dataclass() -> None:
     # Test dataclass detection
     @dataclasses.dataclass
     class A:
@@ -58,7 +58,7 @@ def test_convert_to_schema_typed_dict() -> None:
     )
 
 
-def test_get_fields_expanded():
+def test_get_fields_expanded() -> None:
     class Dict1(te.TypedDict):
         a: int
         b: str
@@ -105,7 +105,7 @@ def test_get_fields_expanded():
     }
 
 
-def test_convert_dataclass_to_schema_simple():
+def test_convert_dataclass_to_schema_simple() -> None:
     @dataclasses.dataclass
     class A:
         a: int
@@ -144,7 +144,7 @@ def test_convert_dataclass_to_schema_simple():
 #     )
 
 
-def test_convert_dataclass_to_schema_with_defaults():
+def test_convert_dataclass_to_schema_with_defaults() -> None:
     @dataclasses.dataclass
     class A:
         a: int = 42
@@ -162,7 +162,7 @@ def test_convert_dataclass_to_schema_with_defaults():
     )
 
 
-def test_convert_dataclass_with_optional_field_has_none_as_default():
+def test_convert_dataclass_with_optional_field_has_none_as_default() -> None:
     @dataclasses.dataclass
     class A:
         a: t.Optional[int]
@@ -187,7 +187,7 @@ def test_convert_dataclass_with_optional_field_has_none_as_default():
     )
 
 
-def test_convert_dataclass_to_schema_nested():
+def test_convert_dataclass_to_schema_nested() -> None:
     @dataclasses.dataclass
     class A:
         a: int
@@ -207,7 +207,7 @@ def test_convert_dataclass_to_schema_nested():
     )
 
 
-def test_convert_dataclass_to_schema_inheritance():
+def test_convert_dataclass_to_schema_inheritance() -> None:
     @dataclasses.dataclass
     class A:
         a: int
@@ -226,7 +226,7 @@ def test_convert_dataclass_to_schema_inheritance():
     )
 
 
-def test_convert_dataclass_to_schema_generic():
+def test_convert_dataclass_to_schema_generic() -> None:
     @dataclasses.dataclass
     class A(t.Generic[T]):
         a: T
@@ -247,7 +247,7 @@ def test_convert_dataclass_to_schema_generic():
     )
 
 
-def test_convert_dataclass_overriden_field_type():
+def test_convert_dataclass_overriden_field_type() -> None:
     @dataclasses.dataclass
     class A:
         a: int
@@ -255,12 +255,12 @@ def test_convert_dataclass_overriden_field_type():
 
     @dataclasses.dataclass
     class B(A):
-        a: str
+        a: str  # type: ignore[assignment]
 
     assert convert_dataclass_to_schema(B) == Schema({"a": Field(TypeHint(str)), "b": Field(TypeHint(str))}, B, B)
 
 
-def test_convert_dataclass_to_schema_type_var_without_generic():
+def test_convert_dataclass_to_schema_type_var_without_generic() -> None:
     @dataclasses.dataclass
     class A:
         a: T  # type: ignore[valid-type]
@@ -287,7 +287,7 @@ def test_convert_dataclass_to_schema_type_var_without_generic():
     )
 
 
-def test_convert_dataclass_to_schema_generic_nested():
+def test_convert_dataclass_to_schema_generic_nested() -> None:
     @dataclasses.dataclass
     class A(t.Generic[T]):
         a: T
@@ -312,7 +312,7 @@ def test_convert_dataclass_to_schema_generic_nested():
     )
     assert convert_dataclass_to_schema(B2) == Schema(
         {
-            "a": Field(TypeHint(A[U])),
+            "a": Field(TypeHint(A[U])),  # type: ignore[valid-type]  # Type variable U is unbound
             "b": Field(TypeHint(str)),
         },
         B2,
@@ -328,7 +328,7 @@ def test_convert_dataclass_to_schema_generic_nested():
     )
 
 
-def test_convert_dataclass_to_schema_generic_inheritance():
+def test_convert_dataclass_to_schema_generic_inheritance() -> None:
     @dataclasses.dataclass
     class A(t.Generic[T]):
         a: T
@@ -368,7 +368,7 @@ def test_convert_dataclass_to_schema_generic_inheritance():
     )
 
 
-def test_convert_dataclass_with_mapping_member():
+def test_convert_dataclass_with_mapping_member() -> None:
     @dataclasses.dataclass
     class A:
         a: int
@@ -384,10 +384,10 @@ def test_convert_dataclass_with_mapping_member():
     )
 
 
-def test_convert_typed_dict_to_schema_total():
+def test_convert_typed_dict_to_schema_total() -> None:
     class Movie(te.TypedDict):
         name: str
-        year: int = 42  # type: ignore[misc]
+        year: int = 42  # type: ignore[misc]  # Right hand side values are not supported in TypedDict
 
     assert convert_typed_dict_to_schema(Movie) == Schema(
         {
@@ -399,9 +399,9 @@ def test_convert_typed_dict_to_schema_total():
     )
 
 
-def test_convert_typed_dict_to_schema_functional():
+def test_convert_typed_dict_to_schema_functional() -> None:
     Movie = te.TypedDict("Movie", {"name": str, "year": int})
-    Movie.year = 42
+    Movie.year = 42  # type: ignore[attr-defined]  # Type[Movie] has no attribute 'year'
     assert convert_typed_dict_to_schema(Movie) == Schema(
         {
             "name": Field(TypeHint(str)),
@@ -412,7 +412,7 @@ def test_convert_typed_dict_to_schema_functional():
     )
 
 
-def test_convert_typed_dict_to_schema_not_total():
+def test_convert_typed_dict_to_schema_not_total() -> None:
     class Movie(te.TypedDict, total=False):
         name: str
         year: int
@@ -427,7 +427,7 @@ def test_convert_typed_dict_to_schema_not_total():
     )
 
 
-def test_convert_typed_dict_with_optional_field_has_none_as_default():
+def test_convert_typed_dict_with_optional_field_has_none_as_default() -> None:
     class A(te.TypedDict, total=False):
         a: t.Optional[int]
         c: te.Annotated[t.Optional[int], "foo"]
@@ -450,7 +450,7 @@ class ClassWithForwardRef:
     b: t.List["int"]
 
 
-def test_parse_dataclass_with_forward_ref():
+def test_parse_dataclass_with_forward_ref() -> None:
     assert convert_dataclass_to_schema(ClassWithForwardRef) == Schema(
         {"a": Field(TypeHint(int), True), "b": Field(TypeHint(t.List[int]), True)},
         ClassWithForwardRef,

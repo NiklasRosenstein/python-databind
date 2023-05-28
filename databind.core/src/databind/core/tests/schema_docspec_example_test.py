@@ -22,7 +22,7 @@ class Module(HasMembers):
     members: t.List["Module"]
 
 
-def test__convert_dataclass_to_schema__multiple_levels_of_inheritance():
+def test__convert_dataclass_to_schema__multiple_levels_of_inheritance() -> None:
     assert convert_dataclass_to_schema(ApiObject) == Schema(
         {
             "location": Field(TypeHint(str), True),

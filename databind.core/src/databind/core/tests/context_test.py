@@ -6,11 +6,11 @@ from databind.core.context import Context, Direction, Location, format_context_t
 from databind.core.settings import Settings
 
 
-def test_format_context_trace():
+def test_format_context_trace() -> None:
     settings = Settings()
     location = Location.EMPTY
 
-    def no_convert(*a):
+    def no_convert(*a: t.Any) -> None:
         raise NotImplementedError
 
     ctx1 = Context(

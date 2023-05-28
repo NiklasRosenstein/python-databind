@@ -21,10 +21,7 @@ else:
     from types import GenericAlias
 
 if t.TYPE_CHECKING:
-
-    class Constructor(t.Protocol):
-        def __call__(self, **kwargs: t.Any) -> t.Any:
-            ...
+    Constructor = t.Callable[..., t.Any]
 
 
 __all__ = [
@@ -257,7 +254,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
     return Schema(fields, t.cast("Constructor", dataclass_type), dataclass_type)
 
 
-def convert_typed_dict_to_schema(typed_dict: TypedDictProtocol) -> Schema:
+def convert_typed_dict_to_schema(typed_dict: t.Union[TypedDictProtocol, t.Type[t.Any], TypeHint]) -> Schema:
     """Converts the definition of a #typing.TypedDict to a #Schema.
 
     !!! note
@@ -291,6 +288,11 @@ def convert_typed_dict_to_schema(typed_dict: TypedDictProtocol) -> Schema:
     }, Movie)
     ```
     """
+
+    if isinstance(typed_dict, TypeHint):
+        if not isinstance(typed_dict, ClassTypeHint):
+            raise TypeError(f"expected ClassTypeHint, got {typed_dict}")
+        typed_dict = typed_dict.type
 
     assert is_typed_dict(typed_dict), typed_dict
 
