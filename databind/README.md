@@ -4,12 +4,12 @@
   <img src="https://img.shields.io/pypi/pyversions/pydoc-markdown?style=for-the-badge" alt="Python versions">
   <a href="https://pypi.org/project/pydoc-markdown/"><img src="https://img.shields.io/pypi/v/pydoc-markdown?style=for-the-badge"></a>
 </p>
-<p align="center">
+<p align="center"><i>
 Databind is a Python serialization library on top of dataclasses, inspired by similar libraries from other languages
-like <a href="https://github.com/FasterXML/jackson-databind">jackson-databind</a> and <a href="https://serde.rs/">serde-rs</a>.
+like <a href="https://github.com/FasterXML/jackson-databind">jackson-databind</a> and <a href="https://serde.rs/">serde-rs</a>.</i>
 </p>
 <p align="center">
-  <a href="https://niklasrosenstein.github.io/python-databind/core/basic-usage/">CORE Guide</a>
+  <a href="https://niklasrosenstein.github.io/python-databind/core/basic-usage/">CORE Guide</a> |
   <a href="https://niklasrosenstein.github.io/python-databind/json/examples/">JSON Examples</a>
 </p>
 
