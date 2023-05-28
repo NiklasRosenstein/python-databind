@@ -200,55 +200,53 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
         type_: vars(sys.modules[type_.__module__]) for type_ in set(field_origin.values())
     }
 
-    # import pdb; pdb.set_trace()
-
     # Collect the members from the dataclass and its base classes.
     queue = [hint]
     fields: t.Dict[str, Field] = {}
     while queue:
         hint = queue.pop(0)
 
-        if hint.type not in eval_context_by_type:
+        if hint.type in eval_context_by_type:
+            # Make sure forward references are resolved.
+            hint = hint.evaluate(eval_context_by_type[hint.type])  # type: ignore[assignment]
+            assert isinstance(hint, ClassTypeHint)
+
+            parameter_map = hint.get_parameter_map()
+
+            for field in dataclasses.fields(hint.type):
+                if not field.init:
+                    # If we cannot initialize the field in the constructor, we should also
+                    # exclude it from the definition of the type for de-/serializing.
+                    continue
+                if field.name in fields:
+                    # Subclasses override their parent's fields.
+                    continue
+                if field_origin[field.name] != hint.type:
+                    # If this field does not belong to the current type
+                    continue
+
+                field_hint = TypeHint(field.type, field_origin[field.name]).evaluate().parameterize(parameter_map)
+
+                # NOTE(NiklasRosenstein): In Python 3.6, Mypy complains about "Callable does not accept self argument",
+                #       but we also cannot ignore it because of warn_unused_ignores.
+                _field_default_factory = getattr(field, "default_factory")
+
+                default = NotSet.Value if field.default == MISSING else field.default
+                default_factory = NotSet.Value if _field_default_factory == MISSING else _field_default_factory
+                has_default = default != NotSet.Value or default_factory != NotSet.Value
+                required = _is_required(field_hint, not has_default)
+
+                fields[field.name] = Field(
+                    datatype=field_hint,
+                    required=required,
+                    default=None if not required and not has_default else default,
+                    default_factory=default_factory,
+                    flattened=_is_flat(field_hint, False),
+                )
+        else:
             # This could mean that a base class is a dataclass but all of its members
             # are overwritten by other fields.
-            continue
-
-        # Make sure forward references are resolved.
-        hint = hint.evaluate(eval_context_by_type[hint.type])  # type: ignore[assignment]
-        assert isinstance(hint, ClassTypeHint)
-
-        parameter_map = hint.get_parameter_map()
-
-        for field in dataclasses.fields(hint.type):
-            if not field.init:
-                # If we cannot initialize the field in the constructor, we should also
-                # exclude it from the definition of the type for de-/serializing.
-                continue
-            if field.name in fields:
-                # Subclasses override their parent's fields.
-                continue
-            if field_origin[field.name] != hint.type:
-                # If this field does not belong to the current type
-                continue
-
-            field_hint = TypeHint(field.type, field_origin[field.name]).evaluate().parameterize(parameter_map)
-
-            # NOTE(NiklasRosenstein): In Python 3.6, Mypy complains about "Callable does not accept self argument",
-            #       but we also cannot ignore it because of warn_unused_ignores.
-            _field_default_factory = getattr(field, "default_factory")
-
-            default = NotSet.Value if field.default == MISSING else field.default
-            default_factory = NotSet.Value if _field_default_factory == MISSING else _field_default_factory
-            has_default = default != NotSet.Value or default_factory != NotSet.Value
-            required = _is_required(field_hint, not has_default)
-
-            fields[field.name] = Field(
-                datatype=field_hint,
-                required=required,
-                default=None if not required and not has_default else default,
-                default_factory=default_factory,
-                flattened=_is_flat(field_hint, False),
-            )
+            pass
 
         # Continue with the base classes.
         for base in hint.bases or hint.type.__bases__:

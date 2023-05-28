@@ -1,0 +1,5 @@
+[[entries]]
+id = "8a53d9d5-7be3-4db0-979b-0f438cd927fe"
+type = "fix"
+description = "Fixed a bug where `convert_dataclass_to_schema()` would fail to pick up members from a base class if an intermediate base class had all its explicitly defined fields overriden by its next subclass."
+author = "@NiklasRosenstein"
