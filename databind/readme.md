@@ -35,13 +35,14 @@ If you install the `databind` proxy package, you get matching versions of `datab
 
   [typeapi]: https://github.com/NiklasRosenstein/python-typeapi
 
-* Support for a plethora of builtin types, including `Enum`, `datetime`, `date`, `time`, `timedelta`, `uuid`, `pathlib.Path`
+* Support for a plethora of builtin types, including `Enum`, `Decimal`, `UUID`, `Path`, `datetime`, `date`, `time`, `timedelta`
 * Support for multiple union serialization modes (nested, flat, keyed, `typing.Literal`)
 * Support for generic types, e.g. `load([{"name": "Jane Doe"}], list[Person])`
 * Support for new-style type hints in older Python versions when using forward refererences (strings or `__future__.annotations`) thanks to [typeapi][]
     * [PEP 604 - Allow writing union types as X | Y](https://www.python.org/dev/peps/pep-0604/)
     * [PEP585 - Type Hinting Generics in Standard Collections](https://www.python.org/dev/peps/pep-0585/))
 * Support for customized serialization and deserialization of types
+* Support for flattening fields of a nested dataclass or collecting remaining fields in a `dict`
 * Full runtime type checking during serialization
 * Use "settings" to customize serialization behaviour
     * As global settings per `load()`/`dump()` call: `load(..., settings=[ExtraKeys(True)])`
