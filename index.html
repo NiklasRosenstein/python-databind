@@ -682,7 +682,7 @@ extended to YAML or TOML by combining it with respective libraries (e.g. <code>p
 <p>If you install the <code>databind</code> proxy package, you get matching versions of <code>databind.core</code> and <code>databind.json</code>.</p>
 <h2 id="features">Features ✨</h2>
 <ul>
-<li>Support for a plethora of builtin types, including <code>Enum</code>, <code>datetime</code>, <code>date</code>, <code>time</code>, <code>timedelta</code>, <code>uuid</code>, <code>pathlib.Path</code></li>
+<li>Support for a plethora of builtin types, including <code>Enum</code>, <code>Decimal</code>, <code>UUID</code>, <code>Path</code>, <code>datetime</code>, <code>date</code>, <code>time</code>, <code>timedelta</code></li>
 <li>Support for multiple union serialization modes (nested, flat, keyed, <code>typing.Literal</code>)</li>
 <li>Support for generic types, e.g. <code>load([{"name": "Jane Doe"}], list[Person])</code></li>
 <li>Support for new-style type hints in older Python versions when using forward refererences (strings or <code>__future__.annotations</code>) thanks to <a href="https://github.com/NiklasRosenstein/python-typeapi">typeapi</a><ul>
@@ -691,6 +691,7 @@ extended to YAML or TOML by combining it with respective libraries (e.g. <code>p
 </ul>
 </li>
 <li>Support for customized serialization and deserialization of types</li>
+<li>Support for flattening fields of a nested dataclass or collecting remaining fields in a <code>dict</code></li>
 <li>Full runtime type checking during serialization</li>
 <li>Use "settings" to customize serialization behaviour<ul>
 <li>As global settings per <code>load()</code>/<code>dump()</code> call: <code>load(..., settings=[ExtraKeys(True)])</code></li>
