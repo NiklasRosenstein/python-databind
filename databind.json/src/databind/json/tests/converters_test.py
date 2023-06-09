@@ -535,8 +535,7 @@ def test__namedtuple() -> None:
 
 
 def test__typing_NamedTuple() -> None:
-    # NOTE: Shouldn't need AnyConverter, we have type info.
-    mapper = make_mapper([CollectionConverter(), PlainDatatypeConverter(), AnyConverter()])
+    mapper = make_mapper([CollectionConverter(), PlainDatatypeConverter()])
 
     class Nt(t.NamedTuple):
         a: int
