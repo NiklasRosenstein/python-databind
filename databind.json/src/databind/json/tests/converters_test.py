@@ -524,7 +524,9 @@ def test_deserialize_tuple() -> None:
 
 
 def test__namedtuple() -> None:
-    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
+    # NOTE: Need the AnyConverter because the namedtuple is not a dataclass and we don't have type information
+    #       for the fields.
+    mapper = make_mapper([CollectionConverter(), PlainDatatypeConverter(), AnyConverter()])
 
     nt = namedtuple("nt", ["a", "b"])
 
@@ -533,7 +535,8 @@ def test__namedtuple() -> None:
 
 
 def test__typing_NamedTuple() -> None:
-    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
+    # NOTE: Shouldn't need AnyConverter, we have type info.
+    mapper = make_mapper([CollectionConverter(), PlainDatatypeConverter(), AnyConverter()])
 
     class Nt(t.NamedTuple):
         a: int
