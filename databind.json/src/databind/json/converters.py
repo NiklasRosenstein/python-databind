@@ -92,7 +92,7 @@ class CollectionConverter(Converter):
         if (
             isinstance(datatype, ClassTypeHint)
             and issubclass(datatype.type, tuple)
-            and getattr(datatype.type, "__annotations__")
+            and getattr(datatype.type, "__annotations__", None)
         ):
             schema = Schema(
                 fields={
