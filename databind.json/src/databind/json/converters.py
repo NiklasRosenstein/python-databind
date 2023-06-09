@@ -129,6 +129,9 @@ class CollectionConverter(Converter):
             values = list(values)
             if python_type == list:
                 return values
+            elif hasattr(python_type, "_fields"):  # For collections.namedtuple
+                return python_type(*values)
+
             try:
                 return python_type(values)
             except TypeError:

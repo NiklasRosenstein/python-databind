@@ -1,10 +1,10 @@
-from collections import namedtuple
 import dataclasses
 import datetime
 import decimal
 import enum
 import typing as t
 import uuid
+from collections import namedtuple
 
 import pytest
 import typing_extensions as te
@@ -530,8 +530,8 @@ def test__namedtuple() -> None:
 
     nt = namedtuple("nt", ["a", "b"])
 
-    assert mapper.serialize(nt(1, 2), nt) == {"a": 1, "b": 2}
-    assert mapper.deserialize({"a": 1, "b": 2}, nt) == nt(1, 2)
+    assert mapper.serialize(nt(1, 2), nt) == [1, 2]
+    assert mapper.deserialize([1, 2], nt) == nt(1, 2)
 
 
 def test__typing_NamedTuple() -> None:
