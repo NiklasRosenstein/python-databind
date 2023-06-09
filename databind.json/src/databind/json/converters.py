@@ -88,6 +88,31 @@ class CollectionConverter(Converter):
         ) and not isinstance(datatype, TupleTypeHint):
             raise NotImplementedError
 
+        # NamedTuples with type information are a lot like data classes, so we delegate to the SchemaConverter.
+        if (
+            isinstance(datatype, ClassTypeHint)
+            and issubclass(datatype.type, tuple)
+            and getattr(datatype.type, "__annotations__", None)
+        ):
+            schema = Schema(
+                fields={
+                    name: Field(
+                        datatype=TypeHint(type_),
+                    )
+                    for name, type_ in getattr(datatype.type, "__annotations__").items()
+                },
+                constructor=datatype.type,
+                type=datatype.type,
+            )
+            if ctx.direction.is_serialize():
+                return SchemaConverter().serialize_from_schema(ctx, schema)
+            elif ctx.direction.is_deserialize():
+                return SchemaConverter().deserialize_from_schema(ctx, schema)
+            else:
+                assert False, ctx.direction
+
+        # TODO(@niklas.rosenstein): Should we support an object-based JSON representation for collections.namedtuple?
+
         if isinstance(datatype, TupleTypeHint) and not datatype.repeated:
             # Require that the length of the input data matches the tuple.
             item_types_iterator = iter(datatype)
@@ -129,6 +154,9 @@ class CollectionConverter(Converter):
             values = list(values)
             if python_type == list:
                 return values
+            elif hasattr(python_type, "_fields"):  # For collections.namedtuple
+                return python_type(*values)
+
             try:
                 return python_type(values)
             except TypeError:
@@ -431,9 +459,7 @@ class SchemaConverter(Converter):
         except ValueError as exc:
             raise NotImplementedError(str(exc))
 
-    def serialize(self, ctx: Context) -> t.MutableMapping[str, t.Any]:
-        schema = self._get_schema(ctx)
-
+    def serialize_from_schema(self, ctx: Context, schema: Schema) -> t.MutableMapping[str, t.Any]:
         try:
             is_instance = isinstance(ctx.value, schema.type)
         except TypeError:
@@ -502,9 +528,7 @@ class SchemaConverter(Converter):
 
         return result
 
-    def deserialize(self, ctx: Context) -> t.Any:
-        schema = self._get_schema(ctx)
-
+    def deserialize_from_schema(self, ctx: Context, schema: Schema) -> t.Any:
         if not isinstance(ctx.value, t.Mapping):
             raise ConversionError.expected(self, ctx, t.Mapping)
 
@@ -574,6 +598,14 @@ class SchemaConverter(Converter):
             extra_keys.inform(self, ctx, unused_keys)
 
         return schema.constructor(**result)
+
+    def deserialize(self, ctx: Context) -> t.Any:
+        schema = self._get_schema(ctx)
+        return self.deserialize_from_schema(ctx, schema)
+
+    def serialize(self, ctx: Context) -> t.MutableMapping[str, t.Any]:
+        schema = self._get_schema(ctx)
+        return self.serialize_from_schema(ctx, schema)
 
 
 class StringifyConverter(Converter):

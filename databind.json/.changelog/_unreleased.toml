@@ -1,0 +1,6 @@
+[[entries]]
+id = "8504f1e4-679f-4a09-8888-bfca54bd4201"
+type = "fix"
+description = "Fix serde of `collections.namedtuple` (to array) and `typing.NamedTuple` (to object)"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/49"
