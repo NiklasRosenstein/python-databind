@@ -542,5 +542,5 @@ def test__typing_NamedTuple() -> None:
         a: int
         b: str
 
-    assert mapper.serialize(Nt(1, 2), Nt) == {"a": 1, "b": 2}
-    assert mapper.deserialize({"a": 1, "b": 2}, Nt) == Nt(1, 2)
+    assert mapper.serialize(Nt(1, "2"), Nt) == {"a": 1, "b": "2"}
+    assert mapper.deserialize({"a": 1, "b": "2"}, Nt) == Nt(1, "2")
