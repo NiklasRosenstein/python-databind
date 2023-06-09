@@ -1,3 +1,4 @@
+from collections import namedtuple
 import dataclasses
 import datetime
 import decimal
@@ -520,3 +521,23 @@ def test_deserialize_tuple() -> None:
     with pytest.raises(ConversionError) as excinfo:
         databind.json.load([1, 42, 3], t.Tuple[int, int])
     assert excinfo.value.message == "expected a tuple of length 2, found 3"
+
+
+def test__namedtuple() -> None:
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
+
+    nt = namedtuple("nt", ["a", "b"])
+
+    assert mapper.serialize(nt(1, 2), nt) == {"a": 1, "b": 2}
+    assert mapper.deserialize({"a": 1, "b": 2}, nt) == nt(1, 2)
+
+
+def test__typing_NamedTuple() -> None:
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
+
+    class Nt(t.NamedTuple):
+        a: int
+        b: str
+
+    assert mapper.serialize(Nt(1, 2), Nt) == {"a": 1, "b": 2}
+    assert mapper.deserialize({"a": 1, "b": 2}, Nt) == Nt(1, 2)
