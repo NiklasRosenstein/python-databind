@@ -97,7 +97,9 @@ class CollectionConverter(Converter):
             schema = Schema(
                 fields={
                     name: Field(
-                        datatype=TypeHint(type_),
+                        # We need to evaluate the type hint to remove forward references. The source is needed to
+                        # understand the context in which forward references must be evaluated.
+                        datatype=TypeHint(type_, source=datatype.type).evaluate(),
                     )
                     for name, type_ in getattr(datatype.type, "__annotations__").items()
                 },
