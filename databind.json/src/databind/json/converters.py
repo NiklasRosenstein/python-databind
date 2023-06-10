@@ -127,13 +127,26 @@ class CollectionConverter(Converter):
                     )
 
         else:
-            # There could be no arguments to the collection type, in which case we
-            # consider Any as the item type.
-            item_types_iterator = iter(lambda: datatype[0] if datatype.args else TypeHint(t.Any), None)
-            if isinstance(datatype, TupleTypeHint):
-                python_type = tuple
-            else:
-                python_type = datatype.type
+            # Find the item type in the base classes of the collection type.
+            bases: t.List[t.Union[ClassTypeHint, TupleTypeHint]] = [datatype]
+            candidates = []
+            while bases:
+                current = bases.pop(0)
+                if issubclass(current.type, t.Collection) and len(current.args) == 1:
+                    candidates.append(current)
+                else:
+                    for base in (current.bases or ()) if isinstance(current, ClassTypeHint) else ():
+                        base_hint = TypeHint(base, current.type).evaluate()
+                        assert isinstance(base_hint, ClassTypeHint), base_hint
+                        bases.append(base_hint)
+            if len(candidates) == 0:
+                raise ConversionError(self, ctx, f"could not find item type in {datatype}")
+            elif len(candidates) > 1:
+                raise ConversionError(self, ctx, f"found multiple item types in {datatype}: {candidates}")
+
+            item_type = TypeHint(candidates[0].args[0])
+            item_types_iterator = iter(lambda: item_type, None)
+            python_type = datatype.type
 
             def _length_check() -> None:
                 pass
