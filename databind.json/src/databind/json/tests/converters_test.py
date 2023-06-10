@@ -545,7 +545,7 @@ def test__typing_NamedTuple() -> None:
     assert mapper.deserialize({"a": 1, "b": "2"}, Nt) == Nt(1, "2")
 
 
-T_Page = t.TypeVar("T_Page")
+T_Page = t.TypeVar("T_Page", bound="Page[t.Any]")
 
 
 @dataclasses.dataclass
@@ -565,3 +565,52 @@ def test__parameterized_base_type_with_forward_ref() -> None:
     expected = SpecificPage("root", [SpecificPage("child", [])])
     assert mapper.deserialize(payload, SpecificPage) == expected
     mapper.serialize(expected, SpecificPage) == payload
+
+
+def test__parameterized_self_seferential_generic_cannot_be_processed() -> None:
+    """
+    A self-referential generic type (or nested generic type) cannot be properly parameterized in Mypy. [1]
+
+    For the page type above, if you would like to use it as-is, you would need to infinitely parameterized it,
+    as in `Page[Page[Page[Page[Page[... etc]]]]]`. As far as I am aware (@NiklasRosenstein, 2023.06.10), this can
+    only be solved by creating a dedicated specialized type that is self-referential via its base-class:
+
+    ```py
+    class MyPage(Page["MyPage"]):
+        pass
+    ```
+
+    When we encounter a partially parameterized type like `Page[Page]` (the inner `Page` is missing a type parameter),
+    databind will not have a way of knowing the value for the type parameter of the inner `Page` and will therefore
+    fail with an error like this:
+
+    ```
+    databind.core.converter.NoMatchingConverter: no deserializer for `TypeHint(~T_Page)` and payload of type `dict`
+    ```
+
+    [1]: https://github.com/python/mypy/issues/13693
+    """
+
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter(), CollectionConverter()])
+
+    payload = {
+        "name": "root",
+        "children": [
+            {
+                "name": "child",
+                "children": [
+                    # This is the level at which the deserialization will fail.
+                    {"name": "grandchild", "children": []}
+                ],
+            }
+        ],
+    }
+
+    with pytest.raises(NoMatchingConverter) as excinfo:
+        mapper.deserialize(payload, Page[Page])  # type: ignore[type-arg]
+    assert str(excinfo.value).splitlines()[0] == "no deserializer for `TypeHint(~T_Page)` and payload of type `dict`"
+
+    # It works with an additional level of page parameterization.
+    assert mapper.deserialize(payload, Page[Page[Page[Page]]]) == Page(  # type: ignore[type-arg]
+        "root", [Page("child", [Page("grandchild", [])])]
+    )

@@ -1,0 +1,5 @@
+[[entries]]
+id = "6ac5f7d0-aeb8-436c-bc2c-a178e2a82a74"
+type = "tests"
+description = "Add a unit tests to demonstrate that deserializing a nested type cannot work."
+author = "@NiklasRosenstein"
