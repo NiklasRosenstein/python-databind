@@ -543,3 +543,25 @@ def test__typing_NamedTuple() -> None:
 
     assert mapper.serialize(Nt(1, "2"), Nt) == {"a": 1, "b": "2"}
     assert mapper.deserialize({"a": 1, "b": "2"}, Nt) == Nt(1, "2")
+
+
+T_Page = t.TypeVar("T_Page")
+
+
+@dataclasses.dataclass
+class Page(t.Generic[T_Page]):
+    name: str
+    children: t.List[T_Page]
+
+
+@dataclasses.dataclass
+class SpecificPage(Page["SpecificPage"]):
+    pass
+
+
+def test__parameterized_base_type_with_forward_ref() -> None:
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter(), CollectionConverter()])
+    payload = {"name": "root", "children": [{"name": "child", "children": []}]}
+    expected = SpecificPage("root", [SpecificPage("child", [])])
+    assert mapper.deserialize(payload, SpecificPage) == expected
+    mapper.serialize(expected, SpecificPage) == payload
