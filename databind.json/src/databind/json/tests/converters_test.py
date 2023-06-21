@@ -537,10 +537,10 @@ def test__namedtuple__cannot_serde() -> None:
     nt = namedtuple("nt", ["a", "b"])
 
     with pytest.raises(ConversionError) as excinfo:
-        assert mapper.serialize(nt(1, 2), nt)
+        print(mapper.serialize(nt(1, 2), nt))
     assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(converters_test.nt)"
     with pytest.raises(ConversionError) as excinfo:
-        assert mapper.deserialize([1, 2], nt)
+        print(mapper.deserialize([1, 2], nt))
     assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(converters_test.nt)"
 
 

@@ -127,24 +127,16 @@ class CollectionConverter(Converter):
                     )
 
         else:
-            # Find the item type in the base classes of the collection type.
-            bases: t.List[t.Union[ClassTypeHint, TupleTypeHint]] = [datatype]
-            candidates = []
-            while bases:
-                current = bases.pop(0)
+            candidates = set()
+            for current in datatype.recurse_bases():
                 if issubclass(current.type, t.Collection) and len(current.args) == 1:
-                    candidates.append(current)
-                else:
-                    for base in (current.bases or ()) if isinstance(current, ClassTypeHint) else ():
-                        base_hint = TypeHint(base, current.type).evaluate()
-                        assert isinstance(base_hint, ClassTypeHint), base_hint
-                        bases.append(base_hint)
+                    candidates.add(current.args[0])
             if len(candidates) == 0:
                 raise ConversionError(self, ctx, f"could not find item type in {datatype}")
             elif len(candidates) > 1:
                 raise ConversionError(self, ctx, f"found multiple item types in {datatype}: {candidates}")
 
-            item_type = TypeHint(candidates[0].args[0])
+            item_type = TypeHint(next(iter(candidates)))
             item_types_iterator = iter(lambda: item_type, None)
             python_type = datatype.type
 
