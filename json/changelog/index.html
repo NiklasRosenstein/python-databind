@@ -15,7 +15,7 @@
         <link rel="next" href="../api/databind.json/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.16">
     
     
       
@@ -1473,6 +1473,21 @@
   <tr><td>Tests</td><td>
 
 Add a unit tests to demonstrate that deserializing a nested type cannot work.</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/51">51</a></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Fix</td><td>
+
+Technically a breaking change, but any consumer who is relying on this behaviour probably does that implicitly and wants to change their code anyway. o_o -- The `CollectionConverter` no longer implicitly assumes `Any` as the item type if collection is not parameterized.</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+The `CollectionConverter` now properly infers the item type from the types base classes</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+The `MappingConverter` now does improved resolution of the key and value type just like the `CollectionConverter`; note that an unparameterized Mapping no longer has its key and value type fall back to `typing.Any`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Improvement</td><td>
+
+Use `ConversionError.expected()` factory function in `PlainDatatypeConverter`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+  <tr><td>Tests</td><td>
+
+Test `JsonConverter`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
 </table>
 
 <h2 id="432-2023-06-09">4.3.2 (2023-06-09)</h2>
@@ -1879,7 +1894,7 @@ accept `datetime.date`/`datetime.datetime` objects when converting to python if 
     <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.b4d07000.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a51614de.min.js"></script>
       
     
   </body>
