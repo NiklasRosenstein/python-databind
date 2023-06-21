@@ -1475,19 +1475,19 @@
 Add a unit tests to demonstrate that deserializing a nested type cannot work.</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/51">51</a></td><td></td><td>@NiklasRosenstein</td></tr>
   <tr><td>Fix</td><td>
 
-Technically a breaking change, but any consumer who is relying on this behaviour probably does that implicitly and wants to change their code anyway. o_o -- The `CollectionConverter` no longer implicitly assumes `Any` as the item type if collection is not parameterized.</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+Technically a breaking change, but any consumer who is relying on this behaviour probably does that implicitly and wants to change their code anyway. o_o -- The `CollectionConverter` no longer implicitly assumes `Any` as the item type if collection is not parameterized.</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/52">52</a></td><td></td><td>@NiklasRosenstein</td></tr>
   <tr><td>Improvement</td><td>
 
-The `CollectionConverter` now properly infers the item type from the types base classes</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+The `CollectionConverter` now properly infers the item type from the types base classes</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/52">52</a></td><td></td><td>@NiklasRosenstein</td></tr>
   <tr><td>Improvement</td><td>
 
-The `MappingConverter` now does improved resolution of the key and value type just like the `CollectionConverter`; note that an unparameterized Mapping no longer has its key and value type fall back to `typing.Any`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+The `MappingConverter` now does improved resolution of the key and value type just like the `CollectionConverter`; note that an unparameterized Mapping no longer has its key and value type fall back to `typing.Any`</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/52">52</a></td><td></td><td>@NiklasRosenstein</td></tr>
   <tr><td>Improvement</td><td>
 
-Use `ConversionError.expected()` factory function in `PlainDatatypeConverter`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+Use `ConversionError.expected()` factory function in `PlainDatatypeConverter`</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/52">52</a></td><td></td><td>@NiklasRosenstein</td></tr>
   <tr><td>Tests</td><td>
 
-Test `JsonConverter`</td><td></td><td></td><td>@NiklasRosenstein</td></tr>
+Test `JsonConverter`</td><td><a href="https://github.com/NiklasRosenstein/python-databind/pull/52">52</a></td><td></td><td>@NiklasRosenstein</td></tr>
 </table>
 
 <h2 id="432-2023-06-09">4.3.2 (2023-06-09)</h2>
