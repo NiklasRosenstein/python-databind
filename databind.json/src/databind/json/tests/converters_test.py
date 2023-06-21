@@ -626,7 +626,7 @@ def test__parameterized_base_type_with_forward_ref() -> None:
     mapper.serialize(expected, SpecificPage) == payload
 
 
-def test__parameterized_self_seferential_generic_cannot_be_processed() -> None:
+def test__parameterized_self_referential_generic_cannot_be_processed() -> None:
     """
     A self-referential generic type (or nested generic type) cannot be properly parameterized in Mypy. [1]
 
