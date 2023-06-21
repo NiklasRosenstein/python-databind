@@ -4,3 +4,38 @@ type = "tests"
 description = "Add a unit tests to demonstrate that deserializing a nested type cannot work."
 author = "@NiklasRosenstein"
 pr = "https://github.com/NiklasRosenstein/python-databind/pull/51"
+
+[[entries]]
+id = "89204ef2-6173-4d4e-b857-3af59db2de32"
+type = "fix"
+description = "Technically a breaking change, but any consumer who is relying on this behaviour probably does that implicitly and wants to change their code anyway. o_o -- The `CollectionConverter` no longer implicitly assumes `Any` as the item type if collection is not parameterized."
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/52"
+
+[[entries]]
+id = "0b05e104-7012-4a03-a995-12ed05878f0b"
+type = "improvement"
+description = "The `CollectionConverter` now properly infers the item type from the types base classes"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/52"
+
+[[entries]]
+id = "ae147797-2857-4e6e-b7af-d2c6c1152e59"
+type = "improvement"
+description = "The `MappingConverter` now does improved resolution of the key and value type just like the `CollectionConverter`; note that an unparameterized Mapping no longer has its key and value type fall back to `typing.Any`"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/52"
+
+[[entries]]
+id = "08e63490-84b9-418d-8f26-39c770f17d59"
+type = "improvement"
+description = "Use `ConversionError.expected()` factory function in `PlainDatatypeConverter`"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/52"
+
+[[entries]]
+id = "78c6beda-22dd-419e-848f-5835ab554efd"
+type = "tests"
+description = "Test `JsonConverter`"
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/52"

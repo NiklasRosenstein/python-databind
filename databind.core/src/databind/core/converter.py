@@ -71,7 +71,11 @@ class Module(Converter):
             self.converters.append(converter)
 
     def get_converters(self, ctx: "Context") -> t.Iterator[Converter]:
-        yield from self.converters
+        for converter in self.converters:
+            if isinstance(converter, Module):
+                yield from converter.get_converters(ctx)
+            else:
+                yield converter
 
     def convert(self, ctx: "Context") -> t.Any:
         errors: t.List[t.Tuple[Converter, Exception]] = []
@@ -150,18 +154,29 @@ class DelegateToClassmethodConverter(Converter):
     scenario (e.g. such as de/serializing JSON with the #databind.json.settings.JsonConverter setting).
     """
 
-    def __init__(self, *, serialize: "str | None" = None, deserialize: "str | None" = None) -> None:
+    def __init__(
+        self,
+        serialized_type: t.Union[t.Type[t.Any], t.Tuple[t.Type[t.Any], ...], None] = None,
+        *,
+        serialize: "str | None" = None,
+        deserialize: "str | None" = None,
+    ) -> None:
+        self._serialized_type = serialized_type
         self._serialize = serialize
         self._deserialize = deserialize
 
     def serialize(self, ctx: "Context") -> t.Any:
         if self._serialize is None or not isinstance(ctx.datatype, ClassTypeHint):
             raise NotImplementedError
+        if not isinstance(ctx.value, ctx.datatype.type):
+            raise ConversionError.expected(self, ctx, ctx.datatype.type)
         method: t.Callable[[t.Any], t.Any] = getattr(ctx.datatype.type, self._serialize)
         return method(ctx.value)
 
     def deserialize(self, ctx: "Context") -> t.Any:
         if self._deserialize is None or not isinstance(ctx.datatype, ClassTypeHint):
             raise NotImplementedError
+        if self._serialized_type is not None and not isinstance(ctx.value, self._serialized_type):
+            raise ConversionError.expected(self, ctx, self._serialized_type)
         method: t.Callable[[t.Any], t.Any] = getattr(ctx.datatype.type, self._deserialize)
         return method(ctx.value)

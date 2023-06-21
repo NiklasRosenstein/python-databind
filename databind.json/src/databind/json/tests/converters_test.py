@@ -2,6 +2,7 @@ import dataclasses
 import datetime
 import decimal
 import enum
+import sys
 import typing as t
 import uuid
 from collections import namedtuple
@@ -36,6 +37,7 @@ from databind.json.converters import (
     StringifyConverter,
     UnionConverter,
 )
+from databind.json.module import JsonConverterSupport, JsonModule
 from databind.json.settings import JsonConverter
 
 
@@ -200,7 +202,11 @@ def test_stringify_converter(direction: Direction) -> None:
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_mapping_converter(direction: Direction) -> None:
     mapper = make_mapper([AnyConverter(), MappingConverter(), PlainDatatypeConverter()])
-    assert mapper.convert(direction, {"a": 1}, t.Mapping) == {"a": 1}
+
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.convert(direction, {"a": 1}, t.Mapping)
+    assert str(excinfo.value).splitlines()[0] == "could not find key/value type in TypeHint(typing.Mapping)"
+
     assert mapper.convert(direction, {"a": 1}, t.Mapping[str, int]) == {"a": 1}
     assert mapper.convert(direction, {"a": 1}, t.MutableMapping[str, int]) == {"a": 1}
     assert mapper.convert(direction, {"a": 1}, t.Dict[str, int]) == {"a": 1}
@@ -226,10 +232,57 @@ def test_mapping_converter(direction: Direction) -> None:
     #   assert mapper.convert(direction, {"a": 1}, FixedDict) == FixedDict({"a": 1})
 
 
+def test__MappingConverter__cannot_deserialize_dict_without_key_value_annotations() -> None:
+    mapper = make_mapper([MappingConverter()])
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize({"a": 1, "b": 2}, dict)
+    assert str(excinfo.value).splitlines()[0] == "could not find key/value type in TypeHint(dict)"
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize({"a": 1, "b": 2}, t.Dict)
+    assert str(excinfo.value).splitlines()[0] == "could not find key/value type in TypeHint(typing.Dict)"
+
+
+def test__MappingConverter__can_deserialize_dict_with_key_value_annotations() -> None:
+    mapper = make_mapper([PlainDatatypeConverter(), MappingConverter()])
+    if sys.version_info[:2] >= (3, 10):
+        assert mapper.deserialize({"a": 1, "b": 2}, dict[str, int]) == {"a": 1, "b": 2}
+    assert mapper.deserialize({"a": 1, "b": 2}, t.Dict[str, int]) == {"a": 1, "b": 2}
+
+
+def test__MappingConverter__can_serde_custom_key_type() -> None:
+    @JsonConverter.using_classmethods(str, serialize="__str__", deserialize="of")
+    @dataclasses.dataclass(frozen=True)
+    class MyKeyType:
+        a: str
+        b: str
+
+        def __str__(self) -> str:
+            return f"{self.a}/{self.b}"
+
+        @staticmethod
+        def of(v: str) -> "MyKeyType":
+            return MyKeyType(*v.split("/"))
+
+    json = {"a/b": 1, "b/c": 2}
+    python = {MyKeyType("a", "b"): 1, MyKeyType("b", "c"): 2}
+
+    for key, mapper in {
+        "Subset": make_mapper([PlainDatatypeConverter(), MappingConverter(), JsonConverterSupport()]),
+        "JsonModule": make_mapper([JsonModule()]),
+    }.items():
+        print(">", key)
+        assert mapper.deserialize(json, t.Mapping[MyKeyType, int]) == python
+        assert mapper.serialize(python, t.Mapping[MyKeyType, int]) == json
+
+
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_collection_converter(direction: Direction) -> None:
     mapper = make_mapper([AnyConverter(), CollectionConverter(), PlainDatatypeConverter()])
-    assert mapper.convert(direction, [1, 2, 3], t.Collection) == [1, 2, 3]
+
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.convert(direction, [1, 2, 3], t.Collection)
+    assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(typing.Collection)"
+
     assert mapper.convert(direction, [1, 2, 3], t.Collection[int]) == [1, 2, 3]
     assert mapper.convert(direction, [1, 2, 3], t.MutableSequence[int]) == [1, 2, 3]
     assert mapper.convert(direction, [1, 2, 3], t.List[int]) == [1, 2, 3]
@@ -294,7 +347,7 @@ def test_union_converter_flat_plain_types_not_supported(direction: Direction) ->
     if direction == Direction.DESERIALIZE:
         with pytest.raises(ConversionError) as excinfo:
             assert mapper.convert(direction, {"type": "int", "int": 42}, th)
-        assert "unable to deserialize dict -> int" in str(excinfo.value)
+        assert "expected int, got dict instead" in str(excinfo.value)
     else:
         with pytest.raises(ConversionError) as excinfo:
             assert mapper.convert(direction, 42, th)
@@ -516,22 +569,28 @@ def test_deserialize_tuple() -> None:
 
     with pytest.raises(ConversionError) as excinfo:
         databind.json.load([1, 42], t.Tuple[int, str])
-    assert excinfo.value.message == "unable to deserialize int -> str"
+    assert excinfo.value.message == "expected str, got int instead"
 
     with pytest.raises(ConversionError) as excinfo:
         databind.json.load([1, 42, 3], t.Tuple[int, int])
     assert excinfo.value.message == "expected a tuple of length 2, found 3"
 
 
-def test__namedtuple() -> None:
-    # NOTE: Need the AnyConverter because the namedtuple is not a dataclass and we don't have type information
-    #       for the fields.
+def test__namedtuple__cannot_serde() -> None:
+    """
+    There is no type information for #collections.namedtuples.
+    """
+
     mapper = make_mapper([CollectionConverter(), PlainDatatypeConverter(), AnyConverter()])
 
     nt = namedtuple("nt", ["a", "b"])
 
-    assert mapper.serialize(nt(1, 2), nt) == [1, 2]
-    assert mapper.deserialize([1, 2], nt) == nt(1, 2)
+    with pytest.raises(ConversionError) as excinfo:
+        print(mapper.serialize(nt(1, 2), nt))
+    assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(converters_test.nt)"
+    with pytest.raises(ConversionError) as excinfo:
+        print(mapper.deserialize([1, 2], nt))
+    assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(converters_test.nt)"
 
 
 def test__typing_NamedTuple() -> None:
@@ -614,3 +673,43 @@ def test__parameterized_self_seferential_generic_cannot_be_processed() -> None:
     assert mapper.deserialize(payload, Page[Page[Page[Page]]]) == Page(  # type: ignore[type-arg]
         "root", [Page("child", [Page("grandchild", [])])]
     )
+
+
+def test__list__fails_without_type_parameter() -> None:
+    mapper = make_mapper([AnyConverter(), CollectionConverter()])
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize([1, 2, 3], list)
+    assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(list)"
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize([1, 2, 3], t.List)
+    assert str(excinfo.value).splitlines()[0] == "could not find item type in TypeHint(typing.List)"
+
+
+def test__list__subclass_items_deserialized_correctly() -> None:
+    class MyList(t.List[SpecificPage]):
+        pass
+
+    mapper = make_mapper([SchemaConverter(), AnyConverter(), CollectionConverter(), PlainDatatypeConverter()])
+    assert mapper.deserialize([{"name": "foo", "children": []}], t.List[SpecificPage]) == MyList(
+        [SpecificPage("foo", [])]
+    )
+    assert mapper.deserialize([{"name": "foo", "children": []}], MyList) == MyList([SpecificPage("foo", [])])
+
+
+def test__JsonConverter__using_classmethods_on_plain_class() -> None:
+    @JsonConverter.using_classmethods(str, serialize="__str__", deserialize="of")
+    class MyCls:
+        def __eq__(self, other: t.Any) -> bool:
+            return type(other) is MyCls
+
+        def __str__(self) -> str:
+            return "MyCls"
+
+        @classmethod
+        def of(cls, v: str) -> "MyCls":
+            assert v == "MyCls"
+            return cls()
+
+    mapper = make_mapper([JsonConverterSupport()])
+    assert mapper.serialize(MyCls(), MyCls) == "MyCls"
+    assert mapper.deserialize("MyCls", MyCls) == MyCls()
