@@ -3,6 +3,8 @@ id = "6ac5f7d0-aeb8-436c-bc2c-a178e2a82a74"
 type = "tests"
 description = "Add a unit tests to demonstrate that deserializing a nested type cannot work."
 author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/51"
+
 
 [[entries]]
 id = "89204ef2-6173-4d4e-b857-3af59db2de32"
