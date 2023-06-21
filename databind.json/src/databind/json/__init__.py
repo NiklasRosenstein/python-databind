@@ -8,7 +8,7 @@ from databind.core import ObjectMapper, Setting, Settings
 from databind.json.module import JsonModule
 from databind.json.settings import JsonConverter
 
-__version__ = "4.3.2"
+__version__ = "4.4.0"
 __all__ = [
     "dump",
     "dumps",
