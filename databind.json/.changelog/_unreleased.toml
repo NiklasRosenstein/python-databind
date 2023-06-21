@@ -15,3 +15,9 @@ id = "0b05e104-7012-4a03-a995-12ed05878f0b"
 type = "improvement"
 description = "The `CollectionConverter` now properly infers the item type from the types base classes"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "ae147797-2857-4e6e-b7af-d2c6c1152e59"
+type = "improvement"
+description = "The `MappingConverter` now does improved resolution of the key and value type just like the `CollectionConverter`; note that an unparameterized Mapping no longer has its key and value type fall back to `typing.Any`"
+author = "@NiklasRosenstein"

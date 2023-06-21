@@ -322,13 +322,20 @@ class MappingConverter(Converter):
 
     def convert(self, ctx: Context) -> t.Any:
         datatype = _unwrap_annotated(ctx.datatype)
+
+        # Find the key and value types of the mapping.
         if not isinstance(datatype, ClassTypeHint) or not issubclass(datatype.type, t.Mapping):
             raise NotImplementedError
+        candidates = set()
+        for current in datatype.recurse_bases():
+            if issubclass(current.type, t.Mapping) and len(current.args) == 2:
+                candidates.add(current.args)
+        if len(candidates) == 0:
+            raise ConversionError(self, ctx, f"could not find key/value type in {datatype}")
+        elif len(candidates) > 1:
+            raise ConversionError(self, ctx, f"found multiple key/value types in {datatype}: {candidates}")
 
-        if not datatype.args:
-            key_type, value_type = t.Any, t.Any
-        else:
-            key_type, value_type = datatype.args
+        key_type, value_type = next(iter(candidates))
 
         if not isinstance(ctx.value, t.Mapping):
             raise ConversionError.expected(self, ctx, t.Mapping)

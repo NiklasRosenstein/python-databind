@@ -200,7 +200,11 @@ def test_stringify_converter(direction: Direction) -> None:
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_mapping_converter(direction: Direction) -> None:
     mapper = make_mapper([AnyConverter(), MappingConverter(), PlainDatatypeConverter()])
-    assert mapper.convert(direction, {"a": 1}, t.Mapping) == {"a": 1}
+
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.convert(direction, {"a": 1}, t.Mapping)
+    assert str(excinfo.value).splitlines()[0] == "could not find key/value type in TypeHint(typing.Mapping)"
+
     assert mapper.convert(direction, {"a": 1}, t.Mapping[str, int]) == {"a": 1}
     assert mapper.convert(direction, {"a": 1}, t.MutableMapping[str, int]) == {"a": 1}
     assert mapper.convert(direction, {"a": 1}, t.Dict[str, int]) == {"a": 1}
