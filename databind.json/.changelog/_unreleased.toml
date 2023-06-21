@@ -21,3 +21,9 @@ id = "ae147797-2857-4e6e-b7af-d2c6c1152e59"
 type = "improvement"
 description = "The `MappingConverter` now does improved resolution of the key and value type just like the `CollectionConverter`; note that an unparameterized Mapping no longer has its key and value type fall back to `typing.Any`"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "08e63490-84b9-418d-8f26-39c770f17d59"
+type = "improvement"
+description = "Use `ConversionError.expected()` factory function in `PlainDatatypeConverter`"
+author = "@NiklasRosenstein"

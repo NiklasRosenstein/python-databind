@@ -302,7 +302,7 @@ def test_union_converter_flat_plain_types_not_supported(direction: Direction) ->
     if direction == Direction.DESERIALIZE:
         with pytest.raises(ConversionError) as excinfo:
             assert mapper.convert(direction, {"type": "int", "int": 42}, th)
-        assert "unable to deserialize dict -> int" in str(excinfo.value)
+        assert "expected int, got dict instead" in str(excinfo.value)
     else:
         with pytest.raises(ConversionError) as excinfo:
             assert mapper.convert(direction, 42, th)
@@ -524,7 +524,7 @@ def test_deserialize_tuple() -> None:
 
     with pytest.raises(ConversionError) as excinfo:
         databind.json.load([1, 42], t.Tuple[int, str])
-    assert excinfo.value.message == "unable to deserialize int -> str"
+    assert excinfo.value.message == "expected str, got int instead"
 
     with pytest.raises(ConversionError) as excinfo:
         databind.json.load([1, 42, 3], t.Tuple[int, int])

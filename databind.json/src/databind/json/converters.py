@@ -429,8 +429,7 @@ class PlainDatatypeConverter(Converter):
         adapter = adapters.get((source_type, target_type))
 
         if adapter is None:
-            msg = f"unable to {ctx.direction.name.lower()} {source_type.__name__} -> {target_type.__name__}"
-            raise ConversionError(self, ctx, msg)
+            raise ConversionError.expected(self, ctx, target_type, source_type)
 
         try:
             return adapter(ctx.value)
