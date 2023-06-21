@@ -2,6 +2,7 @@ import dataclasses
 import datetime
 import decimal
 import enum
+import sys
 import typing as t
 import uuid
 from collections import namedtuple
@@ -36,6 +37,7 @@ from databind.json.converters import (
     StringifyConverter,
     UnionConverter,
 )
+from databind.json.module import JsonConverterSupport, JsonModule
 from databind.json.settings import JsonConverter
 
 
@@ -228,6 +230,49 @@ def test_mapping_converter(direction: Direction) -> None:
     #   assert mapper.convert(direction, FixedDict({"a": 1}), FixedDict) == {"a": 1}
     # else:
     #   assert mapper.convert(direction, {"a": 1}, FixedDict) == FixedDict({"a": 1})
+
+
+def test__MappingConverter__cannot_deserialize_dict_without_key_value_annotations() -> None:
+    mapper = make_mapper([MappingConverter()])
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize({"a": 1, "b": 2}, dict)
+    assert str(excinfo.value).splitlines()[0] == "could not find key/value type in TypeHint(dict)"
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize({"a": 1, "b": 2}, t.Dict)
+    assert str(excinfo.value).splitlines()[0] == "could not find key/value type in TypeHint(typing.Dict)"
+
+
+def test__MappingConverter__can_deserialize_dict_with_key_value_annotations() -> None:
+    mapper = make_mapper([PlainDatatypeConverter(), MappingConverter()])
+    if sys.version_info[:2] >= (3, 10):
+        assert mapper.deserialize({"a": 1, "b": 2}, dict[str, int]) == {"a": 1, "b": 2}
+    assert mapper.deserialize({"a": 1, "b": 2}, t.Dict[str, int]) == {"a": 1, "b": 2}
+
+
+def test__MappingConverter__can_serde_custom_key_type() -> None:
+    @JsonConverter.using_classmethods(str, serialize="__str__", deserialize="of")
+    @dataclasses.dataclass(frozen=True)
+    class MyKeyType:
+        a: str
+        b: str
+
+        def __str__(self) -> str:
+            return f"{self.a}/{self.b}"
+
+        @staticmethod
+        def of(v: str) -> "MyKeyType":
+            return MyKeyType(*v.split("/"))
+
+    json = {"a/b": 1, "b/c": 2}
+    python = {MyKeyType("a", "b"): 1, MyKeyType("b", "c"): 2}
+
+    for key, mapper in {
+        "Subset": make_mapper([PlainDatatypeConverter(), MappingConverter(), JsonConverterSupport()]),
+        "JsonModule": make_mapper([JsonModule()]),
+    }.items():
+        print(">", key)
+        assert mapper.deserialize(json, t.Mapping[MyKeyType, int]) == python
+        assert mapper.serialize(python, t.Mapping[MyKeyType, int]) == json
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
@@ -649,3 +694,22 @@ def test__list__subclass_items_deserialized_correctly() -> None:
         [SpecificPage("foo", [])]
     )
     assert mapper.deserialize([{"name": "foo", "children": []}], MyList) == MyList([SpecificPage("foo", [])])
+
+
+def test__JsonConverter__using_classmethods_on_plain_class() -> None:
+    @JsonConverter.using_classmethods(str, serialize="__str__", deserialize="of")
+    class MyCls:
+        def __eq__(self, other: t.Any) -> bool:
+            return type(other) is MyCls
+
+        def __str__(self) -> str:
+            return "MyCls"
+
+        @classmethod
+        def of(cls, v: str) -> "MyCls":
+            assert v == "MyCls"
+            return cls()
+
+    mapper = make_mapper([JsonConverterSupport()])
+    assert mapper.serialize(MyCls(), MyCls) == "MyCls"
+    assert mapper.deserialize("MyCls", MyCls) == MyCls()

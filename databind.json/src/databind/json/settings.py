@@ -56,5 +56,12 @@ class JsonConverter(ClassDecoratorSetting):
             self.supplier = supplier
 
     @staticmethod
-    def using_classmethods(*, serialize: "str | None" = None, deserialize: "str | None" = None) -> "JsonConverter":
-        return JsonConverter(DelegateToClassmethodConverter(serialize=serialize, deserialize=deserialize))
+    def using_classmethods(
+        serialized_type: t.Union[t.Type[t.Any], t.Tuple[t.Type[t.Any], ...], None] = None,
+        *,
+        serialize: "str | None" = None,
+        deserialize: "str | None" = None
+    ) -> "JsonConverter":
+        return JsonConverter(
+            DelegateToClassmethodConverter(serialized_type, serialize=serialize, deserialize=deserialize)
+        )

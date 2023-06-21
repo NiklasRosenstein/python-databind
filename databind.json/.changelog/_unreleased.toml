@@ -27,3 +27,9 @@ id = "08e63490-84b9-418d-8f26-39c770f17d59"
 type = "improvement"
 description = "Use `ConversionError.expected()` factory function in `PlainDatatypeConverter`"
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "78c6beda-22dd-419e-848f-5835ab554efd"
+type = "tests"
+description = "Test `JsonConverter`"
+author = "@NiklasRosenstein"

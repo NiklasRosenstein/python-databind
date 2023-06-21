@@ -55,6 +55,17 @@ class JsonModule(Module):
         self.register(StringifyConverter(duration, duration.parse, name="JsonModule:nr.date.duration"), first=True)
         self.register(LiteralConverter())
 
+        self.register(JsonConverterSupport(), first=True)
+
+
+class JsonConverterSupport(Module):
+    """
+    Handles the JsonConverter setting.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(__name__ + ".JsonConverterSupport")
+
     def get_converters(self, ctx: Context) -> Iterator[Converter]:
         converter_setting = ctx.get_setting(JsonConverter)
         if converter_setting is not None:
