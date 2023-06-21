@@ -9,3 +9,9 @@ id = "43fe920b-b6b9-4701-9403-bff9aba2e744"
 type = "improvement"
 description = "Work around highly nested error tracebacks in `Module.convert()` by expanding all converters returned by `Module.get_converter()`. Note that this means `Module.convert()` is no longer called if the module is a child of another module."
 author = "@NiklasRosenstein"
+
+[[entries]]
+id = "e2e3fbdf-b19c-443d-bc79-8560dba4b1b5"
+type = "improvement"
+description = "Add `DelegateToClassmethodConverter(serialized_type)` parameter."
+author = "@NiklasRosenstein"
