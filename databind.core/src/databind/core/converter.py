@@ -71,7 +71,11 @@ class Module(Converter):
             self.converters.append(converter)
 
     def get_converters(self, ctx: "Context") -> t.Iterator[Converter]:
-        yield from self.converters
+        for converter in self.converters:
+            if isinstance(converter, Module):
+                yield from converter.get_converters(ctx)
+            else:
+                yield converter
 
     def convert(self, ctx: "Context") -> t.Any:
         errors: t.List[t.Tuple[Converter, Exception]] = []
