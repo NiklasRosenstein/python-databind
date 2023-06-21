@@ -1144,7 +1144,7 @@
 <h2 id="class-root">Class Root</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">Root</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L11">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L11">[view_source]</a></p>
 <p>A singleton to represent that a <a href="#pydoc:databind.core.context.Context">Context</a> is pointing to the root of the payload.</p>
 <p><a id="databind.core.context.Location"></a></p>
 <p><a id="pydoc:databind.core.context.Location"></a></p>
@@ -1152,7 +1152,7 @@
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Location</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L18">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L18">[view_source]</a></p>
 <p>Represents a location in a file.</p>
 <p><a id="databind.core.context.Location.filename"></a></p>
 <p><a id="pydoc:databind.core.context.Location.filename"></a></p>
@@ -1172,7 +1172,7 @@
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Context</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L48">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L48">[view_source]</a></p>
 <p>The context is constructed by the <a href="/python-databind/core/api/databind.core.mapper#pydoc:databind.core.mapper.ObjectMapper">ObjectMapper</a> and passed to an applicable <a href="/python-databind/core/api/databind.core.converter#pydoc:databind.core.converter.Converter">Converter</a> to convert <a href="#pydoc:databind.core.context.Context.value">value</a>
 according to the <a href="#pydoc:databind.core.context.Context.datatype">datatype</a>.</p>
 <p><a id="databind.core.context.Context.parent"></a></p>
@@ -1215,7 +1215,7 @@ has no parent.</p>
 <h4 id="get_setting">get_setting</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_setting</span><span class="p">(</span><span class="n">setting_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="s2">&quot;T_Setting&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;T_Setting | None&quot;</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L86">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L86">[view_source]</a></p>
 <p>Retrieve a setting by type that for the current context.</p>
 <p><a id="databind.core.context.Context.spawn"></a></p>
 <p><a id="pydoc:databind.core.context.Context.spawn"></a></p>
@@ -1225,7 +1225,7 @@ has no parent.</p>
           <span class="n">key</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
           <span class="n">location</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">Location</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Context&quot;</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L91">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L91">[view_source]</a></p>
 <p>Spawn a sub context with a new value, datatype, key and optionally a new location. If the location is
 not overwritten, the parent filename is inherited, but not line number and column.</p>
 <p><strong>Arguments</strong>:</p>
@@ -1244,14 +1244,14 @@ not overwritten, the parent filename is inherited, but not line number and colum
 <h4 id="convert">convert</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Any</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L120">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L120">[view_source]</a></p>
 <p>Invoke the <a href="#pydoc:databind.core.context.Context.convert_func">convert_func</a> with <em>self</em>.</p>
 <p><a id="databind.core.context.format_context_trace"></a></p>
 <p><a id="pydoc:databind.core.context.format_context_trace"></a></p>
 <h4 id="format_context_trace">format_context_trace</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">format_context_trace</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="n">Context</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/context.py#L132">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/context.py#L132">[view_source]</a></p>
 <p>Formats a trace for the given context that is convenient to inspect in case of errors to understand where the
 context is pointing to in the payload that is being converted.</p>
 
