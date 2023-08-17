@@ -15,7 +15,7 @@
         <link rel="next" href="../databind.json.direction/">
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.16">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -23,7 +23,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ecc896b0.min.css">
@@ -994,14 +994,14 @@
 <h2 id="class-anyconverter">Class AnyConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">AnyConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L65">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L65">[view_source]</a></p>
 <p>A converter for <code>typing.Any</code> and <code>object</code> typed values, which will return them unchanged in any case.</p>
 <p><a id="databind.json.converters.DatetimeConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.DatetimeConverter"></a></p>
 <h2 id="class-datetimeconverter">Class DatetimeConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DatetimeConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L176">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L176">[view_source]</a></p>
 <p>A converter for <code>datetime.datetime</code>, <code>datetime.date</code> and <code>datetime.time</code> that represents the serialized form as
 strings formatted using the <code>nr.date</code> module. The converter respects the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.DateFormat">DateFormat</a> setting.</p>
 <p><a id="databind.json.converters.DecimalConverter"></a></p>
@@ -1009,14 +1009,14 @@ strings formatted using the <code>nr.date</code> module. The converter respects 
 <h2 id="class-decimalconverter">Class DecimalConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">DecimalConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L222">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L222">[view_source]</a></p>
 <p>A converter for <code>decimal.Decimal</code> values to and from JSON as strings.</p>
 <p><a id="databind.json.converters.EnumConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.EnumConverter"></a></p>
 <h2 id="class-enumconverter">Class EnumConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">EnumConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L248">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L248">[view_source]</a></p>
 <p>JSON converter for enum values.</p>
 <p>Converts <code>enum.IntEnum</code> values to integers and <code>enum.Enum</code> values to strings. Note that combined integer flags
 are not supported and cannot be serializ</p>
@@ -1036,7 +1036,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-plaindatatypeconverter">Class PlainDatatypeConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PlainDatatypeConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L374">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L374">[view_source]</a></p>
 <p>A converter for the plain datatypes <code>bool</code>, <code>bytes</code>, <code>int</code>, <code>str</code> and <code>float</code>.</p>
 <p><strong>Arguments</strong>:</p>
 <ul>
@@ -1052,7 +1052,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-schemaconverter">Class SchemaConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">SchemaConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L440">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L440">[view_source]</a></p>
 <p>Converter for type hints that can be adapter to a <code>databind.core.schema.Schema</code> object.</p>
 <p>This converter respects the following settings:</p>
 <ul>
@@ -1064,7 +1064,7 @@ in the value's serialized form as opposed to its value name defined in code.</p>
 <h2 id="class-stringifyconverter">Class StringifyConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">StringifyConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L624">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L624">[view_source]</a></p>
 <p>A useful helper converter that matches on a given type or its subclasses and converts them to a string for
 serialization and deserializes them from a string using the type's constructor.</p>
 <p><a id="databind.json.converters.UnionConverter"></a></p>
@@ -1072,38 +1072,20 @@ serialization and deserializes them from a string using the type's constructor.<
 <h2 id="class-unionconverter">Class UnionConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">UnionConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L669">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L669">[view_source]</a></p>
 <p>Converter for union types. The following kinds of union types are supported:</p>
 <ul>
-<li>A <code>typing.Union</code> (represented as <code>UnionTypeHint</code>) instance, in which case the members are deserialized in the
-the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union.NESTED">Union.NESTED</a> mode, using the class name as the discriminator keys.</li>
+<li>
+<p>A <code>typing.Union</code> (represented as <code>UnionTypeHint</code>) instance, in which case the members are deserialized in the
+the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union.NESTED">Union.NESTED</a> mode, using the class name as the discriminator keys.</p>
+</li>
+<li>
+<p>A <code>typing.Annotated</code> annotated with the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union">Union</a> setting (represented as <code>AnnotatedTypeHint</code>)</p>
+</li>
+<li>
+<p>A class that is decorated with the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union">Union</a> setting</p>
+</li>
 </ul>
-<div class="highlight"><pre><span></span><code><span class="n">AOrB</span> <span class="o">=</span> <span class="n">A</span> <span class="o">|</span> <span class="n">B</span>   <span class="c1"># ex.: {&quot;type&quot;: &quot;A&quot;, &quot;A&quot;: {...}}</span>
-</code></pre></div>
-<ul>
-<li>A <code>typing.Annotated</code> annotated with the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union">Union</a> setting (represented as <code>AnnotatedTypeHint</code>)</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">databind.core.settings</span> <span class="kn">import</span> <span class="n">Union</span>
-<span class="n">AOrB</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Annotated</span><span class="p">[</span><span class="n">A</span> <span class="o">|</span> <span class="n">B</span><span class="p">,</span> <span class="n">Union</span><span class="p">({</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="n">B</span><span class="p">},</span> <span class="n">Union</span><span class="o">.</span><span class="n">KEYED</span><span class="p">)]</span>  <span class="c1"># ex.: {&quot;a&quot;: {...}}</span>
-</code></pre></div>
-<ul>
-<li>A class that is decorated with the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Union">Union</a> setting</li>
-</ul>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">dataclasses</span>
-<span class="kn">from</span> <span class="nn">databind.core.settings</span> <span class="kn">import</span> <span class="n">Union</span>
-
-<span class="nd">@Union</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="n">Union</span><span class="o">.</span><span class="n">FLAT</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Base</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-<span class="k">pass</span>
-
-<span class="nd">@Union</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Base</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
-<span class="k">class</span> <span class="nc">A</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
-<span class="k">pass</span>
-
-<span class="c1"># ...</span>
-<span class="c1"># ex.: {&quot;type&quot;: &quot;a&quot;, ...}</span>
-</code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 </div>
@@ -1111,26 +1093,50 @@ the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.cor
 if an object is an instance of an alias. This is an implementation detail of the
 <code>databind.core.union.UnionMembers</code> implementations.</p>
 <p>More Examples:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">import</span> <span class="nn">typing</span>
-<span class="kn">from</span> <span class="nn">databind.core.settings</span> <span class="kn">import</span> <span class="n">Union</span>
+<div class="highlight"><pre><span></span><code>```py
+AOrB = A | B   # ex.: {&quot;type&quot;: &quot;A&quot;, &quot;A&quot;: {...}}
+```
+```py
+from databind.core.settings import Union
+AOrB = typing.Annotated[A | B, Union({&#39;a&#39;: A, &#39;b&#39;: B}, Union.KEYED)]  # ex.: {&quot;a&quot;: {...}}
+```
+```py
+import dataclasses
+from databind.core.settings import Union
 
-<span class="n">AOrB</span> <span class="o">=</span> <span class="n">typing</span><span class="o">.</span><span class="n">Annotated</span><span class="p">[</span>
-  <span class="n">typing</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span>
-  <span class="n">Union</span><span class="p">({</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="n">A</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="n">B</span><span class="p">},</span> <span class="n">Union</span><span class="o">.</span><span class="n">NESTED</span><span class="p">,</span> <span class="s1">&#39;uses&#39;</span><span class="p">,</span> <span class="s1">&#39;with&#39;</span><span class="p">)</span>
-<span class="p">]</span>
+@Union(style=Union.FLAT)
+class Base(abc.ABC):
+  pass
 
-<span class="nd">@Union</span><span class="p">(</span><span class="s1">&#39;!my.package.plugins&#39;</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Plugin</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-  <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-  <span class="k">def</span> <span class="nf">activate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+@Union.register(Base, &#39;a&#39;)
+@dataclasses.dataclass
+class A(Base):
+  pass
+
+# ...
+# ex.: {&quot;type&quot;: &quot;a&quot;, ...}
+```
 </code></pre></div>
+<p><code>py
+import abc
+import typing
+from databind.core.settings import Union
+
+AOrB = typing.Annotated[
+  typing.Union[A, B],
+  Union({'A': A, 'B': B}, Union.NESTED, 'uses', 'with')
+]
+
+@Union('!my.package.plugins')
+class Plugin(abc.ABC):
+  @abc.abstractmethod
+  def activate(self) -&gt; None: ...</code></p>
 <p><a id="databind.json.converters.LiteralConverter"></a></p>
 <p><a id="pydoc:databind.json.converters.LiteralConverter"></a></p>
 <h2 id="class-literalconverter">Class LiteralConverter</h2>
 <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">LiteralConverter</span><span class="p">(</span><span class="n">Converter</span><span class="p">)</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.json/src/databind/json/converters.py#L857">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.json/src/databind/json/converters.py#L857">[view_source]</a></p>
 <p>A converter for <code>typing.Literal</code> type hints. A literal value in the definition must simply match the literal
 value in the context being serialized/deserialized, otherwise a <a href="/python-databind/core/api/databind.core.converter#pydoc:databind.core.converter.ConversionError">ConversionError</a> is raised. Currently, literal
 values must be of a plain data type that natively maps to a JSON type, like a boolean, integer, float, string
@@ -1177,10 +1183,10 @@ or <code>None</code>.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.a51614de.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>

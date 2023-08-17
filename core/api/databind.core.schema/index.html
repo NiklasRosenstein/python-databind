@@ -15,7 +15,7 @@
         <link rel="next" href="../databind.core.settings/">
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.16">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
     
     
       
@@ -23,7 +23,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.26e3688c.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.eebd395e.min.css">
       
         
         <link rel="stylesheet" href="../../../assets/stylesheets/palette.ecc896b0.min.css">
@@ -1117,7 +1117,7 @@
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Field</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L38">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L38">[view_source]</a></p>
 <p>Describes a field in a schema.</p>
 <p><a id="databind.core.schema.Field.datatype"></a></p>
 <p><a id="pydoc:databind.core.schema.Field.datatype"></a></p>
@@ -1148,7 +1148,7 @@ own, those fields should be treated as if expanded into the same level as this f
 <div class="highlight"><pre><span></span><code><span class="nd">@property</span>
 <span class="k">def</span> <span class="nf">aliases</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L71">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L71">[view_source]</a></p>
 <p>For convience, the aliases described in the <a href="#pydoc:databind.core.schema.Field.datatype">datatype</a>#'s annotations are listed here. Do note however, that
 during the conversion process, the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Alias">Alias</a> setting should still be looked up through <a href="/python-databind/core/api/databind.core.context#pydoc:databind.core.context.Context.get_setting">Context.get_setting()</a>
 and this field should be ignored. It serves only a introspective purpose. Returns an empty tuple if no alias
@@ -1159,7 +1159,7 @@ setting is present in the type hint.</p>
 <div class="highlight"><pre><span></span><code><span class="nd">@dataclasses</span><span class="o">.</span><span class="n">dataclass</span>
 <span class="k">class</span> <span class="nc">Schema</span><span class="p">()</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L84">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L84">[view_source]</a></p>
 <p>A <a href="#pydoc:databind.core.schema.Schema">Schema</a> describes a set of fields with a name and datatype.</p>
 <p><a id="databind.core.schema.Schema.fields"></a></p>
 <p><a id="pydoc:databind.core.schema.Schema.fields"></a></p>
@@ -1187,7 +1187,7 @@ Python type object.</p>
 <h4 id="convert_to_schema">convert_to_schema</h4>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_to_schema</span><span class="p">(</span><span class="n">hint</span><span class="p">:</span> <span class="n">TypeHint</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L105">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L105">[view_source]</a></p>
 <p>Convert the given type hint to a <a href="#pydoc:databind.core.schema.Schema">Schema</a>.</p>
 <p>The function delegates to <a href="#pydoc:databind.core.schema.convert_dataclass_to_schema">convert_dataclass_to_schema()</a> or <a href="#pydoc:databind.core.schema.convert_typed_dict_to_schema">convert_typed_dict_to_schema()</a>.</p>
 <p><strong>Arguments</strong>:</p>
@@ -1204,7 +1204,7 @@ Python type object.</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">convert_dataclass_to_schema</span><span class="p">(</span>
         <span class="n">dataclass_type</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">,</span> <span class="n">GenericAlias</span><span class="p">,</span> <span class="n">ClassTypeHint</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L137">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L137">[view_source]</a></p>
 <p>Converts a Python class that is decorated with <code>dataclasses.dataclass()</code> to a Schema.</p>
 <p>The function will respect the <a href="/python-databind/core/api/databind.core.settings#pydoc:databind.core.settings.Required">Required</a> setting if it is present in a field's datatype if,
 and only if, the setting occurs in the root type hint, which must be a <code>typing.Annotated</code> hint.</p>
@@ -1233,7 +1233,7 @@ and only if, the setting occurs in the root type hint, which must be a <code>typ
         <span class="n">typed_dict</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Union</span><span class="p">[</span><span class="n">TypedDictProtocol</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Type</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Any</span><span class="p">],</span>
                             <span class="n">TypeHint</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Schema</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L257">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L257">[view_source]</a></p>
 <p>Converts the definition of a <code>typing.TypedDict</code> to a <a href="#pydoc:databind.core.schema.Schema">Schema</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1269,49 +1269,45 @@ typed dict are not possible (state: 2022-03-17, Python 3.10.2).</p>
     <span class="n">convert_to_schema</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Callable</span><span class="p">[[</span><span class="n">TypeHint</span><span class="p">],</span> <span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="n">convert_to_schema</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Field</span><span class="p">]]</span>
 </code></pre></div>
-<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/d0939c0281ad2aecf95ecab9d6a19948e359bd3f/docs/../databind.core/src/databind/core/schema.py#L342">[view_source]</a></p>
+<p><a href="https://github.com/NiklasRosenstein/python-databind/blob/develop/docs/../databind.core/src/databind/core/schema.py#L342">[view_source]</a></p>
 <p>Returns a dictionary that contains an entry for each flattened field in the schema, mapping to another
 dictionary that contains <em>all</em> fields expanded from the flattened field's sub-schema.</p>
 <p>Given a schema like the following example, this function returns something akin to the below.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:1"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Schema</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Schema</label><label for="__tabbed_1_2">Result</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block"></div>
-</div>
-</div>
-<div class="highlight"><pre><span></span><code>Schema1:
-a: int
-b: Schema2, flattened=True
+<div class="tabbed-block">
+<p><div class="highlight"><pre><span></span><code>Schema1:
+  a: int
+  b: Schema2, flattened=True
 
 Schema2:
-c: str
-d: Schema3, flattened=True
+  c: str
+  d: Schema3, flattened=True
 
 Schema3:
-e: int
+  e: int
 </code></pre></div>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Result</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block"></div>
+```py
+{
+  "b": {
+    "c": Field(str),
+    "e": Field(int)
+  }
+}</p>
 </div>
 </div>
-<div class="highlight"><pre><span></span><code><span class="p">{</span>
-<span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span>
-<span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="n">Field</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
-<span class="s2">&quot;e&quot;</span><span class="p">:</span> <span class="n">Field</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-<span class="p">}</span>
-<span class="p">}</span>
-
-<span class="o">**</span><span class="n">Arguments</span><span class="o">**</span><span class="p">:</span>
-
-<span class="o">-</span> <span class="err">`</span><span class="n">schema</span><span class="err">`</span> <span class="o">-</span> <span class="n">The</span> <span class="n">schema</span> <span class="n">to</span> <span class="nb">compile</span> <span class="n">the</span> <span class="n">expanded</span> <span class="n">fields</span> <span class="k">for</span><span class="o">.</span>
-<span class="o">-</span> <span class="err">`</span><span class="n">convert_to_schema</span><span class="err">`</span> <span class="o">-</span> <span class="n">A</span> <span class="n">function</span> <span class="n">that</span> <span class="n">accepts</span> <span class="n">a</span> <span class="err">`</span><span class="n">TypeHint</span><span class="err">`</span> <span class="ow">and</span> <span class="n">converts</span> <span class="n">it</span> <span class="n">to</span> <span class="n">a</span> <span class="n">schema</span><span class="o">.</span>
-  <span class="n">Defaults</span> <span class="n">to</span> <span class="n">the</span> <span class="p">[</span><span class="n">convert_to_schema</span><span class="p">()](</span><span class="c1">#pydoc:databind.core.schema.convert_to_schema) function.</span>
-
-  <span class="err">!!!</span> <span class="n">note</span>
-
-  <span class="n">The</span> <span class="n">top</span><span class="o">-</span><span class="n">level</span> <span class="n">dictionary</span> <span class="n">returned</span> <span class="n">by</span> <span class="n">this</span> <span class="n">function</span> <span class="n">contains</span> <span class="n">_only_</span> <span class="n">those</span> <span class="n">fields</span> <span class="n">that</span> <span class="n">are</span>
-  <span class="n">flattened</span> <span class="ow">and</span> <span class="n">should</span> <span class="n">be</span> <span class="s2">&quot;composed&quot;</span> <span class="n">of</span> <span class="n">other</span> <span class="n">fields</span><span class="o">.</span>
-</code></pre></div>
+</div>
+<p>Arguments:
+  schema: The schema to compile the expanded fields for.
+  convert_to_schema: A function that accepts a <code>TypeHint</code> and converts it to a schema.
+    Defaults to the <a href="#pydoc:databind.core.schema.convert_to_schema">convert_to_schema()</a> function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The top-level dictionary returned by this function contains <em>only</em> those fields that are
+flattened and should be "composed" of other fields.</p>
+</div>
+<p>```</p>
 
 
 
@@ -1354,10 +1350,10 @@ e: int
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.indexes", "navigation.instant", "navigation.sections", "navigation.tracking", "navigation.top", "toc.follow"], "search": "../../../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.a51614de.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.220ee61c.min.js"></script>
       
     
   </body>
