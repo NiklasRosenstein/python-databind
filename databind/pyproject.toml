@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "databind"
-version = "4.4.0"
+version = "4.4.1"
 description = "Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. The `databind` package will install the full suite of databind packages. Compatible with Python 3.7 and newer."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
@@ -9,8 +9,8 @@ packages = [{ include="databind/_version", from="src" }]
 
 [tool.poetry.dependencies]
 python = "^3.6.3"
-"databind.core" = "^4.4.0"
-"databind.json" = "^4.4.0"
+"databind.core" = "^4.4.1"
+"databind.json" = "^4.4.1"
 
 [build-system]
 requires = ["poetry-core==1.0.8"]
