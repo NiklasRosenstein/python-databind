@@ -1,0 +1,5 @@
+[[entries]]
+id = "0484f896-617e-450e-8835-6bcd6f8acc80"
+type = "fix"
+description = "Fixed a potential exception during generating the exception message when date object cannot be parsed."
+author = "@NiklasRosenstein"
