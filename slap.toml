@@ -10,4 +10,4 @@ fmt = "cd databind.core && slap run fmt && cd ../databind.json && slap run fmt"
 check = "slap check"
 
 [install.extras]
-docs = ['pydoc-markdown==4.6.0', 'novella==0.2.3', 'mkdocs', 'mkdocs-material']
+docs = ['pydoc-markdown==4.8.2', 'novella==0.2.6', 'mkdocs', 'mkdocs-material']
