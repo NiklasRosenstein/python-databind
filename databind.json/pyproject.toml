@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "databind.json"
-version = "4.4.1"
+version = "4.4.2"
 description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.7 and newer."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
@@ -15,7 +15,7 @@ Repository = "https://github.com/NiklasRosenstein/python-databind"
 
 [tool.poetry.dependencies]
 python = "^3.6.3"
-"databind.core" = "^4.4.1"
+"databind.core" = "^4.4.2"
 nr-date = "^2.0.0"
 typeapi = "^2.0.1"
 typing-extensions = ">=3.10.0,<4.7"  # See https://github.com/python/typing_extensions/issues/265#issuecomment-1616809112
