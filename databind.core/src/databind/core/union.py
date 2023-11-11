@@ -17,7 +17,7 @@ else:
     from importlib.metadata import EntryPoint, entry_points
 
     def iter_entry_points(group: str) -> t.Iterator[EntryPoint]:
-        return entry_points(group=group)
+        return iter(entry_points(group=group))
 
 
 __all__ = ["UnionMembers", "StaticUnionMembers", "EntrypointUnionMembers", "ImportUnionMembers", "ChainUnionMembers"]
