@@ -1,0 +1,5 @@
+[[entries]]
+id = "765031c7-ffd8-4078-8e54-4e5e9154f036"
+type = "improvement"
+description = "Support Python 3.12 by using `importlib.metadata` instead of `pkg_resources` in Python 3.10 and newer"
+author = "@NiklasRosenstein"
