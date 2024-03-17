@@ -1,0 +1,9 @@
+[[entries]]
+id = "04482ac4-46c4-461d-962c-d7998cd01548"
+type = "breaking change"
+description = "Support typing-extensions>4.7 for Python 3.8 or greater"
+author = "@rhaps0dy"
+pr = "https://github.com/NiklasRosenstein/python-databind/pull/60"
+issues = [
+    "https://github.com/NiklasRosenstein/python-databind/issues/59",
+]

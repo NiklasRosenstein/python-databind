@@ -1,8 +1,0 @@
-release-date = "2024-03-18"
-
-[[entries]]
-id = "7e8470ea-b562-45e4-b3ff-1e0f1c6452d1"
-type = "improvement"
-description = "Support typing-extensions>4.7 on python>3.7"
-author = "@rhaps0dy"
-pr = "https://github.com/NiklasRosenstein/python-databind/pull/60"
