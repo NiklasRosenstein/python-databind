@@ -167,10 +167,13 @@ class CollectionConverter(Converter):
             try:
                 return python_type(values)
             except TypeError:
-                assert not isinstance(values, types.GeneratorType), (type(values), python_type)
+                assert not (
+                    isinstance(values, types.GeneratorType),  # type: ignore[unreachable]
+                    (type(values), python_type),
+                )
                 # We assume that the native list is an appropriate placeholder for whatever specific Collection type
                 # was chosen in the value's datatype.
-                return values
+                return values  # type: ignore[unreachable]
 
 
 class DatetimeConverter(Converter):
