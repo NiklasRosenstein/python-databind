@@ -61,11 +61,13 @@ def check_not_none(value: "_T | None", message: "_Message | None" = None) -> _T:
 
 
 @overload
-def check_instance_of(value: Any, types: Type[_T], message: "_Message | None" = None) -> _T: ...
+def check_instance_of(value: Any, types: Type[_T], message: "_Message | None" = None) -> _T:
+    ...
 
 
 @overload
-def check_instance_of(value: Any, types: Tuple[type, ...], message: "_Message | None" = None) -> Any: ...
+def check_instance_of(value: Any, types: Tuple[type, ...], message: "_Message | None" = None) -> Any:
+    ...
 
 
 def check_instance_of(

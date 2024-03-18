@@ -194,7 +194,9 @@ class DatetimeConverter(Converter):
             else (
                 self.DEFAULT_TIME_FMT
                 if date_type == datetime.time
-                else self.DEFAULT_DATETIME_FMT if date_type == datetime.datetime else None
+                else self.DEFAULT_DATETIME_FMT
+                if date_type == datetime.datetime
+                else None
             )
         )
         assert datefmt is not None

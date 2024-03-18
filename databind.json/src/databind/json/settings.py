@@ -6,7 +6,8 @@ from databind.core.settings import ClassDecoratorSetting
 
 
 class ConverterSupplier(te.Protocol):
-    def __call__(self) -> Converter: ...
+    def __call__(self) -> Converter:
+        ...
 
 
 class JsonConverter(ClassDecoratorSetting):
