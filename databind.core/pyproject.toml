@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "databind.core"
 version = "4.4.2"
-description = "Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.7 and newer."
+description = "Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.8 and newer."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -14,17 +14,13 @@ Documentation = "https://niklasrosenstein.github.io/python-databind/"
 Repository = "https://github.com/NiklasRosenstein/python-databind"
 
 [tool.poetry.dependencies]
-python = "^3.6.3"
+python = "^3.8.0"
 Deprecated = "^1.2.12"
 nr-date = "^2.0.0"
 nr-stream = "^1.0.0"
 setuptools = { version = ">=40.8.0", markers = "python_version < '3.10'" }
 typeapi = ">=2.0.1,<3"
- # See https://github.com/python/typing_extensions/issues/265#issuecomment-1616809112
-typing-extensions = [
-    { version =">=3.10.0,<4.7", markers = "python_version <= '3.7'" },
-    { version =">=3.10.0,<5", markers = "python_version > '3.7'" },
-]
+typing-extensions = ">=3.10.0,<5"
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -56,7 +52,7 @@ flake8 = "flake8 src/"
 fmt = "black src/ && isort src/"
 
 [tool.mypy]
-python_version = "3.6"
+python_version = "3.8"
 explicit_package_bases = true
 mypy_path = ["src"]
 namespace_packages = true
