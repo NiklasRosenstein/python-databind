@@ -44,8 +44,7 @@ def load(
     type_: "t.Type[T]",
     filename: "str | None" = None,
     settings: "t.List[Setting] | None" = None,
-) -> T:
-    ...
+) -> T: ...
 
 
 @t.overload
@@ -54,8 +53,7 @@ def load(
     type_: t.Any,
     filename: "str | None" = None,
     settings: "t.List[Setting] | None" = None,
-) -> t.Any:
-    ...
+) -> t.Any: ...
 
 
 def load(
@@ -73,8 +71,7 @@ def loads(
     type_: "t.Type[T]",
     filename: "str | None" = None,
     settings: "t.List[Setting] | None" = None,
-) -> T:
-    ...
+) -> T: ...
 
 
 @t.overload
@@ -83,8 +80,7 @@ def loads(
     type_: t.Any,
     filename: "str | None" = None,
     settings: "t.List[Setting] | None" = None,
-) -> t.Any:
-    ...
+) -> t.Any: ...
 
 
 def loads(

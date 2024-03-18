@@ -22,8 +22,7 @@ T_ClassDecoratorSetting = t.TypeVar("T_ClassDecoratorSetting", bound="ClassDecor
 class SettingsProvider(abc.ABC):
     """Interface for providing settings."""
 
-    def get_setting(self, context: "Context", setting_type: "t.Type[T_Setting]") -> "T_Setting | None":
-        ...
+    def get_setting(self, context: "Context", setting_type: "t.Type[T_Setting]") -> "T_Setting | None": ...
 
 
 class Settings(SettingsProvider):

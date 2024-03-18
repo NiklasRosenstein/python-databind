@@ -541,8 +541,7 @@ def test_json_converter_setting() -> None:
     assert load({}, MyClass1) == "Oh HELLO"  # type: ignore[comparison-overlap]  # Non-overlapping equality check  # noqa: E501
     assert load({}, te.Annotated[MyClass1, JsonConverter(MyConverter("I am better"))]) == "I am better"
 
-    class AnotherClass:
-        ...
+    class AnotherClass: ...
 
     with pytest.raises(NoMatchingConverter):
         assert dump(None, AnotherClass)
