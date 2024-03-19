@@ -1,7 +1,0 @@
-release-date = "2020-09-09"
-
-[[entries]]
-id = "c039776f-9ecc-460a-b5d4-b9cbc5bb1e46"
-type = "fix"
-description = "Fix Python 3.6 support for `typing.List` subclasses by reading the generic paraemter from the right object"
-author = "@NiklasRosenstein"

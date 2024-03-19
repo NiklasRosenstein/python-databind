@@ -1,0 +1,15 @@
+release-date = "2021-08-10"
+
+[[entries]]
+id = "fba8312f-7a24-4f0f-adb3-e1a21f02dae5"
+type = "improvement"
+description = "`ObjectType` and `ConcreteType` now show the class fqn on repr()"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "99cec1c1-6269-4a2b-81b9-9f8dcdfb359d"
+type = "fix"
+description = "fix support for special generic subclasses (like `List` or `Dict`) with another generic base class (eg. `Generic`)"
+author = "@NiklasRosenstein"
+component = "databind.core"

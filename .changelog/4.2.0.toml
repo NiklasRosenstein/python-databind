@@ -1,0 +1,29 @@
+release-date = "2022-11-21"
+
+[[entries]]
+id = "33063789-c83a-4d0d-967c-9093984dbc62"
+type = "improvement"
+description = "improve error message display format and add a default implementation for `Converter.__repr__()`"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "ea24af2b-0378-414e-8452-d8b379e8b780"
+type = "improvement"
+description = "when a `ConversionError` occurs, we continue with the remaining converters to attempt to convert it until we are all out of options"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "f80f15cd-54ce-465e-a9b7-e88040ad380e"
+type = "tests"
+description = "add unit tests for deserializing `duration` from an object form"
+author = "@NiklasRosenstein"
+component = "databind.json"
+
+[[entries]]
+id = "32461220-a197-4d09-aa81-d9c8c827a637"
+type = "docs"
+description = "update readme to list supported types"
+author = "@NiklasRosenstein"
+component = "databind.json"

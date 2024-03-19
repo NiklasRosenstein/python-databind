@@ -1,0 +1,11 @@
+release-date = "2021-09-06"
+
+[[entries]]
+id = "b832cafb-fa62-4a62-af38-568002bb8554"
+type = "fix"
+description = "allow datetime objects as value during deserialization"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/19",
+]
+component = "databind.core"

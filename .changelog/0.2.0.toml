@@ -1,0 +1,36 @@
+release-date = "2020-08-29"
+
+[[entries]]
+id = "d54aa0ac-9329-4d2a-8e3a-16063491f764"
+type = "improvement"
+description = "update type hints to pass mypy checks"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "47206f43-6699-40ea-8210-c1a341d2b623"
+type = "improvement"
+description = "`FieldMetadata` now keeps a reference to the `dataclasses.Field` object and it's' metadata"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "3195561b-c5ed-4595-922b-9d76c46892f9"
+type = "improvement"
+description = "update type hints to pass mypy checks"
+author = "@NiklasRosenstein"
+component = "databind.json"
+
+[[entries]]
+id = "c3458aff-e6b3-4b20-97b0-12882818b6db"
+type = "improvement"
+description = "add DEBUG log when `MixtypeConverter` is unable to convert a value at all to make debugging easier"
+author = "@NiklasRosenstein"
+component = "databind.json"
+
+[[entries]]
+id = "37e0f485-54c0-4bcf-bd3e-082f629b8689"
+type = "fix"
+description = "accept `datetime.date`/`datetime.datetime` objects when converting to python if the target type is a respective match (rather than forcing a string as an input)"
+author = "@NiklasRosenstein"
+component = "databind.json"

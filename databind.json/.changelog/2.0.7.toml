@@ -1,7 +1,0 @@
-release-date = "2022-06-20"
-
-[[entries]]
-id = "df546027-bed8-46e1-8e9d-caa6447142bf"
-type = "improvement"
-description = "Enable Mypy strict type checking mode"
-author = "@NiklasRosenstein"

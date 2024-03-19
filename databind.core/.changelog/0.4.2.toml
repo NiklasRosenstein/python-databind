@@ -1,7 +1,0 @@
-release-date = "2020-09-09"
-
-[[entries]]
-id = "6993c150-4320-4d1d-b8a9-d5763c326a34"
-type = "hygiene"
-description = "Move `type_repr()` declaration to `databind.core.utils` and add `find_orig_base()` function"
-author = "@NiklasRosenstein"

@@ -1,7 +1,0 @@
-release-date = "2020-11-24"
-
-[[entries]]
-id = "a27c60f9-6cce-4abf-8043-d081c0de33c2"
-type = "feature"
-description = "add converter for `typing.Any`, which by the way does not actually convert anything"
-author = "@NiklasRosenstein"

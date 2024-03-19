@@ -1,7 +1,0 @@
-release-date = "2022-11-11"
-
-[[entries]]
-id = "3c686427-9cb7-4a22-a534-0cbf7a22257f"
-type = "fix"
-description = "Register stringify converters for specific types first in the module to take priority over other converters (fixes deserializing `nr.date.duration`)"
-author = "@NiklasRosenstein"

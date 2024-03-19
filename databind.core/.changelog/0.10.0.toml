@@ -1,7 +1,0 @@
-release-date = "2021-03-05"
-
-[[entries]]
-id = "941943f9-5cf7-48fb-beea-2c341bc01907"
-type = "improvement"
-description = "classes decorated with `@uniontype(container=True)` must now be constructed using a single keyword argument as in `MyUnion(member1=Member1Value())`\n"
-author = "@NiklasRosenstein"

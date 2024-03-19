@@ -1,0 +1,15 @@
+release-date = "2020-11-24"
+
+[[entries]]
+id = "71eb5eb9-8246-489d-948f-8a525b00e505"
+type = "improvement"
+description = "`@implementation()` now sets the databind metadata field to `None` if no explicit metadata is already set on the type. `Registry.get_converter()` recognizes this case and stops checking the base classes. This is to avoid a confusing error when the type decorated with `@implementation()` seems to inherit the `UnionMetadata` from the parent class (because of the `Registry.get_converter()` base class check) but actually does not provide a metadata. Now we see \"no converter found for type XYZ\" instead \"expected UnionMetadata to be provided by XYZ\" in `databind.json`"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "a27c60f9-6cce-4abf-8043-d081c0de33c2"
+type = "feature"
+description = "add converter for `typing.Any`, which by the way does not actually convert anything"
+author = "@NiklasRosenstein"
+component = "databind.json"

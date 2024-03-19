@@ -1,0 +1,15 @@
+release-date = "2020-09-06"
+
+[[entries]]
+id = "8bc4f7c3-1a29-41f1-9f5d-f3f8a99897ca"
+type = "fix"
+description = "Re-render setup file, materializing missing dependency on `dataclasses`. This fixes using the module in Python 3.6."
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "7abbb43c-0eab-4009-9353-9de48aebc5b7"
+type = "fix"
+description = "conversion of values of a `List` subtype *from Python* are now converted to a built-in `list` instead of the same `List` subtype"
+author = "@NiklasRosenstein"
+component = "databind.json"

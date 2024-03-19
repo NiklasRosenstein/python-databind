@@ -1,0 +1,8 @@
+release-date = "2021-10-24"
+
+[[entries]]
+id = "404847f0-d763-4a38-889a-3364f15024b1"
+type = "fix"
+description = "declare missing `nr.optional` dependency (was not an actual bug because the dependency was introduced transitively anyway)"
+author = "@NiklasRosenstein"
+component = "databind.json"

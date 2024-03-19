@@ -1,0 +1,15 @@
+release-date = "2021-08-06"
+
+[[entries]]
+id = "bf344197-c36c-41ff-9084-fcf035d58f37"
+type = "fix"
+description = "fix `@A.union` types to accept `ObjectType`s"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "9f730924-d0bc-4c55-8563-66719ff6188d"
+type = "feature"
+description = "support de-/serializing `bytes` as base64"
+author = "@NiklasRosenstein"
+component = "databind.json"

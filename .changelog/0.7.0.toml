@@ -1,0 +1,15 @@
+release-date = "2020-10-02"
+
+[[entries]]
+id = "24bad1cf-e404-4c23-b6ad-e0b3499564c1"
+type = "feature"
+description = "`@dataclasses.dataclass()` classes can now be converted as a data model automatically, `BaseMetadata.for_type()` now returns an optional"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "b6a90864-ebc9-43fd-a909-4a88139eb2b7"
+type = "feature"
+description = "Now supports converting Sets"
+author = "@NiklasRosenstein"
+component = "databind.json"

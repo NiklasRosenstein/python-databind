@@ -1,0 +1,8 @@
+release-date = "2022-03-29"
+
+[[entries]]
+id = "72d6a4f6-dcd2-4638-af22-64764ea89385"
+type = "fix"
+description = "Fix `CollectionConverter` (used for subclasses of `collections.abc.Collection`) does not end up returnin a generator instead of a collection"
+author = "@NiklasRosenstein"
+component = "databind.json"

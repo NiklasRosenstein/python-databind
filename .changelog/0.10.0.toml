@@ -1,0 +1,22 @@
+release-date = "2020-12-30"
+
+[[entries]]
+id = "941943f9-5cf7-48fb-beea-2c341bc01907"
+type = "improvement"
+description = "classes decorated with `@uniontype(container=True)` must now be constructed using a single keyword argument as in `MyUnion(member1=Member1Value())`\n"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "0cb46581-98b5-40ad-82f1-eba64a2d498a"
+type = "fix"
+description = "add missing `to_stream` and `from_stream` to `__all__`"
+author = "@NiklasRosenstein"
+component = "databind.json"
+
+[[entries]]
+id = "b65cd60e-3b8f-42c0-b4d8-37e5257bc269"
+type = "feature"
+description = "add `cast()` function"
+author = "@NiklasRosenstein"
+component = "databind.json"
