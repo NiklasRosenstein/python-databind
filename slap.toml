@@ -1,5 +1,5 @@
 [changelog]
-enabled = false
+enabled = true
 
 [run]
 "docs:build" = "cd docs && novella --base-url python-databind/"

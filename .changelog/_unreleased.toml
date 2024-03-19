@@ -7,3 +7,9 @@ pr = "https://github.com/NiklasRosenstein/python-databind/pull/60"
 issues = [
     "https://github.com/NiklasRosenstein/python-databind/issues/59",
 ]
+
+[[entries]]
+id = "086986b6-c4bf-4f09-a1f3-7cc41a40e17e"
+type = "breaking change"
+description = "Drop support for Python 3.6 and 3.7"
+author = "@NiklasRosenstein"
