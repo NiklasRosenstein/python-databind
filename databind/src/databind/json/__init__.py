@@ -4,7 +4,6 @@ import json
 import typing as t
 
 from databind.core import ObjectMapper, Setting, Settings
-
 from databind.json.module import JsonModule
 from databind.json.settings import JsonConverter
 

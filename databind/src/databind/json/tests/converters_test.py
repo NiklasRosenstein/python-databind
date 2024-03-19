@@ -9,6 +9,8 @@ from collections import namedtuple
 
 import pytest
 import typing_extensions as te
+from nr.date import duration
+
 from databind.core.context import Context, Direction
 from databind.core.converter import ConversionError, Converter, NoMatchingConverter
 from databind.core.mapper import ObjectMapper
@@ -22,8 +24,6 @@ from databind.core.settings import (  # noqa: F401
     Strict,
     Union,
 )
-from nr.date import duration
-
 from databind.json.converters import (
     AnyConverter,
     CollectionConverter,

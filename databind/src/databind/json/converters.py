@@ -4,6 +4,17 @@ import decimal
 import enum
 import typing as t
 
+from typeapi import (
+    AnnotatedTypeHint,
+    ClassTypeHint,
+    LiteralTypeHint,
+    TupleTypeHint,
+    TypeHint,
+    UnionTypeHint,
+    get_annotations,
+    type_repr,
+)
+
 from databind.core import (
     Alias,
     Context,
@@ -23,16 +34,6 @@ from databind.core import (
     convert_to_schema,
     get_annotation_setting,
     get_fields_expanded,
-)
-from typeapi import (
-    AnnotatedTypeHint,
-    ClassTypeHint,
-    LiteralTypeHint,
-    TupleTypeHint,
-    TypeHint,
-    UnionTypeHint,
-    get_annotations,
-    type_repr,
 )
 
 T = t.TypeVar("T")

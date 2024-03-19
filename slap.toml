@@ -4,7 +4,6 @@ enabled = false
 [run]
 "docs:build" = "cd docs && novella --base-url python-databind/"
 "docs:dev" = "cd docs && novella --serve"
-fmt = "cd databind.core && slap run fmt && cd ../databind.json && slap run fmt"
 
 [test]
 check = "slap check"
