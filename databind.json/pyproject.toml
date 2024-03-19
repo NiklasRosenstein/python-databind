@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "databind.json"
-version = "4.4.2"
+version = "4.5.0"
 description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.8 and newer. Deprecated, use `databind` module instead."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
@@ -13,7 +13,7 @@ Repository = "https://github.com/NiklasRosenstein/python-databind"
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
-databind = "^4.4.2"
+databind = "^4.5.0"
 
 [build-system]
 requires = ["poetry-core==1.9.0"]

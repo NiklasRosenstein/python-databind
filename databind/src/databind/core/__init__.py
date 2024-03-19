@@ -1,4 +1,4 @@
-__version__ = "4.4.2"
+__version__ = "4.5.0"
 
 from .context import Context, Direction, Location, format_context_trace
 from .converter import ConversionError, Converter, DelegateToClassmethodConverter, Module, NoMatchingConverter
