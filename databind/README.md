@@ -11,7 +11,7 @@
 The `databind` package provides a (de)serialization framework that understands most native Python types as well as
 dataclasses, as well as an implementation for serialize to/from JSON-like nested data structures.
 
-Databind is intended mostly for flexible and easy to use configuration loading. It's goal is not to provide high-performance payload serde, you should look towards [mashumaro](https://pypi.org/project/mashumaro/) for this usecase.
+Databind is intended mostly for flexible and easy to use configuration loading. It does __not__ try achieve high-performance; you should look towards e.g. [mashumaro](https://pypi.org/project/mashumaro/) for this usecase.
 
 ### Example
 
