@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../basic-usage/">
+        <link rel="prev" href="../pitfalls/">
       
       
-        <link rel="next" href="../dataclass-ext/">
+        <link rel="next" href="../api/databind.core/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -20,7 +20,7 @@
     
     
       
-        <title>Changelog - python-databind</title>
+        <title>Settings - python-databind</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#changelog" class="md-skip">
+        <a href="#settings" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Changelog
+              Settings
             
           </span>
         </div>
@@ -262,19 +262,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -283,7 +274,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -352,10 +342,30 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../settings/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Settings
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -364,6 +374,53 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifying settings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      Settings priority
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes-about-implementing-custom-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes about implementing custom settings
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -587,6 +644,41 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#specifying-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Specifying settings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      Settings priority
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes-about-implementing-custom-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Notes about implementing custom settings
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -603,8 +695,35 @@
   
 
 
-<h1 id="changelog">Changelog</h1>
-<p>@shell cd .. &amp;&amp; slap changelog format --markdown --all</p>
+<h1 id="settings">Settings</h1>
+<p>Settings in Databind are Python objects that convey additional information to the serialization process. A setting
+must be expicitly supported by a {@pylink databind.core.converter.Converter} in order to take effect. As such, all
+settings provided by <code>databind.core</code> merely provide a standard set of settings that should but may not all be supported
+by serialization lirbary implementations.</p>
+<p>Settings must be subclasses from {@pylink databind.core.settings.Setting}, {@pylink databind.core.settings.BooleanSetting}
+or {@pylink databind.core.settings.ClassDecoratedSetting}.</p>
+<h2 id="specifying-settings">Specifying settings</h2>
+<p>You can specify settings at various places in your code to make them apply at various stages during the serialization.
+The following list shows the order of precedence, from highest to lowest:</p>
+<ol>
+<li>Type-hint local settings specified in the metadata of <code>typing.Annotated</code> hints.</li>
+<li>Settings that were used to annotate a type.</li>
+<li>Global settings that are passed to {@pylink databind.core.mapper.ObjectMapper.convert}, or the respective
+  <code>serialize</code>/<code>deserialize</code> methods.</li>
+</ol>
+<h2 id="settings-priority">Settings priority</h2>
+<p>The above precedence only takes effect within the same priority group. The priority of all setting defaults to <code>NORMAL</code>
+unless specified otherwise. The following priority groups exist:</p>
+<ul>
+<li><code>LOW</code>: Settings with this priority group are resolved after <code>NORMAL</code> settings.</li>
+<li><code>NORMAL</code>: The default priority group.</li>
+<li><code>HIGH</code>: Settings with this priority group are resolved before <code>NORMAL</code> settings.</li>
+<li><code>ULTIMATE</code>: Settings with this priority group are resolved before <code>HIGH</code> settings.</li>
+</ul>
+<p>Converters are usually only interested in the first instance of any setting type.</p>
+<h2 id="notes-about-implementing-custom-settings">Notes about implementing custom settings</h2>
+<p>To support Python 3.6, <code>typing_extensions.Annotated</code> metadata must be hashable. As such, settings that you want users
+to be able to pass into annotated type hints in Python 3.6 must support hashing (identity hashing is often sufficient).</p>
 
 
 
