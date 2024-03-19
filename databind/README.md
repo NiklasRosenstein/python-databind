@@ -11,7 +11,8 @@
 The `databind` package provides a (de)serialization framework that understands most native Python types as well as
 dataclasses, as well as an implementation for serialize to/from JSON-like nested data structures.
 
-Databind is intended mostly for flexible and easy to use configuration loading. It does __not__ try achieve high-performance; you should look towards e.g. [mashumaro](https://pypi.org/project/mashumaro/) for this usecase.
+Databind is intended mostly for flexible and easy to use configuration loading. It does __not__ try achieve
+high-performance; you should look towards e.g. [mashumaro](https://pypi.org/project/mashumaro/) for this usecase.
 
 ### Example
 
@@ -38,10 +39,12 @@ assert dump(loaded, Config) == dict_payload
 
   [typeapi]: https://github.com/NiklasRosenstein/python-typeapi
 
-* Support for a plethora of builtin types, including `Enum`, `Decimal`, `UUID`, `Path`, `datetime`, `date`, `time`, `timedelta`
+* Support for a plethora of builtin types, including `Enum`, `Decimal`, `UUID`, `Path`, `datetime`, `date`,
+  `time`, `timedelta`
 * Support for multiple union serialization modes (nested, flat, keyed, `typing.Literal`)
 * Support for generic types, e.g. `load([{"name": "Jane Doe"}], list[Person])`
-* Support for new-style type hints in older Python versions when using forward refererences (strings or `__future__.annotations`) thanks to [typeapi][]
+* Support for new-style type hints in older Python versions when using forward refererences (strings or
+  `__future__.annotations`) thanks to [typeapi][]
     * [PEP 604 - Allow writing union types as X | Y](https://www.python.org/dev/peps/pep-0604/)
     * [PEP585 - Type Hinting Generics in Standard Collections](https://www.python.org/dev/peps/pep-0585/))
 * Support for customized serialization and deserialization of types
@@ -50,7 +53,8 @@ assert dump(loaded, Config) == dict_payload
 * Use "settings" to customize serialization behaviour
     * As global settings per `load()`/`dump()` call: `load(..., settings=[ExtraKeys(True)])`
     * As class-level settings using a decorator: `@Union(style=Union.FLAT)` or `@ExtraKeys(True)`
-    * As type-hint level settings using `typing.Annotated` (or `typing_extensions.Annotated`): `full_name: Annotated[str, Alias("fullName")]` or `FullNameField = Annotated[str, Alias("fullName")]`
+    * As type-hint level settings using `typing.Annotated` (or `typing_extensions.Annotated`):
+      `full_name: Annotated[str, Alias("fullName")]` or `FullNameField = Annotated[str, Alias("fullName")]`
 
 ## Notable release notes
 
