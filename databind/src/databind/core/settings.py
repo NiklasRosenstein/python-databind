@@ -620,7 +620,7 @@ class DateFormat(Setting):
         """Format a date/time value to a string.
 
         Arguments:
-          value: The date/time value to format (i.e. an instance of #datetime.date, #datetime.time or
+          dt: The date/time value to format (i.e. an instance of #datetime.date, #datetime.time or
             #datetime.datetime).
         Raises:
           ValueError: If no date format to format the type of *value* is available.
