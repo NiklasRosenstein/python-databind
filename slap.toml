@@ -2,11 +2,8 @@
 enabled = true
 
 [run]
-"docs:build" = "cd docs && novella --base-url python-databind/"
-"docs:dev" = "cd docs && novella --serve"
+"docs:build" = "cd docs && mkdocs build --site-dir _site"
+"docs:dev" = "cd docs && mkdocs serve"
 
 [test]
 check = "slap check"
-
-[install.extras]
-docs = ['pydoc-markdown==4.8.2', 'novella==0.2.6', 'mkdocs', 'mkdocs-material']

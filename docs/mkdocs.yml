@@ -1,21 +1,59 @@
+site_name: python-databind
 repo_url: https://github.com/NiklasRosenstein/python-databind
 repo_name: NiklasRosenstein/python-databind
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: black
+  features:
+    - navigation.sections
+hooks:
+  - mksync-hook.py
+watch:
+  - ../databind/src
+  - mksync-hook.py
 
-nav:
-  - Home:
-    - index.md
-    - changelog.md
-  - databind.core:
-    - core/index.md
-    - core/basic-usage.md
-    - core/settings.md
-    - core/dataclass-ext.md
-    - API: []
-  - databind.json:
-    - json/index.md
-    - Examples:
-      - json/examples/index.md
-      - json/examples/config-serde.md
-      - json/examples/unions.md
-      - json/examples/unknown-keys.md
-    - API: []
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [../databind/src]
+          options:
+            heading_level: 3
+            show_root_heading: true
+            show_root_full_path: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            separate_signature: true
+            show_signature_annotations: true
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+# nav:
+#   - index.md
+#   - changelog.md
+#   - basic-usage.md
+#   - settings.md
+#   - dataclass-ext.md
+#   - databind.core:
+#     - databind.core/index.md
+#   - databind.json:
+#     - databind.json/index.md
+#     - Examples:
+#       - json/examples/index.md
+#       - json/examples/config-serde.md
+#       - json/examples/unions.md
+#       - json/examples/unknown-keys.md
+#     - API: []

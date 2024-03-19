@@ -27,6 +27,15 @@ types-deprecated = "*"
 types-setuptools = "*"
 types-termcolor = "*"
 
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mkdocs = "*"
+mkdocs-material = "*"
+mkdocstrings = {version = "*", extras = ["python"]}
+mksync = "^0.1.4"
+
 [build-system]
 requires = ["poetry-core==1.9.0"]
 build-backend = "poetry.core.masonry.api"
