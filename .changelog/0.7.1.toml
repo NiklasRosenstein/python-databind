@@ -1,0 +1,22 @@
+release-date = "2020-11-20"
+
+[[entries]]
+id = "bc008cf1-db00-4789-9362-7b5c47af1d26"
+type = "fix"
+description = "Python 3.9 support in type hint normalization"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "8465d65a-3f95-4a9f-aa18-e8810999b5ec"
+type = "fix"
+description = "fix mypy errors"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "28477028-ec46-493a-9b8c-acf024cf953c"
+type = "fix"
+description = "Fix mypy errors"
+author = "@NiklasRosenstein"
+component = "databind.json"

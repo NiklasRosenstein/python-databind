@@ -1,0 +1,39 @@
+release-date = "2021-08-03"
+
+[[entries]]
+id = "6fe4210a-2ee5-4311-8152-c6b4164486a4"
+type = "improvement"
+description = "remove `AnnotatedType`, add `BaseType.annotations` instead."
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "b864f8a6-fa00-49e3-b23e-cf290e8aee0b"
+type = "breaking change"
+description = "Reorganize a lot of internal APIs and some public APIs (e.g. renamed `ITypeHintConverter` to `TypeHintAdapter`, `IConverter` to `Converter` + respective module name changes, deprecated `ObjectMapper.default()`, remove `IObjectMapper` and replace `Context.mapper` with `Context.converters` and `Context.annotations`."
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "a7f89cac-61a3-42bd-acec-6b25ed363f4f"
+type = "breaking change"
+description = "replace `Schema.flat_fields()` with `Schema.flattened()`"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "aaff65b7-df9f-4e90-b7c0-86b0b7762479"
+type = "improvement"
+description = "only import members from sub-modules where they are expected to be used from (ie. `databind.core`, `databind.core.annotations`, `databind.core.dataclasses`, `databind.json`)"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "8d8029c3-7fb9-4017-ae24-61f7099e73fb"
+type = "feature"
+description = "add support for `fieldinfo(flat=True)` marked `MapType` fields"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/7",
+]
+component = "databind.core"

@@ -1,0 +1,8 @@
+release-date = "2021-10-24"
+
+[[entries]]
+id = "de35184a-5931-40b4-82db-72ab0912b99a"
+type = "fix"
+description = "add missing nr.pylang.utils dependency (was introduced transtively before so it was no crucial bug)"
+author = "@NiklasRosenstein"
+component = "databind.core"

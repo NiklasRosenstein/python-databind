@@ -1,7 +1,0 @@
-release-date = "2021-08-06"
-
-[[entries]]
-id = "9f730924-d0bc-4c55-8563-66719ff6188d"
-type = "feature"
-description = "support de-/serializing `bytes` as base64"
-author = "@NiklasRosenstein"

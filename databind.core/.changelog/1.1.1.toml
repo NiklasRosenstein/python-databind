@@ -1,7 +1,0 @@
-release-date = "2021-08-03"
-
-[[entries]]
-id = "a17c9256-e016-4328-9b80-a4ee73627c39"
-type = "fix"
-description = "fix `EntrypointSubtypes()` constructor which used to accidentally accept a `TypeHintAdapter` argument"
-author = "@NiklasRosenstein"

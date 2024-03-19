@@ -22,20 +22,20 @@ def databind_json_modules = [
 
 action "mkdocs-update-config" {
   site_name = "python-databind"
-  update '$.theme.features' add: []
-  update '$.theme.palette' set: {'primary': 'blue', 'accent': 'amber'}
+  update '$.theme.features' add: ["navigation.tabs"]
+  update '$.theme.palette' set: {'primary': 'black', 'accent': 'blue', 'scheme': 'slate'}
   update_with config -> {
     for module in databind_core_modules:
-      config['nav'][1]['CORE'][-1]['API'].append('core/api/' + module + '.md')
+      config['nav'][1]['databind.core'][-1]['API'].append('core/api/' + module + '.md')
     for module in databind_json_modules:
-      config['nav'][2]['JSON'][-1]['API'].append('json/api/' + module + '.md')
+      config['nav'][2]['databind.json'][-1]['API'].append('json/api/' + module + '.md')
   }
 }
 
 action "preprocess-markdown" {
   use "pydoc" {
-    loader().search_path = [ "../databind.core/src", "../databind.json/src" ]
-    loader().packages = [ "databind.core", "databind.json" ]
+    loader().search_path = [ "../databind/src" ]
+    loader().packages = [ "databind" ]
   }
 }
 

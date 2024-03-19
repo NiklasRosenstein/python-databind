@@ -1,7 +1,0 @@
-release-date = "2022-11-03"
-
-[[entries]]
-id = "c8cb2dd0-edb5-4a7c-a0e8-f3c8ac89aecb"
-type = "feature"
-description = "add `Module.get_converters()`"
-author = "@NiklasRosenstein"

@@ -1,0 +1,15 @@
+release-date = "2022-11-03"
+
+[[entries]]
+id = "c8cb2dd0-edb5-4a7c-a0e8-f3c8ac89aecb"
+type = "feature"
+description = "add `Module.get_converters()`"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "6ae51d42-f0e1-4d1a-85bc-0bf5c4ec7623"
+type = "feature"
+description = "add `JsonConverter()` setting to override the converter used for JSON de-/serialization"
+author = "@NiklasRosenstein"
+component = "databind.json"

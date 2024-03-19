@@ -1,7 +1,0 @@
-release-date = "2021-08-06"
-
-[[entries]]
-id = "bf344197-c36c-41ff-9084-fcf035d58f37"
-type = "fix"
-description = "fix `@A.union` types to accept `ObjectType`s"
-author = "@NiklasRosenstein"

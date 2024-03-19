@@ -1,7 +1,0 @@
-release-date = "2022-06-16"
-
-[[entries]]
-id = "349e567d-c835-44e6-b10d-2296850f4249"
-type = "fix"
-description = "Fix that subclasses of a dataclasses marked also with @Union are deserialized as dataclasses instead of Unions; this change may have wider reaching effects because we no longer look up settings in bases of a type, but unit tests are OK with this"
-author = "@NiklasRosenstein"

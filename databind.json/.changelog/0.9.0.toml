@@ -1,7 +1,0 @@
-release-date = "2020-11-24"
-
-[[entries]]
-id = "4436d541-f7a8-4c1b-9292-0bc1d6624a15"
-type = "feature"
-description = "handle `FieldMetadata.relaxed` and `FieldMetadata.strict` in Bool, Integer and String converters"
-author = "@NiklasRosenstein"

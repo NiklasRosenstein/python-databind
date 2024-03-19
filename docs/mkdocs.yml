@@ -1,18 +1,21 @@
+repo_url: https://github.com/NiklasRosenstein/python-databind
+repo_name: NiklasRosenstein/python-databind
+
 nav:
-  - Home: index.md
-  - CORE:
+  - Home:
+    - index.md
+    - changelog.md
+  - databind.core:
     - core/index.md
     - core/basic-usage.md
     - core/settings.md
     - core/dataclass-ext.md
-    - core/changelog.md
     - API: []
-  - JSON:
+  - databind.json:
     - json/index.md
     - Examples:
       - json/examples/index.md
       - json/examples/config-serde.md
       - json/examples/unions.md
       - json/examples/unknown-keys.md
-    - json/changelog.md
     - API: []

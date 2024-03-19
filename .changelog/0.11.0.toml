@@ -1,0 +1,43 @@
+release-date = "2021-03-05"
+
+[[entries]]
+id = "5fdfb706-e8fd-4277-a4fa-8bc9fd894336"
+type = "feature"
+description = "`enumerate_fields()` now works with uniontype instances and classes"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "58571d4d-65a2-46c7-949d-60f8eb219e56"
+type = "improvement"
+description = "update `@uniontype` generated `__repr__()` method"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "8585b0f1-6d33-4f1c-8637-c4186e456786"
+type = "feature"
+description = "add support for member aliasing in `UnionResolver`"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "9a23ae46-60fd-4f4f-950b-bb6966aa0003"
+type = "feature"
+description = "add `Context.closed_field_metadata()` function"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "65f5c1ef-ae7f-4802-af8c-c5e5460f602d"
+type = "improvement"
+description = "Update union construction during deserialization"
+author = "@NiklasRosenstein"
+component = "databind.json"
+
+[[entries]]
+id = "779fedda-841f-4e00-bed0-e3ccab1ad836"
+type = "improvement"
+description = "minimum version of `databind.core` is `^0.10.0`"
+author = "@NiklasRosenstein"
+component = "databind.json"

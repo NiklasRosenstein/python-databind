@@ -1,0 +1,18 @@
+release-date = "2021-08-16"
+
+[[entries]]
+id = "efbf0a33-5eae-4868-84e0-00d252c7a08d"
+type = "fix"
+description = "normal type with `Annotated[MyType, union(...)]` is now correctly interpreted as `UnionType`"
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "02e75fd1-7555-42de-bb36-e9c88b65b680"
+type = "fix"
+description = "`str`, `bytes`, `bytearray` and `memoryview` are no longer accepted when deserializing `CollectionType` values"
+author = "@NiklasRosenstein"
+issues = [
+    "https://github.com/NiklasRosenstein/databind/issues/13",
+]
+component = "databind.json"

@@ -1,7 +1,0 @@
-release-date = "2022-09-27"
-
-[[entries]]
-id = "25634f7f-a646-407b-9696-fedfa201e1b9"
-type = "improvement"
-description = "Add a `LiteralConverter` which allows you to create literal-based unions (see new example in readme)"
-author = "@NiklasRosenstein"

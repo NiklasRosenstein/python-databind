@@ -1,7 +1,0 @@
-release-date = "2021-08-18"
-
-[[entries]]
-id = "a1d0d6a4-75ea-41c4-b79b-5d3a4f517b69"
-type = "fix"
-description = "fix case where DefaultTypeHintAdapter does not continue adaptation dynamically upon encountering a fixed type object"
-author = "@NiklasRosenstein"

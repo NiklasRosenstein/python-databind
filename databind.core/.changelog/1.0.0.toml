@@ -1,7 +1,0 @@
-release-date = "2021-07-20"
-
-[[entries]]
-id = "4c779cd4-3aeb-4ab8-b9cf-178dce76db85"
-type = "breaking change"
-description = "Full rewrite"
-author = "@NiklasRosenstein"

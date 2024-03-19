@@ -1,0 +1,15 @@
+release-date = "2022-05-11"
+
+[[entries]]
+id = "ad7df855-fe04-4acc-b925-83010fe02662"
+type = "fix"
+description = "Fix resolving nested forward references in dataclasses."
+author = "@NiklasRosenstein"
+component = "databind.core"
+
+[[entries]]
+id = "fde3ca08-6897-4a16-a4d9-b794da8dd702"
+type = "fix"
+description = "Fixed an issue when deserializing fields in a schema when the Python type does not have the exact same representation in the structured payload, causing an error when that Python default value is handed as a value to be deserialized."
+author = "@NiklasRosenstein"
+component = "databind.json"

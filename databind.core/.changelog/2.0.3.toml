@@ -1,7 +1,0 @@
-release-date = "2022-05-11"
-
-[[entries]]
-id = "ad7df855-fe04-4acc-b925-83010fe02662"
-type = "fix"
-description = "Fix resolving nested forward references in dataclasses."
-author = "@NiklasRosenstein"

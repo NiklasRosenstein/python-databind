@@ -1,0 +1,9 @@
+release-date = "2023-04-12"
+
+[[entries]]
+id = "52080762-1fcd-4005-9024-9051571aeb5d"
+type = "fix"
+description = "Fixed an issue where TypeVar parametrization was lost when converting a dataclass to a schema."
+author = "@NiklasRosenstein"
+pr = "https://github.com/NiklasRosenstein/python-databind/issues/39"
+component = "databind.core"

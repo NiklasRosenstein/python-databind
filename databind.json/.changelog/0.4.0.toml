@@ -1,7 +1,0 @@
-release-date = "2020-09-06"
-
-[[entries]]
-id = "03524ec0-3644-4bd8-9a64-a1dc0e754fd7"
-type = "feature"
-description = "support `@datamodel(serialize_as)` in `ModelConverter`"
-author = "@NiklasRosenstein"
