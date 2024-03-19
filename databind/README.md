@@ -1,15 +1,12 @@
+<p align="center"><img src="https://i.imgur.com/KkWFne2.png" width="256px"></p>
+
 <h1 align="center">databind</h1>
 
 <p align="center">
   <img src="https://img.shields.io/pypi/pyversions/databind?style=flat" alt="Python versions">
   <a href="https://pypi.org/project/databind/"><img src="https://img.shields.io/pypi/v/databind?flat"></a>
+  <a href="https://NiklasRosenstein.github.io/python-databind/"><img src="https://img.shields.io/badge/Documentation-blue?style=flat&logo=gitbook&logoColor=white" alt="Documentation"></a>
 </p>
-<p align="center">
-  <a href="https://niklasrosenstein.github.io/python-databind/core/basic-usage/">CORE Guide</a> |
-  <a href="https://niklasrosenstein.github.io/python-databind/json/examples/">JSON Examples</a>
-</p>
-
-## Overview 📖
 
 The `databind` package provides a (de)serialization framework that understands most native Python types as well as
 dataclasses, as well as an implementation for serialize to/from JSON-like nested data structures.
@@ -29,8 +26,12 @@ class Config:
     server: Server
 
 from databind.json import dump, load
-assert load({"server": {"host": "localhost", "port": 8080}}, Config) == Config(server=Server(host='localhost', port=8080))
-assert dump(Config(server=Server(host='localhost', port=8080)), Config) == {"server": {"host": "localhost", "port": 8080}}
+
+dict_payload = {"server": {"host": "localhost", "port": 8080}}
+loaded = Config(server=Server(host="localhost", port=8080))
+
+assert load(dict_payload, Config) == loaded
+assert dump(loaded, Config) == dict_payload
 ```
 
 ## Features ✨
