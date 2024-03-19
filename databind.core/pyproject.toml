@@ -1,37 +1,19 @@
 [tool.poetry]
 name = "databind.core"
 version = "4.4.2"
-description = "Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.8 and newer."
+description = "Databind is a library inspired by jackson-databind to de-/serialize Python dataclasses. Compatible with Python 3.8 and newer. Deprecated, use `databind` package."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "databind/core", from = "src"}]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/NiklasRosenstein/python-databind/issues"
 Documentation = "https://niklasrosenstein.github.io/python-databind/"
-# Homepage = ""
 Repository = "https://github.com/NiklasRosenstein/python-databind"
 
 [tool.poetry.dependencies]
 python = "^3.8.0"
-Deprecated = "^1.2.12"
-nr-date = "^2.0.0"
-nr-stream = "^1.0.0"
-setuptools = { version = ">=40.8.0", markers = "python_version < '3.10'" }
-typeapi = ">=2.0.1,<3"
-typing-extensions = ">=3.10.0,<5"
-
-[tool.poetry.dev-dependencies]
-black = ">=23.0.0,<24.0.0"
-flake8 = ">=5.0.4,<8.0.0"
-isort = ">=5.13.2,<6.0.0"
-pytest = ">=8.1.1,<9.0.0"
-mypy = ">=1.9.0,<2.0.0"
-types-dataclasses = "*"
-types-deprecated = "*"
-types-setuptools = "*"
-types-termcolor = "*"
+databind = "^4.4.2"
 
 [tool.slap]
 typed = true
@@ -39,36 +21,3 @@ typed = true
 [build-system]
 requires = ["poetry-core==1.9.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.slap.test]
-check = "slap check"
-mypy = "dmypy run src/"
-pytest = "pytest src/ -vv"
-black = "black --check src/"
-isort = "isort --check-only src/"
-flake8 = "flake8 src/"
-
-[tool.slap.run]
-fmt = "black src/ && isort src/"
-
-[tool.mypy]
-python_version = "3.8"
-explicit_package_bases = true
-mypy_path = ["src"]
-namespace_packages = true
-pretty = true
-show_error_codes = true
-show_error_context = true
-strict = true
-warn_no_return = true
-warn_redundant_casts = true
-warn_unreachable = true
-warn_unused_ignores = true
-
-[tool.isort]
-profile = "black"
-line_length = 120
-combine_as_imports = true
-
-[tool.black]
-line-length = 120
