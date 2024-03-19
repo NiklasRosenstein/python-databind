@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "databind.json"
 version = "4.4.2"
-description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.7 and newer."
+description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.8 and newer."
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -14,21 +14,21 @@ Documentation = "https://niklasrosenstein.github.io/python-databind/"
 Repository = "https://github.com/NiklasRosenstein/python-databind"
 
 [tool.poetry.dependencies]
-python = "^3.6.3"
+python = "^3.8.0"
 "databind.core" = "^4.4.2"
 nr-date = "^2.0.0"
-typeapi = "^2.0.1"
-typing-extensions = ">=3.10.0,<4.7"  # See https://github.com/python/typing_extensions/issues/265#issuecomment-1616809112
+typeapi = ">=2.0.1,<3"
+typing-extensions = ">=3.10.0,<5"
 
 [tool.poetry.dev-dependencies]
-black = "*"
-flake8 = "*"
-isort = "*"
-pytest = "*"
-mypy = "*"
+black = ">=23.0.0,<24.0.0"
+flake8 = ">=5.0.4,<8.0.0"
+isort = ">=5.13.2,<6.0.0"
+pytest = ">=8.1.1,<9.0.0"
+mypy = ">=1.9.0,<2.0.0"
 
 [build-system]
-requires = ["poetry-core==1.0.8"]
+requires = ["poetry-core==1.9.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.slap]
@@ -46,7 +46,7 @@ flake8 = "flake8 src/"
 fmt = "black src/ && isort src/"
 
 [tool.mypy]
-python_version = "3.6"
+python_version = "3.8"
 explicit_package_bases = true
 mypy_path = ["src"]
 namespace_packages = true

@@ -2,7 +2,6 @@ import base64
 import datetime
 import decimal
 import enum
-import types
 import typing as t
 
 from databind.core import (
@@ -167,7 +166,6 @@ class CollectionConverter(Converter):
             try:
                 return python_type(values)
             except TypeError:
-                assert not isinstance(values, types.GeneratorType), (type(values), python_type)
                 # We assume that the native list is an appropriate placeholder for whatever specific Collection type
                 # was chosen in the value's datatype.
                 return values
@@ -193,11 +191,13 @@ class DatetimeConverter(Converter):
         datefmt = ctx.get_setting(DateFormat) or (
             self.DEFAULT_DATE_FMT
             if date_type == datetime.date
-            else self.DEFAULT_TIME_FMT
-            if date_type == datetime.time
-            else self.DEFAULT_DATETIME_FMT
-            if date_type == datetime.datetime
-            else None
+            else (
+                self.DEFAULT_TIME_FMT
+                if date_type == datetime.time
+                else self.DEFAULT_DATETIME_FMT
+                if date_type == datetime.datetime
+                else None
+            )
         )
         assert datefmt is not None
 

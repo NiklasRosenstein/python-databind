@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.x"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.x"]
     steps:
     - uses: actions/checkout@v2
     - uses: NiklasRosenstein/slap@gha/install/v1
@@ -29,3 +29,4 @@ jobs:
       - run: slap run --no-venv-check docs:build
       - uses: JamesIves/github-pages-deploy-action@4.1.4
         with: { branch: gh-pages, folder: docs/_site, ssh-key: "${{ secrets.DEPLOY_KEY }}" }
+        if: github.ref == 'refs/heads/develop'
