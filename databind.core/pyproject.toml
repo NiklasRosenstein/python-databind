@@ -5,6 +5,7 @@ description = "Databind is a library inspired by jackson-databind to de-/seriali
 authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [{include = "_databind_core_proxy.py", from = "src"}]
 
 [tool.poetry.urls]
 "Bug Tracker" = "https://github.com/NiklasRosenstein/python-databind/issues"
