@@ -1,0 +1,8 @@
+[[entries]]
+id = "32835227-2170-4c19-952b-4649de1bfe7d"
+type = "fix"
+description = "Downgrade to `poetry-core==1.0.8` for `databind.core` and `databind.json` packages because of #64"
+author = "niklas.rosenstein@helsing.ai"
+issues = [
+    "https://github.com/NiklasRosenstein/python-databind/issues/64",
+]

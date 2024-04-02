@@ -17,7 +17,7 @@ python = "^3.8.0"
 databind = "^4.5.0"
 
 [build-system]
-requires = ["poetry-core==1.9.0"]
+requires = ["poetry-core==1.0.8"]  # Don't ugprade, see https://github.com/NiklasRosenstein/python-databind/issues/64
 build-backend = "poetry.core.masonry.api"
 
 [tool.slap]
