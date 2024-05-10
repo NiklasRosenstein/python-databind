@@ -764,7 +764,7 @@ class UnionConverter(Converter):
     def convert(self, ctx: Context) -> t.Any:
         datatype = ctx.datatype
         union: t.Optional[Union]
-        literal_types: list[TypeHint] = []
+        literal_types: t.List[TypeHint] = []
 
         if isinstance(datatype, UnionTypeHint):
             if datatype.has_none_type():
