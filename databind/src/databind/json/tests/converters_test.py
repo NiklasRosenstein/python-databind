@@ -834,3 +834,9 @@ def test_union_literal():
 
     assert mapper.serialize("bye", StrType) == "bye"
     assert mapper.serialize("other", StrType) == "other"
+
+    assert mapper.deserialize("hi", IntType) == "hi"
+    assert mapper.deserialize(2, IntType) == 2
+
+    assert mapper.deserialize("bye", StrType) == "bye"
+    assert mapper.deserialize("other", StrType) == "other"
