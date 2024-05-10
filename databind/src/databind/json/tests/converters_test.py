@@ -821,3 +821,16 @@ def test_extra_keys_parent_decorated_child_inherits_and_can_override() -> None:
     with pytest.raises(ConversionError) as excinfo:
         mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, ChildOverriding)
     assert "extra" in str(excinfo.value)
+
+
+def test_union_literal():
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
+
+    IntType = int | t.Literal["hi", "bye"]
+    StrType = str | t.Literal["hi", "bye"]
+
+    assert mapper.serialize("hi", IntType) == "hi"
+    assert mapper.serialize(2, IntType) == 2
+
+    assert mapper.serialize("bye", StrType) == "bye"
+    assert mapper.serialize("other", StrType) == "other"

@@ -764,13 +764,19 @@ class UnionConverter(Converter):
     def convert(self, ctx: Context) -> t.Any:
         datatype = ctx.datatype
         union: t.Optional[Union]
+        literal_types: list[TypeHint] = []
+
         if isinstance(datatype, UnionTypeHint):
             if datatype.has_none_type():
                 raise NotImplementedError("unable to handle Union type with None in it")
-            if not all(isinstance(a, ClassTypeHint) for a in datatype):
-                raise NotImplementedError(f"members of plain Union must be concrete types: {datatype}")
-            members = {t.cast(ClassTypeHint, a).type.__name__: a for a in datatype}
-            if len(members) != len(datatype):
+
+            literal_types = [a for a in datatype if isinstance(a, LiteralTypeHint)]
+            non_literal_types = [a for a in datatype if not isinstance(a, LiteralTypeHint)]
+            if not all(isinstance(a, ClassTypeHint) for a in non_literal_types):
+                raise NotImplementedError(f"members of plain Union must be concrete or Literal types: {datatype}")
+
+            members = {t.cast(ClassTypeHint, a).type.__name__: a for a in non_literal_types}
+            if len(members) != len(non_literal_types):
                 raise NotImplementedError(f"members of plain Union cannot have overlapping type names: {datatype}")
             union = Union(members, Union.BEST_MATCH)
         elif isinstance(datatype, (AnnotatedTypeHint, ClassTypeHint)):
@@ -787,6 +793,11 @@ class UnionConverter(Converter):
                 member_type = union.members.get_type_by_id(member_name)
                 try:
                     return ctx.spawn(ctx.value, member_type, None).convert()
+                except ConversionError as exc:
+                    errors.append((exc.origin, exc))
+            for literal_type in literal_types:
+                try:
+                    return ctx.spawn(ctx.value, literal_type, None).convert()
                 except ConversionError as exc:
                     errors.append((exc.origin, exc))
             raise ConversionError(
