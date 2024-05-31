@@ -78,6 +78,10 @@ def test_plain_datatype_converter(direction: Direction) -> None:
         with pytest.raises(ConversionError):
             mapper.convert(direction, "foobar", int)
 
+    # None should behave the same in both cases
+    assert mapper.convert(direction, None, type(None)) is None
+    assert mapper.convert(direction, None, None) is None
+
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_decimal_converter(direction: Direction) -> None:

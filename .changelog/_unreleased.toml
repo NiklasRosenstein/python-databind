@@ -1,0 +1,5 @@
+[[entries]]
+id = "0240153b-1aaa-4801-b258-522c608bb936"
+type = "improvement"
+description = "Add None to the set of plain datatypes that can be de/serialized"
+author = "@rhaps0dy"

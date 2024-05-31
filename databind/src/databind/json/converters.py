@@ -373,7 +373,7 @@ class OptionalConverter(Converter):
 
 
 class PlainDatatypeConverter(Converter):
-    """A converter for the plain datatypes #bool, #bytes, #int, #str and #float.
+    """A converter for the plain datatypes #bool, #bytes, #int, #str, #float and #null.
 
     Arguments:
       direction (Direction): The direction in which to convert (serialize or deserialize).
@@ -394,6 +394,7 @@ class PlainDatatypeConverter(Converter):
         (int, float): float,
         (float, int): _int_lossless,
         (bool, bool): bool,
+        (type(None), type(None)): lambda x: x,
     }
 
     # Used only during deserialization if the #fieldinfo.strict is disabled.
@@ -406,6 +407,7 @@ class PlainDatatypeConverter(Converter):
             (int, str): str,
             (float, str): str,
             (bool, str): str,
+            (type(None), type(None)): lambda x: x,
         }
     )
 
@@ -428,7 +430,6 @@ class PlainDatatypeConverter(Converter):
         )
         adapters = self._strict_adapters if strict.enabled else self._nonstrict_adapters
         adapter = adapters.get((source_type, target_type))
-
         if adapter is None:
             raise ConversionError.expected(self, ctx, target_type, source_type)
 
