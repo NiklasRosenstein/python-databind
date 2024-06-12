@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/pypi/pyversions/databind?style=flat" alt="Python versions">
   <a href="https://pypi.org/project/databind/"><img src="https://img.shields.io/pypi/v/databind?flat"></a>
   <a href="https://NiklasRosenstein.github.io/python-databind/"><img src="https://img.shields.io/badge/Documentation-blue?style=flat&logo=gitbook&logoColor=white" alt="Documentation"></a>
+  <a href = "https://piptrends.com/package/databind" alt = "databind Downloads Last Month"><img alt="databind Downloads Last Month by pip Trends" src="https://assets.piptrends.com/get-last-month-downloads-badge/databind.svg"></a>
 </p>
 
 The `databind` package provides a (de)serialization framework that understands most native Python types as well as
