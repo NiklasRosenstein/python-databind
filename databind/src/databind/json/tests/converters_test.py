@@ -717,3 +717,70 @@ def test__JsonConverter__using_classmethods_on_plain_class() -> None:
     mapper = make_mapper([JsonConverterSupport()])
     assert mapper.serialize(MyCls(), MyCls) == "MyCls"
     assert mapper.deserialize("MyCls", MyCls) == MyCls()
+
+
+def test_extra_keys_on_subclass_creates_own_settings() -> None:
+    """Regression test: ExtraKeys() applied to a subclass must create its own __databind_settings__,
+    not append to the parent's list via MRO traversal."""
+    from databind.core.settings import get_class_settings
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Parent:
+        a: int
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Child(Parent):
+        b: str = ""
+
+    # Each class must have its own independent __databind_settings__ list.
+    assert "__databind_settings__" in vars(Parent)
+    assert "__databind_settings__" in vars(Child)
+    assert vars(Parent)["__databind_settings__"] is not vars(Child)["__databind_settings__"]
+
+    # get_class_settings must find ExtraKeys on each class independently.
+    assert list(get_class_settings(Parent, ExtraKeys)) != []
+    assert list(get_class_settings(Child, ExtraKeys)) != []
+
+    # Parent's settings list must not be polluted with Child's decorator.
+    assert len(vars(Parent)["__databind_settings__"]) == 1
+
+
+def test_extra_keys_subclass_deserialization_allows_extra_keys() -> None:
+    """Regression test: ExtraKeys() on a subclass must allow extra keys during deserialization."""
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Parent:
+        a: int
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Child(Parent):
+        b: str = ""
+
+    # Child should allow extra keys because it is decorated with ExtraKeys().
+    result = mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, Child)
+    assert result == Child(a=1, b="hello")
+
+
+def test_extra_keys_parent_decorated_child_not_decorated_raises() -> None:
+    """When only the parent has ExtraKeys(), the child should NOT inherit that permission
+    via get_class_settings (which uses vars()), so extra keys on the child raise an error."""
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Parent:
+        a: int
+
+    @dataclasses.dataclass
+    class Child(Parent):
+        b: str = ""
+
+    # Child has no ExtraKeys() of its own; extra keys should cause an error.
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, Child)
+    assert "extra" in str(excinfo.value)

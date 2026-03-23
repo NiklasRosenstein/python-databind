@@ -176,7 +176,7 @@ class ClassDecoratorSetting(Setting):
             raise RuntimeError("cannot decorate multiple types with the same setting instance")
 
         self.bound_to = type_
-        settings = getattr(type_, "__databind_settings__", None)
+        settings = vars(type_).get("__databind_settings__", None)
         if settings is None:
             settings = []
             setattr(type_, "__databind_settings__", settings)
