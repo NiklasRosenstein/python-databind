@@ -818,7 +818,7 @@ class UnionConverter(Converter):
             try:
                 member_name = union.members.get_type_id_for_value(ctx.value)
             except ValueError as exc:
-                raise ConversionError(self, ctx, str(exc))
+                raise ConversionError(self, ctx, str(exc)) from exc
             member_type = union.members.get_type_by_id(member_name)
 
         nesting_key = union.nesting_key or member_name

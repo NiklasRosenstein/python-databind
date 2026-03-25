@@ -13,5 +13,5 @@ author = "@NiklasRosenstein"
 [[entries]]
 id = "6d0f41f2-f7f9-4808-af65-196a7a909b4f"
 type = "fix"
-description = "Fix #47: Union with Literal in them can now de/serialize"
+description = "Fix #47: Unions containing Literal types can now be serialized/deserialized"
 author = "@rhaps0dy"
