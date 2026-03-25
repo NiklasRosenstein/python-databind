@@ -30,6 +30,7 @@ from databind.json.converters import (
     DatetimeConverter,
     DecimalConverter,
     EnumConverter,
+    LiteralConverter,
     MappingConverter,
     OptionalConverter,
     PlainDatatypeConverter,
@@ -333,6 +334,17 @@ def test_union_converter_best_match(direction: Direction) -> None:
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_union_converter_best_match_literal(direction: Direction) -> None:
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter(), LiteralConverter()])
+
+    LiteralUnionType = t.Union[int, t.Literal["hi"], t.Literal["bye"]]
+
+    assert mapper.convert(direction, 42, LiteralUnionType) == 42
+    assert mapper.convert(direction, "hi", LiteralUnionType) == "hi"
+    assert mapper.convert(direction, "bye", LiteralUnionType) == "bye"
+
+
+@pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_union_converter_keyed(direction: Direction) -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
 
@@ -341,6 +353,30 @@ def test_union_converter_keyed(direction: Direction) -> None:
         assert mapper.convert(direction, {"int": 42}, th) == 42
     else:
         assert mapper.convert(direction, 42, th) == {"int": 42}
+
+
+@pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_union_converter_keyed_literal(direction: Direction) -> None:
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter(), LiteralConverter()])
+
+    th = te.Annotated[
+        t.Union[int, t.Literal["hi"], t.Literal["bye"]],
+        Union({"int": int, "HiType": t.Literal["hi"], "ByeType": t.Literal["bye"]}, style=Union.KEYED),
+    ]
+    if direction == Direction.DESERIALIZE:
+        assert mapper.convert(direction, {"int": 42}, th) == 42
+        assert mapper.convert(direction, {"HiType": "hi"}, th) == "hi"
+        assert mapper.convert(direction, {"ByeType": "bye"}, th) == "bye"
+
+        with pytest.raises(ConversionError):
+            mapper.convert(direction, {"ByeType": "hi"}, th)
+    else:
+        assert mapper.convert(direction, 42, th) == {"int": 42}
+        assert mapper.convert(direction, "hi", th) == {"HiType": "hi"}
+        assert mapper.convert(direction, "bye", th) == {"ByeType": "bye"}
+
+        with pytest.raises(ConversionError):
+            mapper.convert(direction, {"ByeType": "hi"}, th)
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
@@ -821,3 +857,22 @@ def test_extra_keys_parent_decorated_child_inherits_and_can_override() -> None:
     with pytest.raises(ConversionError) as excinfo:
         mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, ChildOverriding)
     assert "extra" in str(excinfo.value)
+
+
+def test_union_literal() -> None:
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter(), LiteralConverter()])
+
+    IntType = t.Union[int, t.Literal["hi", "bye"]]
+    StrType = t.Union[str, t.Literal["hi", "bye"]]
+
+    assert mapper.serialize("hi", IntType) == "hi"
+    assert mapper.serialize(2, IntType) == 2
+
+    assert mapper.serialize("bye", StrType) == "bye"
+    assert mapper.serialize("other", StrType) == "other"
+
+    assert mapper.deserialize("hi", IntType) == "hi"
+    assert mapper.deserialize(2, IntType) == 2
+
+    assert mapper.deserialize("bye", StrType) == "bye"
+    assert mapper.deserialize("other", StrType) == "other"

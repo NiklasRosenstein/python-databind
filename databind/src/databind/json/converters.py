@@ -764,14 +764,21 @@ class UnionConverter(Converter):
     def convert(self, ctx: Context) -> t.Any:
         datatype = ctx.datatype
         union: t.Optional[Union]
+
         if isinstance(datatype, UnionTypeHint):
             if datatype.has_none_type():
                 raise NotImplementedError("unable to handle Union type with None in it")
-            if not all(isinstance(a, ClassTypeHint) for a in datatype):
-                raise NotImplementedError(f"members of plain Union must be concrete types: {datatype}")
-            members = {t.cast(ClassTypeHint, a).type.__name__: a for a in datatype}
-            if len(members) != len(datatype):
+
+            literal_types = [a for a in datatype if isinstance(a, LiteralTypeHint)]
+            non_literal_types = [a for a in datatype if not isinstance(a, LiteralTypeHint)]
+            if not all(isinstance(a, ClassTypeHint) for a in non_literal_types):
+                raise NotImplementedError(f"members of plain Union must be concrete or Literal types: {datatype}")
+
+            members: t.Dict[str, t.Any] = {t.cast(ClassTypeHint, a).type.__name__: a for a in non_literal_types}
+            if len(members) != len(non_literal_types):
                 raise NotImplementedError(f"members of plain Union cannot have overlapping type names: {datatype}")
+            for lit in literal_types:
+                members[type_repr(lit.hint)] = lit
             union = Union(members, Union.BEST_MATCH)
         elif isinstance(datatype, (AnnotatedTypeHint, ClassTypeHint)):
             union = ctx.get_setting(Union)
@@ -807,8 +814,11 @@ class UnionConverter(Converter):
             member_type = union.members.get_type_by_id(member_name)
 
         else:
-            # Identify the member type based on the Python value type.
-            member_name = union.members.get_type_id(type(ctx.value))
+            # Identify the member type based on the Python value.
+            try:
+                member_name = union.members.get_type_id_for_value(ctx.value)
+            except ValueError as exc:
+                raise ConversionError(self, ctx, str(exc))
             member_type = union.members.get_type_by_id(member_name)
 
         nesting_key = union.nesting_key or member_name
