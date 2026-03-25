@@ -78,6 +78,10 @@ def test_plain_datatype_converter(direction: Direction) -> None:
         with pytest.raises(ConversionError):
             mapper.convert(direction, "foobar", int)
 
+    # None should behave the same in both cases
+    assert mapper.convert(direction, None, type(None)) is None
+    assert mapper.convert(direction, None, None) is None
+
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_decimal_converter(direction: Direction) -> None:
@@ -102,7 +106,7 @@ def test_enum_converter(direction: Direction) -> None:
     class Pet(enum.Enum):
         CAT = enum.auto()
         DOG = enum.auto()
-        LION: te.Annotated[int, Alias("KITTY")] = enum.auto()
+        LION: te.Annotated[int, Alias("KITTY")] = enum.auto()  # type: ignore[misc,assignment]
 
     if direction == Direction.SERIALIZE:
         assert mapper.convert(direction, Pet.CAT, Pet) == "CAT"
@@ -741,3 +745,79 @@ def test_convert_generic_dataclass(direction: Direction) -> None:
     else:
         obj = InheritGeneric(4, "something")
         assert mapper.convert(direction, {"a_field": obj.a_field, "b_field": obj.b_field}, InheritGeneric) == obj
+
+
+def test_extra_keys_on_subclass_creates_own_settings() -> None:
+    """Regression test: ExtraKeys() applied to a subclass must create its own __databind_settings__,
+    not append to the parent's list via MRO traversal."""
+    from databind.core.settings import get_class_settings
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Parent:
+        a: int
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Child(Parent):
+        b: str = ""
+
+    # Each class must have its own independent __databind_settings__ list.
+    assert "__databind_settings__" in vars(Parent)
+    assert "__databind_settings__" in vars(Child)
+    assert vars(Parent)["__databind_settings__"] is not vars(Child)["__databind_settings__"]
+
+    # get_class_settings must find ExtraKeys on each class independently.
+    assert list(get_class_settings(Parent, ExtraKeys)) != []
+    assert list(get_class_settings(Child, ExtraKeys)) != []
+
+    # Parent's settings list must not be polluted with Child's decorator.
+    assert len(vars(Parent)["__databind_settings__"]) == 1
+
+
+def test_extra_keys_subclass_deserialization_allows_extra_keys() -> None:
+    """Regression test: ExtraKeys() on a subclass must allow extra keys during deserialization."""
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Parent:
+        a: int
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Child(Parent):
+        b: str = ""
+
+    # Child should allow extra keys because it is decorated with ExtraKeys().
+    result = mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, Child)
+    assert result == Child(a=1, b="hello")
+
+
+def test_extra_keys_parent_decorated_child_inherits_and_can_override() -> None:
+    """When only the parent has ExtraKeys(), the child inherits that permission via MRO traversal.
+    The child can override it by decorating with @ExtraKeys(allow=False)."""
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
+
+    @ExtraKeys()
+    @dataclasses.dataclass
+    class Parent:
+        a: int
+
+    @dataclasses.dataclass
+    class ChildInheriting(Parent):
+        b: str = ""
+
+    @ExtraKeys(allow=False)
+    @dataclasses.dataclass
+    class ChildOverriding(Parent):
+        b: str = ""
+
+    # Child inherits ExtraKeys() from parent, so extra keys are allowed.
+    result = mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, ChildInheriting)
+    assert result == ChildInheriting(a=1, b="hello")
+
+    # Child explicitly overrides with ExtraKeys(allow=False), so extra keys raise an error.
+    with pytest.raises(ConversionError) as excinfo:
+        mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, ChildOverriding)
+    assert "extra" in str(excinfo.value)

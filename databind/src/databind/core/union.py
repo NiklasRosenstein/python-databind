@@ -12,7 +12,7 @@ from typeapi import ClassTypeHint, TypeHint
 from databind.core.utils import T
 
 if sys.version_info[:2] < (3, 10):
-    from pkg_resources import EntryPoint, iter_entry_points
+    from pkg_resources import EntryPoint, iter_entry_points  # type: ignore[import-not-found,unused-ignore]
 else:
     from importlib.metadata import EntryPoint, entry_points
 
@@ -148,7 +148,7 @@ class EntrypointUnionMembers(UnionMembers):
     def get_type_id(self, type_: t.Any) -> str:
         for ep in self._entrypoints.values():
             if ep.load() == type_:
-                return ep.name
+                return ep.name  # type: ignore[no-any-return,unused-ignore]
         raise ValueError(f"unable to resolve type {type_!r} to a type ID for {self}")
 
     def get_type_by_id(self, type_id: str) -> t.Any:

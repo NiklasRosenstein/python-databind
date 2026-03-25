@@ -3,3 +3,9 @@ id = "693674ea-b2b2-4733-bce6-4d5bae59b164"
 type = "fix"
 description = "Fix #66: dataclasses inheriting from uninstantiated Generic did not get all their fields serialized"
 author = "@rhaps0dy"
+
+[[entries]]
+id = "ab7f2766-e6f5-4236-946d-bddedcd73433"
+type = "fix"
+description = "Fix ClassDecoratorSetting and get_class_settings to correctly handle __databind_settings__ on subclasses"
+author = "@NiklasRosenstein"
