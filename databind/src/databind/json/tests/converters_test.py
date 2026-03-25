@@ -860,11 +860,11 @@ def test_extra_keys_parent_decorated_child_inherits_and_can_override() -> None:
     assert "extra" in str(excinfo.value)
 
 
-def test_union_literal():
+def test_union_literal() -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter(), LiteralConverter()])
 
-    IntType = int | t.Literal["hi", "bye"]
-    StrType = str | t.Literal["hi", "bye"]
+    IntType = t.Union[int, t.Literal["hi", "bye"]]
+    StrType = t.Union[str, t.Literal["hi", "bye"]]
 
     assert mapper.serialize("hi", IntType) == "hi"
     assert mapper.serialize(2, IntType) == 2
