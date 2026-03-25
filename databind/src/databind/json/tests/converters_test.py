@@ -766,9 +766,9 @@ def test_extra_keys_subclass_deserialization_allows_extra_keys() -> None:
     assert result == Child(a=1, b="hello")
 
 
-def test_extra_keys_parent_decorated_child_not_decorated_raises() -> None:
-    """When only the parent has ExtraKeys(), the child should NOT inherit that permission
-    via get_class_settings (which uses vars()), so extra keys on the child raise an error."""
+def test_extra_keys_parent_decorated_child_inherits_and_can_override() -> None:
+    """When only the parent has ExtraKeys(), the child inherits that permission via MRO traversal.
+    The child can override it by decorating with @ExtraKeys(allow=False)."""
     mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
 
     @ExtraKeys()
@@ -777,10 +777,19 @@ def test_extra_keys_parent_decorated_child_not_decorated_raises() -> None:
         a: int
 
     @dataclasses.dataclass
-    class Child(Parent):
+    class ChildInheriting(Parent):
         b: str = ""
 
-    # Child has no ExtraKeys() of its own; extra keys should cause an error.
+    @ExtraKeys(allow=False)
+    @dataclasses.dataclass
+    class ChildOverriding(Parent):
+        b: str = ""
+
+    # Child inherits ExtraKeys() from parent, so extra keys are allowed.
+    result = mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, ChildInheriting)
+    assert result == ChildInheriting(a=1, b="hello")
+
+    # Child explicitly overrides with ExtraKeys(allow=False), so extra keys raise an error.
     with pytest.raises(ConversionError) as excinfo:
-        mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, Child)
+        mapper.deserialize({"a": 1, "b": "hello", "extra": "ignored"}, ChildOverriding)
     assert "extra" in str(excinfo.value)
