@@ -199,6 +199,7 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
 
     # Collect the members from the dataclass and its base classes.
     queue = [hint]
+    seen: t.Set[type] = set()
     fields: t.Dict[str, Field] = {}
     while queue:
         hint = queue.pop(0)
@@ -244,11 +245,16 @@ def convert_dataclass_to_schema(dataclass_type: t.Union[type, GenericAlias, Clas
             # are overwritten by other fields.
             pass
 
-        # Continue with the base classes.
-        for base in hint.bases or hint.type.__bases__:
+        # Continue with the base classes. We iterate both hint.bases (which provides
+        # parameterized generic type info from __orig_bases__) and hint.type.__bases__
+        # (the actual base classes). This is necessary because when a class inherits from
+        # a Generic without parameterizing it (e.g. `class B(A)` where A is Generic[T]),
+        # hint.bases only contains Generic[T] and misses the actual parent dataclass A.
+        for base in (*hint.bases, *hint.type.__bases__):
             base_hint = TypeHint(base, source=hint.type).evaluate().parameterize(parameter_map)
             assert isinstance(base_hint, ClassTypeHint), f"nani? {base_hint}"
-            if dataclasses.is_dataclass(base_hint.type):
+            if dataclasses.is_dataclass(base_hint.type) and base_hint.type not in seen:
+                seen.add(base_hint.type)
                 queue.append(base_hint)
 
     return Schema(fields, t.cast("Constructor", dataclass_type), dataclass_type)

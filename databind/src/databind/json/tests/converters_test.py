@@ -719,6 +719,34 @@ def test__JsonConverter__using_classmethods_on_plain_class() -> None:
     assert mapper.deserialize("MyCls", MyCls) == MyCls()
 
 
+UnboundTypeVar = t.TypeVar("UnboundTypeVar")
+
+
+@dataclasses.dataclass
+class GenericClass(t.Generic[UnboundTypeVar]):
+    a_field: int
+
+
+@dataclasses.dataclass
+class InheritGeneric(GenericClass):  # type: ignore[type-arg]
+    b_field: str
+
+
+@pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
+def test_convert_generic_dataclass(direction: Direction) -> None:
+    """Regression test for #66: dataclasses inheriting from Generic with an uninstantiated TypeVar don't get their
+    parents' fields.
+    """
+    mapper = make_mapper([SchemaConverter(), PlainDatatypeConverter()])
+
+    if direction == Direction.SERIALIZE:
+        obj = InheritGeneric(2, "hi")
+        assert mapper.convert(direction, obj, InheritGeneric) == {"a_field": obj.a_field, "b_field": obj.b_field}
+    else:
+        obj = InheritGeneric(4, "something")
+        assert mapper.convert(direction, {"a_field": obj.a_field, "b_field": obj.b_field}, InheritGeneric) == obj
+
+
 def test_extra_keys_on_subclass_creates_own_settings() -> None:
     """Regression test: ExtraKeys() applied to a subclass must create its own __databind_settings__,
     not append to the parent's list via MRO traversal."""
