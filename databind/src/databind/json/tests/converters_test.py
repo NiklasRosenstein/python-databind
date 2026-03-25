@@ -339,14 +339,9 @@ def test_union_converter_best_match_literal(direction: Direction) -> None:
 
     LiteralUnionType = t.Union[int, t.Literal["hi"], t.Literal["bye"]]
 
-    if direction == Direction.DESERIALIZE:
-        assert mapper.convert(direction, 42, LiteralUnionType) == 42
-        assert mapper.convert(direction, "hi", LiteralUnionType) == "hi"
-        assert mapper.convert(direction, "bye", LiteralUnionType) == "bye"
-    else:
-        assert mapper.convert(direction, 42, LiteralUnionType) == 42
-        assert mapper.convert(direction, "hi", LiteralUnionType) == "hi"
-        assert mapper.convert(direction, "bye", LiteralUnionType) == "bye"
+    assert mapper.convert(direction, 42, LiteralUnionType) == 42
+    assert mapper.convert(direction, "hi", LiteralUnionType) == "hi"
+    assert mapper.convert(direction, "bye", LiteralUnionType) == "bye"
 
 
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
@@ -360,7 +355,6 @@ def test_union_converter_keyed(direction: Direction) -> None:
         assert mapper.convert(direction, 42, th) == {"int": 42}
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize("direction", (Direction.SERIALIZE, Direction.DESERIALIZE))
 def test_union_converter_keyed_literal(direction: Direction) -> None:
     mapper = make_mapper([UnionConverter(), PlainDatatypeConverter(), LiteralConverter()])
@@ -867,7 +861,7 @@ def test_extra_keys_parent_decorated_child_inherits_and_can_override() -> None:
 
 
 def test_union_literal():
-    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter()])
+    mapper = make_mapper([UnionConverter(), PlainDatatypeConverter(), LiteralConverter()])
 
     IntType = int | t.Literal["hi", "bye"]
     StrType = str | t.Literal["hi", "bye"]

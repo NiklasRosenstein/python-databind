@@ -7,7 +7,7 @@ import sys
 import types
 import typing as t
 
-from typeapi import ClassTypeHint, TypeHint
+from typeapi import ClassTypeHint, LiteralTypeHint, TypeHint
 
 from databind.core.utils import T
 
@@ -46,6 +46,19 @@ class UnionMembers(abc.ABC):
         Raises:
           ValueError: If the *type_id* is not an ID among the union members.
         """
+
+    def get_type_id_for_value(self, value: t.Any) -> str:
+        """Given a Python value, return the ID of the type among the union members.
+
+        This method allows matching values against Literal type members, which cannot be
+        resolved by type alone. The default implementation falls back to `get_type_id(type(value))`.
+
+        Arguments:
+          value: The Python value to retrieve the type ID for.
+        Raises:
+          ValueError: If no member matches the *value*.
+        """
+        return self.get_type_id(type(value))
 
     @abc.abstractmethod
     def get_type_ids(self) -> t.List[str]:
@@ -100,6 +113,17 @@ class StaticUnionMembers(UnionMembers):
             if reference_type == type_ or isinstance(reference_type, ClassTypeHint) and reference_type.type == type_:
                 return type_id
         raise ValueError(f"type {type_} is not a member of {self}")
+
+    def get_type_id_for_value(self, value: t.Any) -> str:
+        # Check LiteralTypeHint members first (more specific — match value in reference_type.values).
+        # Members may be stored as raw typing annotations or as TypeHint instances, so wrap if needed.
+        for type_id in self.members:
+            reference_type = self.get_type_by_id(type_id)
+            hint = reference_type if isinstance(reference_type, TypeHint) else TypeHint(reference_type)
+            if isinstance(hint, LiteralTypeHint) and value in hint.values:
+                return type_id
+        # Then fall back to class/type members (existing type-based matching)
+        return self.get_type_id(type(value))
 
     def get_type_by_id(self, type_id: str) -> t.Any:
         try:
@@ -225,6 +249,15 @@ class ChainUnionMembers(UnionMembers):
             except ValueError as exc:
                 errors.append(exc)
         raise ValueError(f"{type_!r} is not a member of {self}\n" + "- \n".join(map(str, errors)))
+
+    def get_type_id_for_value(self, value: t.Any) -> str:
+        errors = []
+        for delegate in self.delegates:
+            try:
+                return delegate.get_type_id_for_value(value)
+            except ValueError as exc:
+                errors.append(exc)
+        raise ValueError(f"{value!r} is not a member of {self}\n" + "- \n".join(map(str, errors)))
 
     def get_type_by_id(self, type_id: str) -> t.Any:
         errors = []
