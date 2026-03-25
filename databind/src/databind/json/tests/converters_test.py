@@ -106,7 +106,7 @@ def test_enum_converter(direction: Direction) -> None:
     class Pet(enum.Enum):
         CAT = enum.auto()
         DOG = enum.auto()
-        LION: te.Annotated[int, Alias("KITTY")] = enum.auto()
+        LION: te.Annotated[int, Alias("KITTY")] = enum.auto()  # type: ignore[misc,assignment]
 
     if direction == Direction.SERIALIZE:
         assert mapper.convert(direction, Pet.CAT, Pet) == "CAT"
