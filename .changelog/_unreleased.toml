@@ -1,0 +1,5 @@
+[[entries]]
+id = "ab7f2766-e6f5-4236-946d-bddedcd73433"
+type = "fix"
+description = "Fix ClassDecoratorSetting and get_class_settings to correctly handle __databind_settings__ on subclasses"
+author = "@NiklasRosenstein"

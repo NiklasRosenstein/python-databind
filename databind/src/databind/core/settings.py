@@ -176,7 +176,7 @@ class ClassDecoratorSetting(Setting):
             raise RuntimeError("cannot decorate multiple types with the same setting instance")
 
         self.bound_to = type_
-        settings = getattr(type_, "__databind_settings__", None)
+        settings = vars(type_).get("__databind_settings__", None)
         if settings is None:
             settings = []
             setattr(type_, "__databind_settings__", settings)
@@ -197,11 +197,14 @@ def get_highest_setting(settings: t.Iterable[T_Setting]) -> "T_Setting | None":
 def get_class_settings(
     type_: type, setting_type: t.Type[T_ClassDecoratorSetting]
 ) -> t.Iterable[T_ClassDecoratorSetting]:
-    """Returns all matching settings on *type_*."""
+    """Returns all matching settings on *type_*, traversing the MRO so that parent class settings
+    are inherited by subclasses. Settings defined on the class itself are yielded before those
+    inherited from parent classes, giving them priority when priority levels are equal."""
 
-    for item in vars(type_).get("__databind_settings__", []):
-        if isinstance(item, setting_type):
-            yield item
+    for klass in type_.__mro__:
+        for item in vars(klass).get("__databind_settings__", []):
+            if isinstance(item, setting_type):
+                yield item
 
 
 def get_class_setting(type_: type, setting_type: t.Type[T_ClassDecoratorSetting]) -> "T_ClassDecoratorSetting | None":
