@@ -755,7 +755,6 @@ def test__JsonConverter__using_classmethods_on_plain_class() -> None:
     assert mapper.deserialize("MyCls", MyCls) == MyCls()
 
 
-
 UnboundTypeVar = t.TypeVar("UnboundTypeVar")
 
 
