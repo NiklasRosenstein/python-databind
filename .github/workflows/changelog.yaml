@@ -1,7 +1,5 @@
-# This workflow will run on every pull request to the develop branch to do the following:
-#
-# - Insert the Pull Request URL into new changelog entries.
-# - Assert that a new changelog entry has been added in the PR unless a "no changelog" label is added to the PR.
+# This workflow will run on every pull request to the develop branch to assert
+# that a new changelog entry has been added unless a "no changelog" label is present.
 
 name: "Changelog"
 
@@ -9,20 +7,20 @@ on:
   pull_request_target: { branches: [ "develop" ] }
 
 jobs:
-  # changelog-update:
-  #   name: "Insert Pull Request URL into new changelog entries"
-  #   runs-on: ubuntu-latest
-  #   if: github.event_name == 'pull_request_target'
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: NiklasRosenstein/slap@gha/changelog/update/v2
-  #       with: { pr-id: '${{ github.event.pull_request.number }}' }
-
   assert-new-changelog-entries:
     name: "At least one new changelog entry must be added"
     runs-on: ubuntu-latest
     if: github.base_ref != '' && !contains(github.event.pull_request.labels.*.name, 'no changelog')
     steps:
-      - uses: actions/checkout@v2
-      - uses: NiklasRosenstein/slap@gha/changelog/assert-added/v2
-        with: { pr-id: '${{ github.event.pull_request.number }}' }
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Check for changelog changes
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^\.changelog/_unreleased\.toml$'; then
+            echo "Changelog entry found."
+          else
+            echo "::error::No changelog entry found. Please add entries to .changelog/_unreleased.toml or add the 'no changelog' label."
+            exit 1
+          fi

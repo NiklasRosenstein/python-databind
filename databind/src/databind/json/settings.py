@@ -61,7 +61,7 @@ class JsonConverter(ClassDecoratorSetting):
         serialized_type: t.Union[t.Type[t.Any], t.Tuple[t.Type[t.Any], ...], None] = None,
         *,
         serialize: "str | None" = None,
-        deserialize: "str | None" = None
+        deserialize: "str | None" = None,
     ) -> "JsonConverter":
         return JsonConverter(
             DelegateToClassmethodConverter(serialized_type, serialize=serialize, deserialize=deserialize)

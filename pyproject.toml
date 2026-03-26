@@ -1,0 +1,62 @@
+[project]
+name = "databind-workspace"
+version = "0.0.0"
+requires-python = ">=3.8"
+dependencies = [
+    "databind",
+    "databind.core",
+    "databind.json",
+]
+
+[tool.uv.workspace]
+members = ["databind", "databind.core", "databind.json"]
+
+[tool.uv.sources]
+databind = { workspace = true }
+databind-core = { workspace = true }
+databind-json = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "black>=23.0.0,<24.0.0",
+    "flake8>=5.0.4,<8.0.0",
+    "isort>=5.13.2,<6.0.0",
+    "pytest>=8.1.1,<9.0.0",
+    "mypy>=1.9.0,<2.0.0",
+    "types-dataclasses",
+    "types-deprecated",
+    "types-setuptools",
+    "types-termcolor",
+]
+docs = [
+    "mkdocs; python_version >= '3.10'",
+    "mkdocs-material; python_version >= '3.10'",
+    "mkdocstrings[python]; python_version >= '3.10'",
+    "mksync>=0.1.4,<0.2; python_version >= '3.10'",
+]
+
+[tool.mypy]
+python_version = "3.10"
+explicit_package_bases = true
+mypy_path = ["databind/src"]
+files = ["databind/src"]
+namespace_packages = true
+pretty = true
+show_error_codes = true
+show_error_context = true
+strict = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_unreachable = true
+warn_unused_ignores = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
+combine_as_imports = true
+
+[tool.black]
+line-length = 120
+
+[tool.pytest.ini_options]
+testpaths = ["databind/src"]

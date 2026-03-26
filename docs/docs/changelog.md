@@ -1,3 +1,3 @@
 # Changelog
 
-@shell cd .. && slap changelog format --markdown --all
+@shell cd ../.. && python scripts/format_changelog.py

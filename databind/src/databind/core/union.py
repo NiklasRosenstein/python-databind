@@ -11,7 +11,7 @@ from typeapi import ClassTypeHint, LiteralTypeHint, TypeHint
 
 from databind.core.utils import T
 
-if sys.version_info[:2] < (3, 10):
+if sys.version_info[:2] < (3, 9):
     from pkg_resources import EntryPoint, iter_entry_points  # type: ignore[import-not-found,unused-ignore]
 else:
     from importlib.metadata import EntryPoint, entry_points

@@ -13,24 +13,111 @@ jobs:
     continue-on-error: ${{ matrix.python-version == '3.15' }}
     steps:
     - uses: actions/checkout@v4
-    - uses: NiklasRosenstein/slap@gha/install/v1
+    - uses: astral-sh/setup-uv@v5
     - uses: actions/setup-python@v5
       with:
         python-version: "${{ matrix.python-version }}"
         allow-prereleases: true
-    - run: slap install --link --no-venv-check
-    - run: slap test
-    - run: slap publish --dry
+    - run: uv sync --group dev
+    - run: uv run pytest databind/src/ -vv
+    - run: uv run black --check --config pyproject.toml databind/src/
+    - run: uv run isort --check-only databind/src/
+    - run: uv run flake8 databind/src/
+    - if: matrix.python-version == '3.12'
+      run: uv run mypy
+    - run: uv build --package databind && uv build --package databind.core && uv build --package databind.json
 
   documentation:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: NiklasRosenstein/slap@gha/install/v1
+      - uses: astral-sh/setup-uv@v5
       - uses: actions/setup-python@v5
-        with: { python-version: "3.10" }
-      - run: slap --version && slap install --only-extras docs --no-venv-check
-      - run: slap run --no-venv-check docs:build
+        with: { python-version: "3.12" }
+      - run: uv sync --group docs
+      - run: cd docs && uv run mkdocs build --site-dir _site
       - uses: JamesIves/github-pages-deploy-action@4.1.4
         with: { branch: gh-pages, folder: docs/_site, ssh-key: "${{ secrets.DEPLOY_KEY }}" }
         if: github.ref == 'refs/heads/develop'
+
+  build:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+          - { name: "databind", artifact: "dist-databind" }
+          - { name: "databind.core", artifact: "dist-databind-core" }
+          - { name: "databind.json", artifact: "dist-databind-json" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: uv build --package ${{ matrix.package.name }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.package.artifact }}
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist-databind, path: dist/databind }
+      - uses: actions/download-artifact@v4
+        with: { name: dist-databind-core, path: dist/databind-core }
+      - uses: actions/download-artifact@v4
+        with: { name: dist-databind-json, path: dist/databind-json }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with: { packages-dir: dist/databind }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with: { packages-dir: dist/databind-core }
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with: { packages-dir: dist/databind-json }
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${GITHUB_REF#refs/tags/}"
+          CHANGELOG=".changelog/${VERSION}.toml"
+          if [ ! -f "$CHANGELOG" ]; then
+            echo "body=Release ${VERSION}" >> "$GITHUB_OUTPUT"
+          else
+            BODY=$(python3 -c "
+          import tomllib, pathlib, sys
+          data = tomllib.loads(pathlib.Path(sys.argv[1]).read_text())
+          lines = []
+          for e in data.get('entries', []):
+              t = e.get('type', 'change')
+              d = e.get('description', '')
+              pr = e.get('pr', '')
+              suffix = f' ({pr})' if pr else ''
+              lines.append(f'- **{t}**: {d}{suffix}')
+          print('\n'.join(lines) if lines else 'No changelog entries.')
+          " "$CHANGELOG")
+            {
+              echo "body<<GHEOF"
+              echo "$BODY"
+              echo "GHEOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --notes "${{ steps.notes.outputs.body }}"

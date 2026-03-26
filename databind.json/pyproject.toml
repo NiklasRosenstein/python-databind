@@ -1,24 +1,26 @@
-[tool.poetry]
+[build-system]
+requires = ["uv_build>=0.11.1,<0.12"]
+build-backend = "uv_build"
+
+[project]
 name = "databind.json"
 version = "4.5.2"
 description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.8 and newer. Deprecated, use `databind` module instead."
-authors = ["Niklas Rosenstein <rosensteinniklas@gmail.com>"]
+authors = [{name = "Niklas Rosenstein", email = "rosensteinniklas@gmail.com"}]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "_databind_json_proxy", from = "src"}]
+requires-python = ">=3.8"
+dependencies = [
+    "databind>=4.5.2,<5",
+]
 
-[tool.poetry.urls]
+[project.urls]
 "Bug Tracker" = "https://github.com/NiklasRosenstein/python-databind/issues"
 Documentation = "https://niklasrosenstein.github.io/python-databind/"
 Repository = "https://github.com/NiklasRosenstein/python-databind"
 
-[tool.poetry.dependencies]
-python = "^3.8.0"
-databind = "^4.5.2"
+[tool.uv.sources]
+databind = { workspace = true }
 
-[build-system]
-requires = ["poetry-core==1.0.8"]  # Don't ugprade, see https://github.com/NiklasRosenstein/python-databind/issues/64
-build-backend = "poetry.core.masonry.api"
-
-[tool.slap]
-typed = true
+[tool.uv.build-backend]
+module-name = "_databind_json_proxy"
