@@ -15,3 +15,9 @@ id = "6d0f41f2-f7f9-4808-af65-196a7a909b4f"
 type = "fix"
 description = "Fix #47: Union with Literal in them can now de/serialize"
 author = "@rhaps0dy"
+
+[[entries]]
+id = "9cb46299-4432-402c-8c31-327ef4daadd4"
+type = "improvement"
+description = "Add Python 3.13, 3.14, and 3.15 (pre-release) to CI test matrix"
+author = "@NiklasRosenstein"
