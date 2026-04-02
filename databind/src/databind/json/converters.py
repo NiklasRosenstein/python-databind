@@ -217,7 +217,7 @@ class DatetimeConverter(Converter):
         else:
             if not isinstance(ctx.value, date_type):
                 raise ConversionError.expected(self, ctx, date_type, type(ctx.value))
-            return datefmt.format(ctx.value)  # type: ignore[type-var]
+            return datefmt.format(ctx.value)  # type: ignore[type-var,unused-ignore]
 
 
 class DecimalConverter(Converter):
