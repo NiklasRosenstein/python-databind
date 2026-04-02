@@ -876,3 +876,94 @@ def test_union_literal() -> None:
 
     assert mapper.deserialize("bye", StrType) == "bye"
     assert mapper.deserialize("other", StrType) == "other"
+
+
+def test_union_not_inherited_by_subclass() -> None:
+    """Regression test for #80: Union settings on a base class must not be inherited by subclasses
+    via MRO traversal, as this causes infinite recursion during serialization/deserialization."""
+
+    @Union(style=Union.FLAT)
+    @dataclasses.dataclass
+    class Base:
+        x: float = 0.0
+
+    @Union.register(Base, "a")
+    @dataclasses.dataclass
+    class A(Base):
+        pass
+
+    @Union.register(Base, "b")
+    @dataclasses.dataclass
+    class B(Base):
+        y: float = 0.0
+
+    mapper = make_mapper([CollectionConverter(), UnionConverter(), SchemaConverter(), PlainDatatypeConverter()])
+
+    # Deserialize via union base type
+    result = mapper.deserialize({"type": "a", "x": 1.0}, Base)
+    assert result == A(x=1.0)
+
+    # Serialize via union base type
+    result = mapper.serialize(A(x=1.0), Base)
+    assert result == {"type": "a", "x": 1.0}
+
+    # Deserialize list of union base type
+    result = mapper.deserialize([{"type": "a", "x": 1.0}, {"type": "b", "x": 2.0, "y": 3.0}], t.List[Base])
+    assert result == [A(x=1.0), B(x=2.0, y=3.0)]
+
+    # Serialize list of union base type
+    result = mapper.serialize([A(x=1.0), B(x=2.0, y=3.0)], t.List[Base])
+    assert result == [{"type": "a", "x": 1.0}, {"type": "b", "x": 2.0, "y": 3.0}]
+
+    # Direct deserialization of a union member as its own type (not through the base)
+    result = mapper.deserialize({"x": 1.0}, A)
+    assert result == A(x=1.0)
+
+
+def test_union_not_inherited_multi_level() -> None:
+    """Union must not be inherited through deeper MRO chains (Base -> Middle -> Leaf)."""
+    from databind.core.settings import get_class_settings
+
+    @Union(style=Union.FLAT)
+    @dataclasses.dataclass
+    class Base:
+        x: float = 0.0
+
+    @Union.register(Base, "mid")
+    @dataclasses.dataclass
+    class Middle(Base):
+        pass
+
+    @dataclasses.dataclass
+    class Leaf(Middle):
+        pass
+
+    # Union should be found on Base (directly applied) but not on Middle or Leaf
+    assert list(get_class_settings(Base, Union)) != []
+    assert list(get_class_settings(Middle, Union)) == []
+    assert list(get_class_settings(Leaf, Union)) == []
+
+
+def test_subclass_with_own_union() -> None:
+    """A subclass that has its own @Union decorator should still have that setting found."""
+    from databind.core.settings import get_class_settings
+
+    @Union(style=Union.FLAT)
+    @dataclasses.dataclass
+    class Parent:
+        x: float = 0.0
+
+    @Union(style=Union.NESTED)
+    @dataclasses.dataclass
+    class Child(Parent):
+        y: float = 0.0
+
+    parent_unions = list(get_class_settings(Parent, Union))
+    child_unions = list(get_class_settings(Child, Union))
+
+    assert len(parent_unions) == 1
+    assert parent_unions[0].style == Union.FLAT
+
+    # Child should find its own Union (NESTED), not inherit the parent's (FLAT)
+    assert len(child_unions) == 1
+    assert child_unions[0].style == Union.NESTED
