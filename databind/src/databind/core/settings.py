@@ -160,6 +160,7 @@ class Setting:
 
 class ClassDecoratorSetting(Setting):
     bound_to: t.Optional[type] = None
+    inheritable: t.ClassVar[bool] = True
 
     def __init__(self) -> None:
         if type(self) is ClassDecoratorSetting:
@@ -203,7 +204,7 @@ def get_class_settings(
 
     for klass in type_.__mro__:
         for item in vars(klass).get("__databind_settings__", []):
-            if isinstance(item, setting_type):
+            if isinstance(item, setting_type) and (klass is type_ or item.inheritable):
                 yield item
 
 
@@ -416,6 +417,8 @@ class Union(ClassDecoratorSetting):
     #: The "best match" style attempts to deserialize the payload in an implementation-defined order and return
     #: the first or best succeeding result. No discriminator key is used.
     BEST_MATCH: t.ClassVar = "best_match"
+
+    inheritable: t.ClassVar[bool] = False
 
     #: The subtypes of the union as an implementation of the #UnionMembers interface. When constructing the #Union
     #: setting, a dictionary may be passed in place of a #UnionMembers implementation, or a list of #UnionMembers
