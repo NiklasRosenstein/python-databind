@@ -160,7 +160,7 @@ class Setting:
 
 class ClassDecoratorSetting(Setting):
     bound_to: t.Optional[type] = None
-    inheritable: bool = True
+    inheritable: t.ClassVar[bool] = True
 
     def __init__(self) -> None:
         if type(self) is ClassDecoratorSetting:
