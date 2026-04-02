@@ -272,7 +272,7 @@ wheels = [
 
 [[package]]
 name = "databind"
-version = "4.5.3"
+version = "4.5.4"
 source = { editable = "databind" }
 dependencies = [
     { name = "deprecated" },
@@ -296,7 +296,7 @@ requires-dist = [
 
 [[package]]
 name = "databind-core"
-version = "4.5.3"
+version = "4.5.4"
 source = { editable = "databind.core" }
 dependencies = [
     { name = "databind" },
@@ -307,7 +307,7 @@ requires-dist = [{ name = "databind", editable = "databind" }]
 
 [[package]]
 name = "databind-json"
-version = "4.5.3"
+version = "4.5.4"
 source = { editable = "databind.json" }
 dependencies = [
     { name = "databind" },

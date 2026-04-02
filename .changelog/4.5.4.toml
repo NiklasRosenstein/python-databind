@@ -1,0 +1,7 @@
+release-date = "2026-04-03"
+
+[[entries]]
+id = "f3a8c1d2-7e4b-4a9f-b6c5-2d1e8f9a0b3c"
+type = "fix"
+description = "Fix #80: Union setting inherited via MRO causing RecursionError during serialization/deserialization"
+author = "@NiklasRosenstein"
