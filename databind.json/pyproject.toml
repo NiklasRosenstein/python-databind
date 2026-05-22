@@ -4,14 +4,14 @@ build-backend = "uv_build"
 
 [project]
 name = "databind.json"
-version = "4.5.4"
+version = "4.5.5"
 description = "De-/serialize Python dataclasses to or from JSON payloads. Compatible with Python 3.8 and newer. Deprecated, use `databind` module instead."
 authors = [{name = "Niklas Rosenstein", email = "rosensteinniklas@gmail.com"}]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
-    "databind>=4.5.4,<5",
+    "databind>=4.5.5,<5",
 ]
 
 [project.urls]
