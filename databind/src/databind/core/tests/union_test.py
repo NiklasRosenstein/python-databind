@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import typing as t
 
-from _pytest.monkeypatch import MonkeyPatch
+from pytest import MonkeyPatch
 
 import databind.core.union as union_module
 
