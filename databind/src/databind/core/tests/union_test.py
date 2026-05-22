@@ -1,17 +1,10 @@
 from __future__ import annotations
 
-import sys
 import typing as t
 
-import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 import databind.core.union as union_module
-
-pytestmark = pytest.mark.skipif(
-    sys.version_info[:2] < (3, 9),
-    reason="iter_entry_points is only backed by importlib.metadata on Python >= 3.9",
-)
 
 
 def test_iter_entry_points_uses_select_api_without_call_arguments(monkeypatch: MonkeyPatch) -> None:
