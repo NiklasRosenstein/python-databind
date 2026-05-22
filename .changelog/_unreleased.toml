@@ -1,6 +1,6 @@
 [[entries]]
 id = "67afd70b-b66e-4aeb-ab30-becf3f121681"
 type = "fix"
-description = "Fix `Union` entry point discovery by no longer passing the `group` keyword to `importlib.metadata.entry_points()`, and drop the deprecated `pkg_resources` fallback (`importlib.metadata` is used on all supported Python versions)"
+description = "Fix `Union` entry point discovery by no longer passing the `group` keyword to `importlib.metadata.entry_points()`, drop the deprecated `pkg_resources` fallback (`importlib.metadata` is used on all supported Python versions), and remove the now-unused `setuptools` runtime dependency on Python <3.9"
 author = "@NiklasRosenstein"
 pr = "https://github.com/NiklasRosenstein/python-databind/pull/84"
