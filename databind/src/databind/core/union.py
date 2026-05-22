@@ -3,21 +3,20 @@
 import abc
 import dataclasses
 import importlib
-import sys
 import types
 import typing as t
+from importlib.metadata import EntryPoint, entry_points
 
 from typeapi import ClassTypeHint, LiteralTypeHint, TypeHint
 
 from databind.core.utils import T
 
-if sys.version_info[:2] < (3, 9):
-    from pkg_resources import EntryPoint, iter_entry_points  # type: ignore[import-not-found,unused-ignore]
-else:
-    from importlib.metadata import EntryPoint, entry_points
 
-    def iter_entry_points(group: str) -> t.Iterator[EntryPoint]:
-        return iter(entry_points(group=group))
+def iter_entry_points(group: str) -> t.Iterator[EntryPoint]:
+    eps = entry_points()
+    if hasattr(eps, "select"):
+        return iter(eps.select(group=group))
+    return iter(eps.get(group, ()))
 
 
 __all__ = ["UnionMembers", "StaticUnionMembers", "EntrypointUnionMembers", "ImportUnionMembers", "ChainUnionMembers"]
